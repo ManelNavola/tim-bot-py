@@ -1,5 +1,6 @@
 import discord
 import os
+import psycopg2
 from discord_slash import SlashCommand # Importing the newly installed library.
 
 registered_guild_ids = [824723874544746507, 745340672109969440, 368145950717378560]
