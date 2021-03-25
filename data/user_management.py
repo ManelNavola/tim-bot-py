@@ -1,5 +1,5 @@
 from data import database
-from data import User
+from data.user import User
 
 cache = {}
 
@@ -25,6 +25,7 @@ def load(user_id):
     if not data:
         print('call save')
         save(user, True)
+    print('cleanup')
     try_cleanup()
     return user
 
