@@ -20,6 +20,7 @@ def load(user_id):
     cur.execute(f"""SELECT * from users WHERE id = {user_id}""")
     data = cur.fetchone()
     print('Creating user')
+    print(data)
     user = User(user_id, data)
     if not data:
         print('call save')

@@ -24,10 +24,10 @@ async def _ping(ctx):
 @slash.slash(name="money", description="Check your balance", guild_ids=registered_guild_ids)
 async def _money(ctx):
     await ctx.ack()
-    await asyncio.sleep(10)
-    await ctx.send("Morning")
-    #user = user_management.get(ctx.author_id)
-    #money = user.get_money()
-    #await ctx.send(f'You have ${money}')
+    print('begin', ctx.author_id)
+    user = user_management.get(ctx.author_id)
+    money = user.get_money()
+    print('end')
+    await ctx.send(f'You have ${money}')
 
 client.run(os.environ['CLIENT_KEY'])
