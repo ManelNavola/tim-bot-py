@@ -22,6 +22,7 @@ def load(user_id):
     print('Creating user')
     print(data)
     user = User(user_id, data)
+    print('done')
     if not data:
         print('call save')
         save(user, True)
