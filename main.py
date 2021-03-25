@@ -16,15 +16,15 @@ async def on_ready():
     print("Ready!")
 
 @slash.slash(name="hello", description="Greet Tim", guild_ids=registered_guild_ids)
-async def _ping(ctx): # Defines a new "context" (ctx) command called "ping."
+async def _ping(ctx):
     await ctx.ack()
     await ctx.send("Hey")
 
 @slash.slash(name="money", description="Check your balance", guild_ids=registered_guild_ids)
-async def _money(ctx): # Defines a new "context" (ctx) command called "ping."
-    await ctx.ack()
+async def _money(ctx):
     user = user_management.get(ctx.author_id)
     money = user.get_money()
+    await ctx.ack()
     await ctx.send(f'You have ${money}')
 
 client.run(os.environ['CLIENT_KEY'])
