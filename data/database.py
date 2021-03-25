@@ -3,7 +3,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 
 conn = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require', cursor_factory=RealDictCursor)
-cur = psycopg2.cursor()
+cur = conn.cursor()
 
 def cursor():
     cur
