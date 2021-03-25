@@ -1,4 +1,3 @@
-worker: python main.py
 discord.py
 discord-py-slash-command
 psycopg2
