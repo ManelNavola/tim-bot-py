@@ -6,7 +6,7 @@ conn = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require', cursor_fa
 cur = conn.cursor()
 
 def cursor():
-    cur
+    return cur
 
 def parse_set(d):
     ts = []

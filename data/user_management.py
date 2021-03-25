@@ -14,7 +14,7 @@ def get(user_id):
 
 def load(user_id):
     print('Try loading')
-    cur = connection.cursor()  
+    cur = database.cursor()
     cur.execute(f"""SELECT * from users WHERE id = {user_id}""")
     data = cur.fetchone()
     user = User(user_id, data)
@@ -24,6 +24,7 @@ def load(user_id):
     return user
 
 def save(user, first_time=False):
+    cur = database.cursor()
     if first_time:
         print('Try saving (first time)')
         a, b = parse_insert(user.data, {'id': user.id})
