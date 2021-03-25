@@ -29,10 +29,12 @@ def save(user, first_time=False):
     if first_time:
         print('Try saving (first time)')
         a, b = database.parse_insert(user.data, {'id': user.id})
+        print(a, b)
         cur.execute(f"""INSERT INTO users {a} VALUES {b}""")
     else:
         print('Try saving')
         to_save = database.parse_set(user.data)
+        print(to_save)
         cur.execute(f"""UPDATE users SET {to_save} WHERE id = {user_id}""")
 
 def try_cleanup():
