@@ -1,7 +1,7 @@
 from utils import utils
 
 class User:
-    def __init__(user_id, data):
+    def __init__(self, user_id, data):
         print('create')
         self.id = user_id
         if row:

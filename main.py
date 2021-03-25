@@ -7,10 +7,6 @@ import asyncio
 
 from data.user import User
 
-User(0, None)
-
-print('wot')
-
 cache = {}
 registered_guild_ids = [824723874544746507, 745340672109969440, 368145950717378560]
 
