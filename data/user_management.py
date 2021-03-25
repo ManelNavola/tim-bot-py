@@ -1,4 +1,5 @@
 from data import database
+from data import User
 
 cache = {}
 

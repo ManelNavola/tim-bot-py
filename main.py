@@ -24,6 +24,6 @@ async def _ping(ctx): # Defines a new "context" (ctx) command called "ping."
 async def _money(ctx): # Defines a new "context" (ctx) command called "ping."
     await ctx.ack()
     user = user_management.get(ctx.author_id)
-    await ctx.send(user.get('money'))
+    await ctx.send(f'You have ${user.get('money')}')
 
 client.run(os.environ['CLIENT_KEY'])
