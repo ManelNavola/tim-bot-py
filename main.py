@@ -22,9 +22,9 @@ async def _ping(ctx):
 
 @slash.slash(name="money", description="Check your balance", guild_ids=registered_guild_ids)
 async def _money(ctx):
+    await ctx.ack()
     user = user_management.get(ctx.author_id)
     money = user.get_money()
-    await ctx.ack()
     await ctx.send(f'You have ${money}')
 
 client.run(os.environ['CLIENT_KEY'])
