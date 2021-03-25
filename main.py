@@ -5,7 +5,7 @@ from discord_slash import SlashCommand # Importing the newly installed library.
 
 registered_guild_ids = [824723874544746507, 745340672109969440, 368145950717378560]
 
-conn = psycopg2.connect(os.eniron['DATABASE_URL'], sslmode='require')
+conn = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require')
 client = discord.Client(intents=discord.Intents.all())
 slash = SlashCommand(client, sync_commands=True) # Declares slash commands through the client.
 
