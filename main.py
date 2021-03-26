@@ -3,7 +3,7 @@ import os
 from discord_slash import SlashCommand # Importing the newly installed library.
 from discord_slash.utils.manage_commands import create_option
 from utils import utils
-from data import user_management
+from data import user_management, database
 from data.glob import Table
 import asyncio
 
@@ -19,7 +19,7 @@ async def on_ready():
     print("Ready!")
 
 @slash.slash(name="hello", description="Greet Tim", guild_ids=registered_guild_ids)
-async def _ping(ctx):
+async def _hello(ctx):
     await ctx.ack()
     await ctx.send("Hey")
 
@@ -29,6 +29,7 @@ async def _money(ctx):
     user = user_management.get(ctx)
     money = user.get_money()
     await ctx.send(f'You have ${money} (+$1/min)')
+    database.commit()
 
 @slash.slash(name="table", description="Place or get money from the table",
     options=[
@@ -39,22 +40,23 @@ async def _money(ctx):
             required=False
         )
     ], guild_ids=registered_guild_ids)
-async def _table(ctx, money: int):
+async def _table(ctx, money):
     await ctx.ack()
     user = user_management.get(ctx)
     if money:
         if user.add_money(-money):
-            table.add_money(money)
+            Table.add_money(ctx, money)
             await ctx.send(f"You placed ${money} on the table")
         else:
             await ctx.send(f"You don't have ${money}!")
     else:
-        money = table.retrieve_money()
+        money = Table.retrieve_money(ctx)
         if money == 0:
             await ctx.send(f'There is no money on the table!')
         else:
             await ctx.send(f'You took ${money} from the table')
             user.add_money(money)
-    user_management.save(user)
+            user_management.save(user)
+    database.commit()
 
 client.run(os.environ['CLIENT_KEY'])

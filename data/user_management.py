@@ -21,16 +21,10 @@ def load(user_id):
     return user
 
 def save(user, first_time=False):
-    cur = database.cursor()
     if first_time:
-        keys, values = database.parse_insert(user.data, {'id': user.id})
-        cur.execute(f"""INSERT INTO users {keys} VALUES {values}""")
-        database.commit()
+        database.insert_data("users", user.id, user.data)
     else:
-        user_id = user.id
-        to_save = database.parse_set(user.data)
-        cur.execute(f"""UPDATE users SET {to_save} WHERE id = '{user_id}'""")
-        database.commit()
+        database.update_data("users", user.id, user.data)
 
 def try_cleanup():
     pass
