@@ -31,11 +31,13 @@ def save(user, first_time=False):
         a, b = database.parse_insert(user.data, {'id': user.id})
         print(a, b)
         cur.execute(f"""INSERT INTO users {a} VALUES {b}""")
+        cur.commit()
     else:
         print('Try saving')
         to_save = database.parse_set(user.data)
         print(to_save)
         cur.execute(f"""UPDATE users SET {to_save} WHERE id = {user_id}""")
+        cur.commit()
 
 def try_cleanup():
     pass
