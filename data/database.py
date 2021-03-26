@@ -14,6 +14,7 @@ def convert_value(v):
     return str(v)
 
 def get_row_data(table_name, row_id):
+    print("""SELECT * from {table_name} WHERE id = '{row_id}'""")
     cur.execute(f"""SELECT * from {table_name} WHERE id = '{row_id}'""")
     return cur.fetchone()
 
