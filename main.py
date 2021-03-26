@@ -40,7 +40,7 @@ async def _money(ctx):
             required=False
         )
     ], guild_ids=registered_guild_ids)
-async def _table(ctx, money):
+async def _table(ctx, money: int):
     await ctx.ack()
     user = user_management.get(ctx)
     if money:
