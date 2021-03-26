@@ -4,6 +4,7 @@ from data import database
 
 class Table:
     def __init__(self):
+        print(database.get_row_data("global", "table"))
         self.data = json.loads(database.get_row_data("global", "table"))
 
     def get_money(self):
