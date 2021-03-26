@@ -24,7 +24,7 @@ def convert_value(v):
     if type(v) == str:
         return "'" + v + "'"
     if type(v) == dict:
-        return json.dumps(v)
+        return "'" + json.dumps(v) + "'"
     return str(v)
 
 def get_row_data(table_name, row_id):
