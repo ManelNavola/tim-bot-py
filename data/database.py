@@ -5,6 +5,9 @@ from psycopg2.extras import RealDictCursor
 conn = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require', cursor_factory=RealDictCursor)
 cur = conn.cursor()
 
+def commit():
+    conn.commit()
+
 def cursor():
     return cur
 
