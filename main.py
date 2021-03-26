@@ -2,12 +2,11 @@ import os
 import discord
 from discord.ext import commands
 from discord_slash import SlashCommand, SlashContext
-from discord_slash.utils.manage_commands import create_option, remove_all_commands
+from discord_slash.utils.manage_commands import create_option
 from utils import utils
 from data import user_management, database
 from data.glob import Table
 from commands import simple
-import asyncio
 
 registered_guild_ids = None
 if not database.cursor():
@@ -19,8 +18,6 @@ slash = SlashCommand(bot, sync_commands=True)
 @bot.event
 async def on_ready():
     print("Ready!")
-    # Execute once
-    await remove_all_commands(824720383596560444, os.environ['CLIENT_KEY'], [824723874544746507, 368145950717378560, 824651379460800562])
 
 @slash.slash(name="hello", description="Greet Tim",
     guild_ids=registered_guild_ids)
