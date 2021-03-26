@@ -1,5 +1,6 @@
-import discord
 import os
+import discord
+from discord.ext import commands
 from discord_slash import SlashCommand # Importing the newly installed library.
 from discord_slash.utils.manage_commands import create_option
 from utils import utils
@@ -11,12 +12,16 @@ cache = {}
 table = Table()
 registered_guild_ids = [824723874544746507, 745340672109969440, 368145950717378560]
 
-client = discord.Client(intents=discord.Intents.all())
-slash = SlashCommand(client, sync_commands=True) # Declares slash commands through the client.
+bot = commands.Bot(command_prefix='/', intents=discord.Intents.all())
+slash = SlashCommand(bot, sync_commands=True)
 
-@client.event
+@bot.event
 async def on_ready():
     print("Ready!")
+    if database.cursor():
+        await bot.user.edit(username="Tim Lord")
+    else:
+        await bot.user.edit(username="Tim Lord (Test)")
 
 @slash.slash(name="hello", description="Greet Tim", guild_ids=registered_guild_ids)
 async def _hello(ctx):
@@ -31,8 +36,20 @@ async def _money(ctx):
     await ctx.send(f'You have ${money} (+$1/min)')
     database.commit()
 
-@slash.slash(name="table", description="Place or get money from the table",
-    options=[
+@slash.subcommand(base="table", name="check", description="Check money on the table",
+    guild_ids=registered_guild_ids)
+async def _table_check(ctx):
+    money = Table.retrieve_money(ctx)
+    if money == 0:
+        await ctx.send(f'There is no money on the table!')
+    else:
+        await ctx.send(f'There is ${money} on the table')
+        user = user_management.get(ctx)
+        user.add_money(money)
+        user_management.save(user)
+
+@slash.subcommand(base="table", name="place", description="Place money on the table",
+    options = [
         create_option(
             name="money",
             description="Amount of money to place on the table",
@@ -40,25 +57,34 @@ async def _money(ctx):
             required=False
         )
     ], guild_ids=registered_guild_ids)
-async def _table(ctx, money=None):
+async def _table_place(ctx, money):
     await ctx.ack()
     user = user_management.get(ctx)
-    if money:
-        if money < 10:
-            await ctx.send(f"You cannot place less than $10!")
-        elif user.add_money(-money):
-            Table.place_money(ctx, money)
-            await ctx.send(f"You placed ${money} on the table")
-        else:
-            await ctx.send(f"You don't have ${money}!")
+    if money < 10:
+        await ctx.send(f"You cannot place less than $10!")
+    elif user.add_money(-money):
+        Table.place_money(ctx, money)
+        await ctx.send(f"You placed ${money} on the table")
     else:
-        money = Table.retrieve_money(ctx)
-        if money == 0:
-            await ctx.send(f'There is no money on the table!')
-        else:
-            await ctx.send(f'You took ${money} from the table')
-            user.add_money(money)
-            user_management.save(user)
+        await ctx.send(f"You don't have ${money}!")
     database.commit()
 
-client.run(os.environ['CLIENT_KEY'])
+@slash.subcommand(base="table", name="take", description="Take money on the table",
+    guild_ids=registered_guild_ids)
+async def _table_take(ctx):
+    await ctx.ack()
+    money = Table.retrieve_money(ctx)
+    if money == 0:
+        await ctx.send(f'There is no money on the table!')
+    else:
+        await ctx.send(f'You took ${money} from the table')
+        user = user_management.get(ctx)
+        user.add_money(money)
+        user_management.save(user)
+    database.commit()
+
+if os.environ.get('CLIENT_KEY'):
+    bot.run(os.environ['CLIENT_KEY'])
+else:
+    with open('local/d.txt') as f:
+        bot.run(f.readline())

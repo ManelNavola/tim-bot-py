@@ -1,6 +1,5 @@
 from utils import utils
 from data import database
-import json
 
 global_cache = {}
 
@@ -24,7 +23,7 @@ def get_global(guild_id):
             data = {
                 "table_money": 0
             }
-            database.insert_data("global", guild_id, {"json": json.dumps(data)})
+            database.insert_data("global", guild_id, {"json": data})
             global_cache[guild_id] = data
         try_cleanup()
         return data
@@ -32,7 +31,7 @@ def get_global(guild_id):
 def update_global(guild_id):
     guild_id = str(guild_id)
     glb = get_global(guild_id)
-    database.update_data("global", guild_id, {"json": json.dumps(glb)})
+    database.update_data("global", guild_id, {"json": glb})
 
 def try_cleanup():
     pass
