@@ -27,6 +27,8 @@ def insert_data(table_name, row_id, data):
     for k, v in data.items():
         keys.append(k)
         values.append(convert_value(v))
+    keys = '(' + ','.join(keys) + ')'
+    values = '(' + ','.join(values) + ')'
     cur.execute(f"""INSERT INTO {table_name} {keys} VALUES {values}""")
     pending_commit = True
 
