@@ -17,12 +17,12 @@ slash = SlashCommand(client, sync_commands=True) # Declares slash commands throu
 async def on_ready():
     print("Ready!")
 
-@slash.slash(name="hello", description="Greet Tim")
+@slash.slash(name="hello", description="Greet Tim", guild_ids=registered_guild_ids)
 async def _ping(ctx):
     await ctx.ack()
     await ctx.send("Hey")
 
-@slash.slash(name="money", description="Check your balance")
+@slash.slash(name="money", description="Check your balance", guild_ids=registered_guild_ids)
 async def _money(ctx):
     await ctx.ack()
     user = user_management.get(ctx.author_id)
