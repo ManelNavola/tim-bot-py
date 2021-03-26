@@ -40,12 +40,12 @@ async def _money(ctx):
             required=False
         )
     ], guild_ids=registered_guild_ids)
-async def _table(ctx, money: int):
+async def _table(ctx, money):
     await ctx.ack()
     user = user_management.get(ctx)
     if money:
         if user.add_money(-money):
-            Table.add_money(ctx, money)
+            Table.place_money(ctx, money)
             await ctx.send(f"You placed ${money} on the table")
         else:
             await ctx.send(f"You don't have ${money}!")
