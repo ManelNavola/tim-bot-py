@@ -16,7 +16,7 @@ def get(user_id):
 
 def load(user_id):
     cur = database.cursor()
-    cur.execute(f"""SELECT * from users WHERE id = {user_id}""")
+    cur.execute(f"""SELECT * from users WHERE id = '{user_id}'""")
     data = cur.fetchone()
     print(data)
     user = User(user_id, data)
