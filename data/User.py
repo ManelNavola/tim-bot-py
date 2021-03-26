@@ -15,7 +15,7 @@ class User:
         return self.data['money'] + (utils.now() - self.data['money_time']) // 60
 
     def add_money(self, amount):
-        new_money = self.get_money() - amount
+        new_money = self.get_money() + amount
         if new_money >= 0:
             self.data['money'] = new_money
             self.data['money_time'] = utils.now()
