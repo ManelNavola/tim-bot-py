@@ -12,4 +12,4 @@ class User:
             }
 
     def get_money(self):
-        return self.data['money'] + (self.data['money_time'] - utils.now()) // 60
+        return self.data['money'] + (utils.now() - self.data['money_time']) // 60
