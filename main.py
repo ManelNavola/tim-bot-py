@@ -44,6 +44,7 @@ async def _table(ctx, money: int):
     user = user_management.get(ctx)
     if money:
         if user.add_money(-money):
+            table.add_money(money)
             await ctx.send(f"You placed ${money} on the table")
         else:
             await ctx.send(f"You don't have ${money}!")
