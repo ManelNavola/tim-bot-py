@@ -3,8 +3,8 @@ from data.user import User
 
 cache = {}
 
-def get(user_id):
-    user_id = str(user_id)
+def get(ctx):
+    user_id = str(ctx.author_id)
     if user_id in cache:
         return cache[user_id]
     else:
@@ -13,9 +13,7 @@ def get(user_id):
         return user
 
 def load(user_id):
-    cur = database.cursor()
-    cur.execute(f"""SELECT * from users WHERE id = '{user_id}'""")
-    data = cur.fetchone()
+    data = database.get_row_data("users", user_id)
     user = User(user_id, data)
     if not data:
         save(user, True)

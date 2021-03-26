@@ -5,9 +5,6 @@ from psycopg2.extras import RealDictCursor
 conn = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require', cursor_factory=RealDictCursor)
 cur = conn.cursor()
 
-def commit():
-    conn.commit()
-
 def cursor():
     return cur
 
@@ -15,6 +12,20 @@ def convert_value(v):
     if type(v) == str:
         return "'" + v + "'"
     return str(v)
+
+def get_row_data(table_name, row_id):
+    cur.execute(f"""SELECT * from {table_name} WHERE id = '{row_id}'""")
+    return cur.fetchone()
+
+def update_data(table_name, row_id, data):
+    ts = []
+    for k, v in data.items():
+        ts.append(k + ' = ' + convert_value(v))
+    ts = ', '.join(ts)
+    cur.execute(f"""UPDATE {table_name} SET {ts} WHERE id = {row_id}""")
+
+def commit():
+    conn.commit()
 
 def parse_set(d):
     ts = []
