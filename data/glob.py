@@ -1,5 +1,6 @@
 from utils import utils
 from data import database
+import json
 
 global_cache = {}
 
@@ -26,11 +27,10 @@ def get_global(guild_id):
             database.insert_data("global", guild_id, data)
         try_cleanup()
 
-def update_global(guild_id, keys):
+def update_global(guild_id):
     guild_id = str(guild_id)
-    glb = get_global(guild_id)
-    data = {k: glb[k] for k in keys}
-    database.update_data("global", guild_id, data)
+    glb = json.dumps(get_global(guild_id))
+    database.update_data("global", guild_id, {"json": glb})
 
 def try_cleanup():
     pass
@@ -49,10 +49,9 @@ class Table:
         if glb['table_money'] == 0:
             glb['table_money_time'] = utils.now()
             glb['table_money'] += amount
-            update_global(ctx.guild_id, ["table_money", "table_money_time"])
         else:
             glb['table_money'] += amount
-            update_global(ctx.guild_id, ["table_money"])
+        update_global(ctx.guild_id)
 
     @staticmethod
     def retrieve_money(ctx):
@@ -61,5 +60,5 @@ class Table:
         if money == 0:
             return money
         glb['table_money'] = 0
-        update_global(ctx.guild_id, ["table_money"])
+        update_global(ctx.guild_id)
         return money
