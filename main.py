@@ -11,6 +11,8 @@ import asyncio
 cache = {}
 table = Table()
 registered_guild_ids = [824723874544746507, 745340672109969440, 368145950717378560]
+if not database.cursor():
+    registered_guild_ids = [824723874544746507]
 
 bot = commands.Bot(command_prefix='/', intents=discord.Intents.all())
 slash = SlashCommand(bot, sync_commands=True)
@@ -18,10 +20,6 @@ slash = SlashCommand(bot, sync_commands=True)
 @bot.event
 async def on_ready():
     print("Ready!")
-    if database.cursor():
-        await bot.user.edit(username="Tim Lord")
-    else:
-        await bot.user.edit(username="Tim Lord (Test)")
 
 @slash.slash(name="hello", description="Greet Tim", guild_ids=registered_guild_ids)
 async def _hello(ctx):
@@ -39,7 +37,7 @@ async def _money(ctx):
 @slash.subcommand(base="table", name="check", description="Check money on the table",
     guild_ids=registered_guild_ids)
 async def _table_check(ctx):
-    money = Table.retrieve_money(ctx)
+    money = Table.get_money(ctx)
     if money == 0:
         await ctx.send(f'There is no money on the table!')
     else:

@@ -10,10 +10,14 @@ if os.environ.get('DATABASE_URL'):
     conn = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require', cursor_factory=RealDictCursor)
     cur = conn.cursor()
 else:
-    mock_db = {
-        "users": {},
-        "global": {}
-    }
+    def on_exit(signal_type):
+        with open('local/data.txt', 'w') as f:
+            json.dump(mock_db, f)
+
+    import win32api
+    win32api.SetConsoleCtrlHandler(on_exit, True)
+    with open('local/data.txt', 'r') as f:
+        mock_db = json.load(f)
 
 pending_commit = False
 
