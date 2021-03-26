@@ -24,15 +24,15 @@ def get_global(guild_id):
             data = {
                 "table_money": 0
             }
-            database.insert_data("global", guild_id, data)
+            database.insert_data("global", guild_id, {"json": json.dumps(data)})
             global_cache[guild_id] = data
         try_cleanup()
         return data
 
 def update_global(guild_id):
     guild_id = str(guild_id)
-    glb = json.dumps(get_global(guild_id))
-    database.update_data("global", guild_id, {"json": glb})
+    glb = get_global(guild_id)
+    database.update_data("global", guild_id, {"json": json.dumps(glb)})
 
 def try_cleanup():
     pass
