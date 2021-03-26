@@ -20,7 +20,7 @@ slash = SlashCommand(bot, sync_commands=True)
 async def on_ready():
     print("Ready!")
     # Execute once
-    remove_all_commands(824720383596560444, os.environ['CLIENT_KEY'], [824723874544746507, 368145950717378560, 824651379460800562])
+    await remove_all_commands(824720383596560444, os.environ['CLIENT_KEY'], [824723874544746507, 368145950717378560, 824651379460800562])
 
 @slash.slash(name="hello", description="Greet Tim",
     guild_ids=registered_guild_ids)
