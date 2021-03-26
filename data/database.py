@@ -38,7 +38,7 @@ def update_data(table_name, row_id, data):
     for k, v in data.items():
         ts.append(k + ' = ' + convert_value(v))
     ts = ', '.join(ts)
-    cur.execute(f"""UPDATE {table_name} SET {ts} WHERE id = {row_id}""")
+    cur.execute(f"""UPDATE {table_name} SET {ts} WHERE id = '{row_id}'""")
     pending_commit = True
 
 def commit(force = False):
