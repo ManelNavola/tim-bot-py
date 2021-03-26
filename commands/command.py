@@ -2,7 +2,7 @@ from discord_slash import SlashContext
 from data import database, users
 
 async def call(ctx: SlashContext, func, *args):
-    await ctx.ack()
+    #await ctx.ack()
     await func(Command(ctx), *args)
     database.commit()
 
