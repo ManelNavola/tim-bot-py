@@ -25,7 +25,9 @@ def get_global(guild_id):
                 "table_money": 0
             }
             database.insert_data("global", guild_id, data)
+            global_cache[guild_id] = data
         try_cleanup()
+        return data
 
 def update_global(guild_id):
     guild_id = str(guild_id)
