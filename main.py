@@ -21,12 +21,12 @@ slash = SlashCommand(bot, sync_commands=True)
 async def on_ready():
     print("Ready!")
 
-@slash.slash(name="hello", description="Greet Tim", guild_ids=registered_guild_ids)
+@slash.slash(name="hello", description="Greet Tim")
 async def _hello(ctx):
     await ctx.ack()
     await ctx.send("Hey")
 
-@slash.slash(name="money", description="Check your balance", guild_ids=registered_guild_ids)
+@slash.slash(name="money", description="Check your balance")
 async def _money(ctx):
     await ctx.ack()
     user = user_management.get(ctx)
@@ -34,8 +34,7 @@ async def _money(ctx):
     await ctx.send(f'You have ${money} (+$1/min)')
     database.commit()
 
-@slash.subcommand(base="table", name="check", description="Check money on the table",
-    guild_ids=registered_guild_ids)
+@slash.subcommand(base="table", name="check", description="Check money on the table")
 async def _table_check(ctx):
     money = Table.get_money(ctx)
     if money == 0:
@@ -54,7 +53,7 @@ async def _table_check(ctx):
             option_type=4,
             required=False
         )
-    ], guild_ids=registered_guild_ids)
+    ])
 async def _table_place(ctx, money):
     await ctx.ack()
     user = user_management.get(ctx)
@@ -67,8 +66,7 @@ async def _table_place(ctx, money):
         await ctx.send(f"You don't have ${money}!")
     database.commit()
 
-@slash.subcommand(base="table", name="take", description="Take money on the table",
-    guild_ids=registered_guild_ids)
+@slash.subcommand(base="table", name="take", description="Take money on the table")
 async def _table_take(ctx):
     await ctx.ack()
     money = Table.retrieve_money(ctx)
