@@ -11,5 +11,5 @@ class User:
                 'money_time': utils.now()
             }
 
-    def get_money():
+    def get_money(self):
         return self.data['money'] + (self.data['money_time'] - utils.now()) // 60

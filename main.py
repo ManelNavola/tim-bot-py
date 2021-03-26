@@ -2,10 +2,8 @@ import discord
 import os
 from discord_slash import SlashCommand # Importing the newly installed library.
 from utils import utils
-from data import user, user_management
+from data import user_management
 import asyncio
-
-from data.user import User
 
 cache = {}
 registered_guild_ids = [824723874544746507, 745340672109969440, 368145950717378560]
