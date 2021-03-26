@@ -21,7 +21,7 @@ def get_row_data(table_name, row_id):
     return cur.fetchone()
 
 def insert_data(table_name, row_id, data):
-    nonlocal pending_commit
+    global pending_commit
     keys = ['id']
     values = [row_id]
     for k, v in data.items():
@@ -31,7 +31,7 @@ def insert_data(table_name, row_id, data):
     pending_commit = True
 
 def update_data(table_name, row_id, data):
-    nonlocal pending_commit
+    global pending_commit
     ts = []
     for k, v in data.items():
         ts.append(k + ' = ' + convert_value(v))
@@ -40,5 +40,6 @@ def update_data(table_name, row_id, data):
     pending_commit = True
 
 def commit(force = False):
+    global pending_commit
     if force or pending_commit:
         conn.commit()
