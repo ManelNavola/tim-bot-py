@@ -4,6 +4,7 @@ from data.user import User
 cache = {}
 
 def get(user_id):
+    user_id = str(user_id)
     if user_id in cache:
         print('cached')
         return cache[user_id]
