@@ -27,8 +27,9 @@ def save(user, first_time=False):
         cur.execute(f"""INSERT INTO users {keys} VALUES {values}""")
         database.commit()
     else:
+        user_id = user.id
         to_save = database.parse_set(user.data)
-        cur.execute(f"""UPDATE users SET {to_save} WHERE id = {user_id}""")
+        cur.execute(f"""UPDATE users SET {to_save} WHERE id = '{user_id}'""")
         database.commit()
 
 def try_cleanup():
