@@ -74,3 +74,4 @@ def commit(force = False):
     global pending_commit
     if cur and (force or pending_commit):
         conn.commit()
+        pending_commit = False

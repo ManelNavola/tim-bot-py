@@ -1,4 +1,3 @@
-from utils import utils
 from data import database
 
 global_cache = {}
@@ -35,31 +34,3 @@ def update_global(guild_id):
 
 def try_cleanup():
     pass
-
-class Table:
-    @staticmethod
-    def get_money(ctx):
-        glb = get_global(ctx.guild_id)
-        if glb['table_money'] == 0:
-            return 0
-        return glb['table_money'] + (utils.now() - glb['table_money_time']) // 15
-
-    @staticmethod
-    def place_money(ctx, amount):
-        glb = get_global(ctx.guild_id)
-        if glb['table_money'] == 0:
-            glb['table_money_time'] = utils.now()
-            glb['table_money'] += amount
-        else:
-            glb['table_money'] += amount
-        update_global(ctx.guild_id)
-
-    @staticmethod
-    def retrieve_money(ctx):
-        glb = get_global(ctx.guild_id)
-        money = glb['table_money']
-        if money == 0:
-            return money
-        glb['table_money'] = 0
-        update_global(ctx.guild_id)
-        return money

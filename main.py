@@ -1,49 +1,53 @@
+#import os
+#import discord
+#from discord.ext import commands
+#from discord_slash import SlashCommand, SlashContext
+#from discord_slash.utils.manage_commands import create_option
+#from utils import utils
+#from data import database
+#from data.glob import Table
+#from commands import command, simple
+
 import os
 import discord
-from discord.ext import commands
+from commands import command, simple, table
 from discord_slash import SlashCommand, SlashContext
 from discord_slash.utils.manage_commands import create_option
-from utils import utils
-from data import user_management, database
-from data.glob import Table
-from commands import simple
+from discord.ext import commands
+from data import database
 
 registered_guild_ids = None
 if not database.cursor():
     registered_guild_ids = [824723874544746507]
 
-bot = commands.Bot(command_prefix='/', intents=discord.Intents.all())
+bot = commands.Bot(command_prefix='/') # intents=discord.Intents.all()
 slash = SlashCommand(bot, sync_commands=True)
 
 @bot.event
 async def on_ready():
     print("Ready!")
 
-@slash.slash(name="hello", description="Greet Tim",
-    guild_ids=registered_guild_ids)
-async def _hello(ctx: SlashContext):
-    simple.Hello(ctx)
+@slash.slash(name="check", description="Check information about a user",
+    options = [
+        create_option(
+            name="user",
+            description="User to check",
+            option_type=6,
+            required=True
+        )
+    ], guild_ids=registered_guild_ids)
+async def _check(ctx: SlashContext, member: discord.Member):
+    await command.call(ctx, simple.check, member)
 
-@slash.slash(name="money", description="Check your balance",
+@slash.slash(name="inv", description="Check your inventory",
     guild_ids=registered_guild_ids)
-async def _money(ctx):
-    await ctx.ack()
-    user = user_management.get(ctx)
-    money = user.get_money()
-    await ctx.send(f'You have ${money} (+$1/min)')
-    database.commit()
+async def _inv(ctx):
+    await command.call(ctx, simple.inv)
 
 @slash.subcommand(base="table", name="check", description="Check money on the table",
     guild_ids=registered_guild_ids)
 async def _table_check(ctx):
-    money = Table.get_money(ctx)
-    if money == 0:
-        await ctx.send(f'There is no money on the table!')
-    else:
-        await ctx.send(f'There is ${money} on the table')
-        user = user_management.get(ctx)
-        user.add_money(money)
-        user_management.save(user)
+    await command.call(ctx, table.check)
 
 @slash.subcommand(base="table", name="place", description="Place money on the table",
     options = [
@@ -55,30 +59,12 @@ async def _table_check(ctx):
         )
     ], guild_ids=registered_guild_ids)
 async def _table_place(ctx, money):
-    await ctx.ack()
-    user = user_management.get(ctx)
-    if money < 10:
-        await ctx.send(f"You cannot place less than $10!")
-    elif user.add_money(-money):
-        Table.place_money(ctx, money)
-        await ctx.send(f"You placed ${money} on the table")
-    else:
-        await ctx.send(f"You don't have ${money}!")
-    database.commit()
+    await command.call(ctx, table.place, money)
 
 @slash.subcommand(base="table", name="take", description="Take money on the table",
     guild_ids=registered_guild_ids)
 async def _table_take(ctx):
-    await ctx.ack()
-    money = Table.retrieve_money(ctx)
-    if money == 0:
-        await ctx.send(f'There is no money on the table!')
-    else:
-        await ctx.send(f'You took ${money} from the table')
-        user = user_management.get(ctx)
-        user.add_money(money)
-        user_management.save(user)
-    database.commit()
+    await command.call(ctx, table.take)
 
 if os.environ.get('CLIENT_KEY'):
     bot.run(os.environ['CLIENT_KEY'])
