@@ -88,15 +88,17 @@ class Guild(Row):
         total_bet = 0
         user_ids = []
         weights = []
+        max_bet = 0
         for user_id, bet_data in self.data['ongoing_bet']['bets'].items():
             user_ids.append(user_id)
             weights.append(bet_data[1])
+            max_bet = max(max_bet, bet_data[1])
             total_bet += bet_data[1]
         user_ids.append('BOT')
-        weights.append(total_bet * 2)
+        weights.append(max_bet * 2)
         winner_id = random.choices(user_ids, weights=weights, k=1)[0]
         result = [f"Bet finished!"]
-        total_bet *= 3
+        total_bet += max_bet * 2
         money_str = utils.print_money(total_bet)
         if winner_id == 'BOT':
             result.append(f"The bot won the jackpot! ({money_str}) Bad luck")
