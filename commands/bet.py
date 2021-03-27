@@ -47,4 +47,7 @@ async def add(cmd: Command, amount: int):
         await cmd.guild.run_bet(cmd)
 
 async def check(cmd: Command):
-    await cmd.send(cmd.guild.get_bet_info())
+    if cmd.guild.check_ongoing_bet():
+        await cmd.send(cmd.guild.get_bet_info())
+    else:
+        await cmd.send("No ongoing bet at the moment", hidden=True)

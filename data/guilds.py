@@ -74,7 +74,7 @@ class Guild(Row):
                 lines.append(f"{bet[0]}: {money_str} ({perc:.0%})")
             return '\n'.join(lines)
         else:
-            return 'No ongoing bet currently'
+            return 'No ongoing bet at the moment'
 
     def start_bet(self):
         self.data['ongoing_bet'] = {
