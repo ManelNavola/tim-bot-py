@@ -44,13 +44,14 @@ class PostgreSQL(Database):
             values.append(self.convert_sql_value(v))
         keys = '(' + ','.join(keys) + ')'
         values = '(' + ','.join(values) + ')'
+        print(f"""INSERT INTO {table_name} {keys} VALUES {values}""")
         self.cursor.execute(f"""INSERT INTO {table_name} {keys} VALUES {values}""")
         self.pending_commit = True
 
     def update_data(self, table_name: str, row_id: int, data: dict):
         ts = []
         for k, v in data.items():
-            ts.append(k + ' = ' + convert_value(v))
+            ts.append(k + ' = ' + self.convert_sql_value(v))
         ts = ', '.join(ts)
         self.cursor.execute(f"""UPDATE {table_name} SET {ts} WHERE id = '{row_id}'""")
         self.pending_commit = True

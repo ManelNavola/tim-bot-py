@@ -23,7 +23,7 @@ def try_cleanup():
 class User(Row):
     def __init__(self, user_id: int):
         super().__init__("users", user_id)
-        self.money = IncrementalHelper(self.data, 'money', 'money_time', 120)
+        self.money = IncrementalHelper(self.data, 'money', 'money_time', 60)
 
     def load_defaults(self):
         return {
@@ -39,7 +39,8 @@ class User(Row):
         return self.data['money_limit']
 
     def get_money(self):
-        return min(self.money.get(), self.get_pocket_limit())
+        return self.money.get()
+        #return min(self.money.get(), self.get_pocket_limit())
 
     def change_money(self, amount: int):
         result = self.get_money() + amount
@@ -55,9 +56,10 @@ class User(Row):
         if checking:
             lines.append(f"{checking}'s profile:")
         if private:
-            limit_str = utils.print_money(self.data['money_limit'])
+            #limit_str = utils.print_money(self.data['money_limit'])
             rate_str = utils.print_money(self.money.rate, decimals=2)
-            lines.append(f"**Money**: {money_str} / {limit_str} (+{rate_str}/minute)")
+            #lines.append(f"**Money**: {money_str} / {limit_str} (+{rate_str}/minute)")
+            lines.append(f"**Money**: {money_str} (+{rate_str}/minute)")
         else:
             lines.append(f"**Money**: {money_str}")
         return '\n'.join(lines)
