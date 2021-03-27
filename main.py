@@ -46,7 +46,11 @@ async def _check(ctx: SlashContext, member: discord.Member):
 async def _inv(ctx):
     await command.call(ctx, simple.inv)
 
-@slash.subcommand(base="bet", name="place", description="Place or start a bet",
+@slash.subcommand(base="bet", name="info", description="Get information about betting", guild_ids=registered_guild_ids)
+async def _bet_info(ctx):
+    await command.call(ctx, bet.info)
+
+@slash.subcommand(base="bet", name="add", description="Place or start a bet",
     options = [
         create_option(
             name="money",
@@ -55,8 +59,8 @@ async def _inv(ctx):
             required=True
         )
     ], guild_ids=registered_guild_ids)
-async def _bet_place(ctx, money: int):
-    await command.call(ctx, bet.place, money)
+async def _bet_add(ctx, money: int):
+    await command.call(ctx, bet.add, money)
 
 @slash.subcommand(base="bet", name="check", description="Check the current bet",
     guild_ids=registered_guild_ids)

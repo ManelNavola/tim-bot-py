@@ -66,7 +66,7 @@ class JSONDatabase(Database):
         import win32api
         def on_exit(signal_type):
             with open(file_name, 'w') as f:
-                json.dump(self.data, f)
+                json.dump(self.data, f, indent=2)
         
         win32api.SetConsoleCtrlHandler(on_exit, True)
         import sys

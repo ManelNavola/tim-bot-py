@@ -3,6 +3,7 @@ from data.helpers import IncrementalHelper
 from commands.command import Command
 from data import users
 import utils, asyncio, random
+from collections import namedtuple
 
 cache = {}
 
@@ -23,6 +24,15 @@ class Guild(Row):
         super().__init__("guilds", guild_id)
         self.table_money = IncrementalHelper(self.data, 'table_money', 'table_money_time', 15)
         self.bet_info_timestamp = 0
+        self.rollback_check()
+
+    def rollback_check(self):
+        if self.data['ongoing_bet']:
+            if self.data['ongoing_bet']['finish_time'] < utils.now():
+                for user_id, bet_data in self.data['ongoing_bet']['bets'].items():
+                    user = users.get(user_id)
+                    user.change_money(bet_data[1])
+                self.data['ongoing_bet'] = {}
 
     def load_defaults(self):
         return {
@@ -47,26 +57,21 @@ class Guild(Row):
             s = self.data['ongoing_bet']['finish_time'] - utils.now()
             if s < 0:
                 s = 0
+            total_bet = self.data['ongoing_bet']['total_bet']
+            bot_bet = self.data['ongoing_bet']['bot_bet']
             time_remaining_str = utils.print_time(s)
             lines = [f"Bet finishes in {time_remaining_str}"]
-            bets = []
-            total_bet = 0
-            max_bet = 0
-            for _, bet_data in self.data['ongoing_bet']['bets'].items():
-                bets.append((bet_data[0], bet_data[1]))
-                max_bet = max(max_bet, bet_data[1])
-                total_bet += bet_data[1]
+            bets = list(self.data['ongoing_bet']['bets'].values())
             bets.sort(key=lambda x: x[1], reverse=True)
-            bot_bet = max_bet * 2
-            total_bet += bot_bet
             total_bet_str = utils.print_money(total_bet)
             lines.append(f"**Jackpot**: {total_bet_str}")
             money_str = utils.print_money(bot_bet)
-            lines.append(f"Bot: {money_str}")
-            for b in bets:
-                name = b[0]
-                money_str = utils.print_money(b[1])
-                lines.append(f"{name}: {money_str}")
+            bot_bet_perc = bot_bet / total_bet
+            lines.append(f"<Bot>: {money_str} ({bot_bet_perc:.0%})")
+            for bet in bets:
+                money_str = utils.print_money(bet[1])
+                perc = bet[1] / total_bet
+                lines.append(f"{bet[0]}: {money_str} ({perc:.0%})")
             return '\n'.join(lines)
         else:
             return 'No ongoing bet currently'
@@ -74,41 +79,38 @@ class Guild(Row):
     def start_bet(self):
         self.data['ongoing_bet'] = {
             'bets': {},
-            'finish_time': utils.now() + 600
+            'finish_time': utils.now() + 60 * 10,
+            'bot_bet': 0,
+            'total_bet': 0
         }
         
     async def run_bet(self, cmd: Command):
         # 10 minute bet
-        await asyncio.sleep(5 * 60)
+        await asyncio.sleep(8 * 60) # 8 minutes
         await cmd.send(self.get_bet_info())
-        await asyncio.sleep(4 * 60)
-        await cmd.send(self.get_bet_info())
-        await asyncio.sleep(1 * 60)
+        await asyncio.sleep(2 * 60) # 2 minutes
+
         # Calculate result
-        total_bet = 0
         user_ids = []
         weights = []
-        max_bet = 0
         for user_id, bet_data in self.data['ongoing_bet']['bets'].items():
             user_ids.append(user_id)
             weights.append(bet_data[1])
-            max_bet = max(max_bet, bet_data[1])
-            total_bet += bet_data[1]
-        user_ids.append('BOT')
-        weights.append(max_bet * 2)
+        user_ids.append('<Bot>')
+        weights.append(self.data['ongoing_bet']['bot_bet'])
         winner_id = random.choices(user_ids, weights=weights, k=1)[0]
-        result = [f"Bet finished!"]
-        total_bet += max_bet * 2
+        result = [f"~ Bet finished! ~"]
+        total_bet = self.data['ongoing_bet']['total_bet']
         money_str = utils.print_money(total_bet)
-        if winner_id == 'BOT':
-            result.append(f"The bot won the jackpot! ({money_str}) Bad luck")
+        if winner_id == '<Bot>':
+            result.append(f"<Bot> won the jackpot ({money_str}), bad luck!")
         else:
             name = self.data['ongoing_bet']['bets'][winner_id][0]
             result.append(f"{name} won the jackpot! ({money_str})")
             user = users.get(winner_id)
             user.change_money(total_bet)
-        await cmd.send('\n'.join(result))
         self.data['ongoing_bet'] = {}
+        await cmd.send('\n'.join(result))
 
     def update_last_bet_info(self):
         if utils.now() - self.bet_info_timestamp > 10:
@@ -116,12 +118,19 @@ class Guild(Row):
             return True
         return False
 
-    def check_bet(self):
+    def check_ongoing_bet(self):
         return bool(self.data['ongoing_bet'])
 
-    def set_bet(self, user_id: int, user_name: str, amount: int):
-        self.data['ongoing_bet']['bets'][user_id] = (user_name, amount)
+    def add_bet(self, user_id: int, user_name: str, amount: int):
+        new_bet = self.get_bet(user_id) + amount
+        self.data['ongoing_bet']['bets'][user_id] = (user_name, new_bet)
+        self.data['ongoing_bet']['total_bet'] += amount
+        if self.data['ongoing_bet']['bot_bet'] < new_bet * 2:
+            self.data['ongoing_bet']['total_bet'] += new_bet * 2 - self.data['ongoing_bet']['bot_bet']
+            self.data['ongoing_bet']['bot_bet'] = new_bet * 2
+            return new_bet * 2
+        return None
 
     def get_bet(self, user_id: int):
         bets = self.data['ongoing_bet']['bets']
-        return bets.get(user_id, (0,0))[1]
+        return bets.get(user_id, (None, 0))[1]
