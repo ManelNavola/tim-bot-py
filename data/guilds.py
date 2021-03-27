@@ -51,13 +51,16 @@ class Guild(Row):
             lines = [f"Bet finishes in {time_remaining_str}"]
             bets = []
             total_bet = 0
+            max_bet = 0
             for _, bet_data in self.data['ongoing_bet']['bets'].items():
                 bets.append((bet_data[0], bet_data[1]))
+                max_bet = max(max_bet, bet_data[1])
                 total_bet += bet_data[1]
             bets.sort(key=lambda x: x[1], reverse=True)
-            bot_bet = total_bet * 2
-            total_bet *= 3
-            lines.append(f"**Jackpot**: {total_bet}")
+            bot_bet = max_bet * 2
+            total_bet += bot_bet
+            total_bet_str = utils.print_money(total_bet)
+            lines.append(f"**Jackpot**: {total_bet_str}")
             money_str = utils.print_money(bot_bet)
             lines.append(f"Bot: {money_str}")
             for b in bets:
