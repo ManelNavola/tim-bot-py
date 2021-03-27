@@ -33,18 +33,17 @@ class PostgreSQL(Database):
         return str(value)
 
     def get_row_data(self, table_name: str, row_id: int):
-        self.cursor.execute(f"""SELECT * from {table_name} WHERE id = '{row_id}'""")
+        self.cursor.execute(f"""SELECT * from {table_name} WHERE id = {row_id}""")
         return self.cursor.fetchone()
 
     def insert_data(self, table_name: str, row_id: int, data: dict):
         keys = ['id']
-        values = [row_id]
+        values = [str(row_id)]
         for k, v in data.items():
             keys.append(k)
             values.append(self.convert_sql_value(v))
         keys = '(' + ','.join(keys) + ')'
         values = '(' + ','.join(values) + ')'
-        print(f"""INSERT INTO {table_name} {keys} VALUES {values}""")
         self.cursor.execute(f"""INSERT INTO {table_name} {keys} VALUES {values}""")
         self.pending_commit = True
 
@@ -53,7 +52,7 @@ class PostgreSQL(Database):
         for k, v in data.items():
             ts.append(k + ' = ' + self.convert_sql_value(v))
         ts = ', '.join(ts)
-        self.cursor.execute(f"""UPDATE {table_name} SET {ts} WHERE id = '{row_id}'""")
+        self.cursor.execute(f"""UPDATE {table_name} SET {ts} WHERE id = {row_id}""")
         self.pending_commit = True
 
     def commit(self):
