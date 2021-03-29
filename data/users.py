@@ -131,7 +131,7 @@ class User(Row):
         return min(self.storage.get(), self.get_bank_limit())
 
     def transfer(self):
-        if self.get_money_limit() >= self.get_money():
+        if self.get_money() >= self.get_money_limit():
             return 'You cannot hold more money!'
         if self.get_bank() == 0:
             return 'Your bank is empty'
