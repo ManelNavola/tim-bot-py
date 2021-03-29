@@ -1,9 +1,14 @@
 # Imports
-import os, discord, utils
-from commands import command, simple, table, bet, upgrade
-from discord_slash import SlashCommand, SlashContext
-from discord_slash.utils.manage_commands import create_option, create_choice
+import discord
+import os
+import utils
+import pretty_errors
+
 from discord.ext import commands
+from discord_slash import SlashCommand, SlashContext
+from discord_slash.utils.manage_commands import create_option
+
+from commands import command, simple, table, bet, upgrade
 from db import database
 from db.database import PostgreSQL, JSONDatabase
 
@@ -53,10 +58,10 @@ async def on_ready():
             elif args[0] == 'clear':
                 database.instance.reset()
                 print("Data cleared")
-            elif args[0] == 'setmoney':
+            elif args[0] == 'addmoney':
                 user = users.get(116901729823358977)
                 money = int(args[1])
-                user.change_money(money - user.get_money())
+                user.change_money(money)
                 user.save()
                 database.instance.commit()
                 money_str = utils.print_money(money)

@@ -130,3 +130,4 @@ dmypy.json
 
 .utils/cred.txt
 local/
+.idea/

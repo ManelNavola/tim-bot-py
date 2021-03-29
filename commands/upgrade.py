@@ -24,24 +24,24 @@ async def menu(cmd: Command):
     tp = ["```fix"]
     tp.append(format_row(['Upgrade Name', 'Level', 'Current', 'Upgrade Cost', 'Next Value']))
     tp.append(format_row(['--------------------', '-------', '----------------', '--------------', '----------------']))
-    tp.append(custom_print(cmd.user.upgrades['money_limit'], utils.print_money))
-    tp.append(custom_print(cmd.user.upgrades['bank'], utils.print_money))
-    tp.append(custom_print(cmd.user.upgrades['garden'], rate_hour))
+    tp.append(custom_print(cmd.user._upgrades['money_limit'], utils.print_money))
+    tp.append(custom_print(cmd.user._upgrades['bank'], utils.print_money))
+    tp.append(custom_print(cmd.user._upgrades['garden'], rate_hour))
     #tp.append(custom_print(cmd.user.upgrades['inventory'], lambda x: x))
     tp.append('```')
     await cmd.send_hidden('\n'.join(tp))
 
 async def upgrade(cmd: Command, key: str):
-    cost = cmd.user.upgrades[key].get_cost()
+    cost = cmd.user._upgrades[key].get_cost()
     if cost:
         if cmd.user.change_money(-cost):
-            cmd.user.upgrades[key].level += 1
+            cmd.user._upgrades[key].level += 1
             cmd.user.data[key + '_lvl'] += 1
             cmd.user.register_changes(key + '_lvl')
-            await cmd.send_hidden(f"Upgraded {key} to Level {cmd.user.upgrades[key].level + 1}!")
+            await cmd.send_hidden(f"Upgraded {key} to Level {cmd.user._upgrades[key].level + 1}!")
             if key == 'garden':
                 cmd.user.storage.set(cmd.user.storage.get())
-                cmd.user.storage.set_increment(cmd.user.storage.every, cmd.user.upgrades[key].get_value())
+                cmd.user.storage.set_increment(cmd.user.storage.every, cmd.user._upgrades[key].get_value())
         else:
             cost_str = utils.print_money(cost)
             await cmd.send_hidden(f"You need {cost_str} for the upgrade!")

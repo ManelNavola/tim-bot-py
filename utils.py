@@ -1,40 +1,33 @@
 import os, calendar, time
-from enum import Enum
+from dataclasses import dataclass
 
-class TimeMetric(Enum):
-    SECOND = 1,
-    MINUTE = 2,
-    HOUR = 3,
-    DAY = 4
+from autoslot import Slots
 
-def metric_to_seconds(metric: TimeMetric):
-    if metric == TimeMetric.SECOND:
-        return 1
-    elif metric == TimeMetric.MINUTE:
-        return 60
-    elif metric == TimeMetric.HOUR:
-        return 3600
-    else:
-        return 86400
 
-def metric_to_abv(metric: TimeMetric):
-    if metric == TimeMetric.SECOND:
-        return 'sec'
-    elif metric == TimeMetric.MINUTE:
-        return 'min'
-    elif metric == TimeMetric.HOUR:
-        return 'hour'
-    else:
-        return 'day'
+@dataclass
+class DictRef(Slots):
+    dictionary: dict
+    key: object
+    func = lambda x: x
+
+    def get(self):
+        return self.dictionary[self.key]
+
+    def set(self, value: object):
+        self.dictionary[self.key] = value
+
 
 def now():
     return int(calendar.timegm(time.gmtime()))
 
-def print_money(money: int, decimals: int=0):
+
+def print_money(money: int, decimals: int = 0):
     return f"${money:,.{decimals}f}"
+
 
 def is_test():
     return 'DATABASE_URL' not in os.environ
+
 
 def print_time(seconds: int):
     minutes = seconds // 60
