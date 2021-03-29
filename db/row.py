@@ -1,17 +1,32 @@
 from db import database
+from functools import wraps
+
+def changes(*changes_args):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(self, *args, **kwargs):
+            result = f(self, *args, **kwargs)
+            self.register_changes(*changes_args)
+            return result
+        return wrapper
+    return decorator
 
 class Row:
-    def __init__(self, table_name: str, row_id: str):
+    def __init__(self, table_name: str, match_columns: dict, data: dict=None):
         self.table = table_name
-        self.id = row_id
-        self.data = database.instance.get_row_data(table_name, row_id)
+        self.id = match_columns
         self.changes = set()
-        if not self.data:
-            self.data = self.load_defaults()
-            database.instance.insert_data(table_name, row_id, self.data)
+        if not data:
+            data = database.instance.get_row_data(table_name, match_columns)
+            if not data:
+                data = self.load_defaults().copy()
+                to_insert = data.copy()
+                to_insert.update(match_columns)
+                database.instance.insert_data(table_name, to_insert)
+        self.data = data
 
     def load_defaults(self):
-        return {}
+        raise MemoryError('Tried loading missing defaults')
 
     def register_changes(self, *change_args):
         for change in change_args:

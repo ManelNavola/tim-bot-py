@@ -1,9 +1,13 @@
-from db.row import Row
+from db.row import Row, changes
 from data.helpers import IncrementalHelper
 from commands.command import Command
 from data import users
 import utils, asyncio, random
+from utils import TimeMetric
 from collections import namedtuple
+
+HYPE_DURATION = 60 * 60
+TABLE_INCREMENT = 3
 
 cache = {}
 
@@ -21,11 +25,16 @@ def try_cleanup():
 
 class Guild(Row):
     def __init__(self, guild_id: int):
-        super().__init__("guilds", guild_id)
-        self.table_money = IncrementalHelper(self.data, 'table_money', 'table_money_time', 15)
+        super().__init__("guilds", dict(id=guild_id))
+        self.table_money = IncrementalHelper(self.data, 'table_money', 'table_money_time',
+            TimeMetric.MINUTE, TABLE_INCREMENT)
         self.bet_info_timestamp = 0
         self.rollback_check()
+        if utils.is_test():
+            if self.data['ongoing_bet']:
+                self.data['ongoing_bet']['bets'] = {int(k): v for k, v in self.data['ongoing_bet']['bets'].items()}
 
+    @changes('ongoing_bet')
     def rollback_check(self):
         if self.data['ongoing_bet']:
             if self.data['ongoing_bet']['finish_time'] < utils.now():
@@ -37,7 +46,7 @@ class Guild(Row):
     def load_defaults(self):
         return {
             'table_money': 0, # bigint
-            'table_money_time': utils.now(), # bigint
+            'table_money_time': 0, # bigint
             'ongoing_bet': {} # json
         }
 
@@ -46,11 +55,20 @@ class Guild(Row):
             return 0
         return self.table_money.get()
 
+    @changes('table_money', 'table_money_time')
     def place_table_money(self, amount: int):
         self.table_money.set(self.get_table_money() + amount)
+        self.table_money.set_limit(utils.now() + HYPE_DURATION)
 
+    @changes('table_money')
     def take_table_money(self):
         self.table_money.set(0)
+
+    def get_table_rate(self):
+        if utils.now() > self.data['table_money_time'] + HYPE_DURATION:
+            return None
+        else:
+            return self.table_money.rate_str
 
     def get_bet_info(self):
         if self.data['ongoing_bet']:
@@ -76,6 +94,7 @@ class Guild(Row):
         else:
             return 'No ongoing bet at the moment'
 
+    @changes('ongoing_bet')
     def start_bet(self):
         self.data['ongoing_bet'] = {
             'bets': {},
@@ -110,6 +129,7 @@ class Guild(Row):
             user = users.get(winner_id)
             user.change_money(total_bet)
         self.data['ongoing_bet'] = {}
+        self.register_changes('ongoing_bet')
         await cmd.send('\n'.join(result))
 
     def update_last_bet_info(self):
@@ -121,7 +141,9 @@ class Guild(Row):
     def check_ongoing_bet(self):
         return bool(self.data['ongoing_bet'])
 
+    @changes('ongoing_bet')
     def add_bet(self, user_id: int, user_name: str, amount: int):
+        print(user_id, user_name, amount)
         new_bet = self.get_bet(user_id) + amount
         self.data['ongoing_bet']['bets'][user_id] = (user_name, new_bet)
         self.data['ongoing_bet']['total_bet'] += amount

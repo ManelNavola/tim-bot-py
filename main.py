@@ -1,8 +1,8 @@
 # Imports
 import os, discord, utils
-from commands import command, simple, table, bet
+from commands import command, simple, table, bet, upgrade
 from discord_slash import SlashCommand, SlashContext
-from discord_slash.utils.manage_commands import create_option
+from discord_slash.utils.manage_commands import create_option, create_choice
 from discord.ext import commands
 from db import database
 from db.database import PostgreSQL, JSONDatabase
@@ -27,6 +27,42 @@ slash = SlashCommand(bot, sync_commands=True)
 @bot.event
 async def on_ready():
     print("Ready!")
+    if utils.is_test():
+        from functools import partial
+        from concurrent.futures.thread import ThreadPoolExecutor
+        import asyncio
+        from data import users
+
+        rie = partial(asyncio.get_event_loop().run_in_executor, ThreadPoolExecutor(1))
+        while not bot.is_closed():
+            print("> ", end='')
+            c = await rie(input)
+            args = c.split(' ')
+            if args[0] == 'restart':
+                print("Restarting bot...")
+                database.instance.save()
+                os.system("python main.py")
+                exit()
+            elif args[0] == 'reset':
+                database.instance.reset()
+                print("Data cleared")
+                print("Restarting bot...")
+                database.instance.save()
+                os.system("python main.py")
+                exit()
+            elif args[0] == 'clear':
+                database.instance.reset()
+                print("Data cleared")
+            elif args[0] == 'setmoney':
+                user = users.get(116901729823358977)
+                money = int(args[1])
+                user.change_money(money - user.get_money())
+                user.save()
+                database.instance.commit()
+                money_str = utils.print_money(money)
+                print(f"Set money to {money_str}")
+            elif len(args[0]) > 0:
+                print("Unknown command")
 
 # Register commands
 @slash.slash(name="check", description="Check information about a user",
@@ -45,6 +81,11 @@ async def _check(ctx: SlashContext, member: discord.Member):
     guild_ids=registered_guild_ids)
 async def _inv(ctx):
     await command.call(ctx, simple.inv)
+
+@slash.slash(name="transfer", description="Retrieves money from the bank",
+    guild_ids=registered_guild_ids)
+async def _bank(ctx):
+    await command.call(ctx, simple.transfer)
 
 @slash.subcommand(base="bet", name="info", description="Get information about betting", guild_ids=registered_guild_ids)
 async def _bet_info(ctx):
@@ -66,6 +107,22 @@ async def _bet_add(ctx, money: int):
     guild_ids=registered_guild_ids)
 async def _bet_check(ctx):
     await command.call(ctx, bet.check)
+
+@slash.subcommand(base="upgrade", name="menu", description="View available upgrades", guild_ids=registered_guild_ids)
+async def _upgrade(ctx):
+    await command.call(ctx, upgrade.menu)
+
+@slash.subcommand(base="upgrade", name="money_limit", description="Upgrade money capacity", guild_ids=registered_guild_ids)
+async def _upgrade(ctx):
+    await command.call(ctx, upgrade.upgrade, 'money_limit')
+
+@slash.subcommand(base="upgrade", name="bank", description="Upgrade bank capacity", guild_ids=registered_guild_ids)
+async def _upgrade(ctx):
+    await command.call(ctx, upgrade.upgrade, 'bank')
+
+@slash.subcommand(base="upgrade", name="garden", description="Upgrade garden production", guild_ids=registered_guild_ids)
+async def _upgrade(ctx):
+    await command.call(ctx, upgrade.upgrade, 'garden')
 
 @slash.slash(name="postinv", description="Post your inventory",
     guild_ids=registered_guild_ids)
