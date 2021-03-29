@@ -112,7 +112,7 @@ class User(Row):
             'garden_lvl': 0, # smallint
             'inventory_lvl': 0, # smallint
 
-            'version': 0 # int
+            'version': CURRENT_VERSION # int
         }
 
     def get_name(self):
