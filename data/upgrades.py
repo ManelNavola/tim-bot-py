@@ -1,22 +1,21 @@
 # Dictionary
 from dataclasses import dataclass
-
 from autoslot import Slots
-
 from utils import DictRef
 
 
 # Base class
 class Upgrade(Slots):
-    def __init__(self, name: str, level_ref: DictRef, upgrades: dict, hook=None):
+    def __init__(self, name: str, icon: str, level_ref: DictRef, upgrades: dict, hook=None):
         self.name = name
+        self.icon = icon
         self._level_ref = level_ref
         self._upgrades = upgrades
         self._hook = hook
 
     def get_value(self, override_level: int = None):
         if not override_level:
-            override_level = self._level_ref.get()
+            override_level = self.get_level()
         return self._upgrades[override_level][0]
 
     def get_next_value(self):
@@ -26,15 +25,21 @@ class Upgrade(Slots):
             return None
 
     def get_cost(self):
-        if self._level_ref.get() + 1 in self._upgrades:
-            return self._upgrades[self._level_ref.get() + 1][1]
+        if self.get_level() + 1 in self._upgrades:
+            return self._upgrades[self.get_level() + 1][1]
         else:
             return None
 
+    def get_level(self):
+        return self._level_ref.get()
+
     def level_up(self):
-        self._level_ref.set(self._level_ref.get() + 1)
+        self._level_ref.set(self.get_level() + 1)
         if self._hook:
             self._hook()
+
+    def is_max_level(self):
+        return (self.get_level() + 1) not in self._upgrades
 
 
 @dataclass
@@ -51,7 +56,7 @@ class MoneyLimit(Upgrade):
     }
 
     def __init__(self, level_ref: DictRef, hook=None):
-        super().__init__('Money Limit', level_ref, MoneyLimit.UPGRADES, hook)
+        super().__init__('Money Limit', 'money', level_ref, MoneyLimit.UPGRADES, hook)
 
 
 @dataclass
@@ -71,7 +76,7 @@ class Garden(Upgrade):
     }
 
     def __init__(self, level_ref: DictRef, hook=None):
-        super().__init__('Garden Production', level_ref, Garden.UPGRADES, hook)
+        super().__init__('Garden Production', 'garden', level_ref, Garden.UPGRADES, hook)
 
 
 class Bank(Upgrade):
@@ -87,4 +92,4 @@ class Bank(Upgrade):
     }
 
     def __init__(self, level_ref: DictRef, hook=None):
-        super().__init__('Bank Limit', level_ref, Bank.UPGRADES, hook)
+        super().__init__('Bank Limit', 'bank', level_ref, Bank.UPGRADES, hook)

@@ -1,20 +1,49 @@
-import os, calendar, time
-from dataclasses import dataclass
+import calendar
+import os
+import time
 
 from autoslot import Slots
 
 
-@dataclass
 class DictRef(Slots):
-    dictionary: dict
-    key: object
-    func = lambda x: x
+    def __init__(self, dictionary: dict, key: object):
+        self.dictionary = dictionary
+        self.key = key
 
     def get(self):
         return self.dictionary[self.key]
 
+    def __getitem__(self, key):
+        return self.dictionary[self.key][key]
+
     def set(self, value: object):
         self.dictionary[self.key] = value
+
+    def __setitem__(self, key, value):
+        self.dictionary[self.key][key] = value
+        self.set(self.get())
+
+
+EMOJI_DICT = {
+    'money': '💵',
+    'bank': '💰',
+    'garden': '🌲',
+    'scroll': '📜',
+    'robot': '🤖',
+    'forbidden': '⛔',
+    'increase': '🔺',
+    'poor': '💸',
+    'sparkle': '✨',
+    'cowboy': '🤠',
+    'sunglasses': '😎'
+}
+
+
+def emoji(emoji_name: str, no_back: bool = False):
+    if no_back:
+        return f"{EMOJI_DICT[emoji_name]}"
+    else:
+        return f"\\{EMOJI_DICT[emoji_name]}"
 
 
 def now():

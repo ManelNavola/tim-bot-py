@@ -1,21 +1,22 @@
+from collections import UserDict
+
 from autoslot import Slots
 
 from db import database
-from collections import UserDict
 
 
 class DataChanges(UserDict):
-    def __init__(self, d: dict = {}):
+    def __init__(self, d=None):
+        self._changes = set()
         super().__init__(d)
-        self.changes = set()
 
     def __setitem__(self, key: str, value: object):
         super().__setitem__(key, value)
-        self.changes.add(key)
+        self._changes.add(key)
 
     def pop_changes(self):
-        pop = list(self.changes)
-        self.changes.clear()
+        pop = list(self._changes)
+        self._changes.clear()
         return pop
 
 
@@ -25,15 +26,15 @@ class Row(Slots):
         self.pkey_dict = pkey_dict
         if insert_data:
             self.data = DataChanges(insert_data.copy())
-            insert_data.join(pkey_dict)
-            database.instance.insert_data(table_name, insert_data)
+            insert_data.update(pkey_dict)
+            database.INSTANCE.insert_data(table_name, insert_data)
         else:
-            data = database.instance.get_row_data(table_name, pkey_dict)
+            data = database.INSTANCE.get_row_data(table_name, pkey_dict)
             if not data:
                 data = self.load_defaults().copy()
                 to_insert = data.copy()
                 to_insert.update(pkey_dict)
-                database.instance.insert_data(table_name, to_insert)
+                database.INSTANCE.insert_data(table_name, to_insert)
             self.data = DataChanges(data)
 
     def __getitem__(self, key: str):
@@ -45,5 +46,5 @@ class Row(Slots):
     def save(self):
         change_list = self.data.pop_changes()
         if change_list:
-            database.instance.update_data(self.table, self.pkey_dict,
+            database.INSTANCE.update_data(self.table, self.pkey_dict,
                                           {k: self.data[k] for k in change_list})

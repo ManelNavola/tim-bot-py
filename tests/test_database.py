@@ -1,7 +1,6 @@
 from unittest import TestCase
 
 from db.database import load_test_database
-from db.row import Row
 
 
 class TestDatabase(TestCase):

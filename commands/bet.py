@@ -1,53 +1,54 @@
-from commands.command import Command
 import utils
+from commands.command import Command
+from data.bet import Bet
 
-MIN_BET = 50
-MIN_BET_STR = utils.print_money(MIN_BET)
-MIN_INCR = 10
-MIN_INCR_STR = utils.print_money(MIN_INCR)
+
+BET_INFO = f"Bet money with other users against the bot to win the Jackpot! " \
+           f"Each bot has a different behaviour, can you overcome their betting strategy?"
+
 
 async def info(cmd: Command):
-    await cmd.send_hidden("Bet money against the bot to win the Jackpot! The bot will always bid double of the maximum bet.")
+    await cmd.send_hidden(
+        "Bet money against the bot to win the Jackpot! The bot will always bid double of the maximum bet.")
+
 
 async def add(cmd: Command, amount: int):
-    start_bet = not cmd.guild.check_ongoing_bet()
-    user_id = cmd.user.user_id
-    if start_bet:
-        if amount < MIN_BET:
-            await cmd.send_hidden(f"Start bet is minimum of {MIN_BET_STR}!")
+    was_not_active = not cmd.guild.bet.is_active()
+    if was_not_active:
+        if amount < Bet.MIN_BET:
+            await cmd.error(f"Starting bet must be at least {utils.print_money(Bet.MIN_BET)}!")
             return
-    if amount < 0:
-        await cmd.send_hidden(f"The minimum bet increase is of {MIN_INCR_STR}!")
+    if amount < Bet.MIN_INCR:
+        await cmd.error(f"The minimum bet increase is of {utils.print_money(Bet.MIN_INCR)}!")
         return
-    if amount > cmd.user.get_money():
-        amount_str = utils.print_money(amount)
-        await cmd.send_hidden(f"You don't have {amount_str}!")
-        return
-    if start_bet:
-        cmd.guild.start_bet()
-    amount_str = utils.print_money(amount)
-    if cmd.user.change_money(-amount):
-        post = []
-        current_bet = cmd.guild.get_bet(user_id)
-        if current_bet == 0:
-            if start_bet:
-                post.append(cmd.user.get_name() + f" started a bet!")
-            post.append(cmd.user.get_name() + f" bet {amount_str}!")
+    previous_bet = None
+    if not was_not_active:
+        previous_bet = cmd.guild.bet.get_bet(cmd.user.id)
+    state, response = cmd.guild.bet.add_bet(cmd.user, amount, cmd.ctx)
+    if state:
+        to_send = []
+        if was_not_active:
+            to_send.append(f"{cmd.user.get_name()} started a bet with {utils.print_money(amount)}! "
+                           f"{utils.emoji('poor')}")
         else:
-            final_bet_str = utils.print_money(current_bet + amount)
-            post.append(cmd.user.get_name() + f" increased their bet to {final_bet_str}!")
-        bot_bet = cmd.guild.add_bet(user_id, cmd.user.get_name(), amount)
-        if bot_bet:
-            bot_bet_str = utils.print_money(bot_bet)
-            post.append(f"Bot's bet increased to {bot_bet_str}")
-        if cmd.guild.update_last_bet_info():
-            post.append(cmd.guild.get_bet_info())
-        await cmd.send('\n'.join(post))
-    if start_bet:
-        await cmd.guild.run_bet(cmd)
+            if previous_bet == 0:
+                to_send.append(f"{cmd.user.get_name()} has bet {utils.print_money(amount)} {utils.emoji('poor')}")
+            else:
+                to_send.append(f"{cmd.user.get_name()} has increased their bet "
+                               f"to {utils.print_money(amount + previous_bet)} {utils.emoji('increase')}")
+        if response:
+            to_send.append(f"{response[1]} has increased their bet to {utils.print_money(response[0])} "
+                           f"{utils.emoji('increase')}")
+        await cmd.send('\n'.join(to_send))
+    else:
+        if response:
+            await cmd.error(f"Your bet cannot increase {utils.print_money(response)}!")
+        else:
+            await cmd.error(f"You don't have {utils.print_money(amount)}!")
+
 
 async def check(cmd: Command):
-    if cmd.guild.check_ongoing_bet():
-        await cmd.send(cmd.guild.get_bet_info())
+    if cmd.guild.bet.is_active():
+        await cmd.send(cmd.guild.bet.print())
     else:
         await cmd.send_hidden("No ongoing bet at the moment")

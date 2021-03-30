@@ -1,10 +1,8 @@
 # Imports
 from enum import Enum, unique
-from dataclasses import dataclass
 
 from autoslot import Slots
 
-from db.row import DataChanges
 import utils
 
 
@@ -16,47 +14,58 @@ class TimeMetric(Enum):
     HOUR = 3,
     DAY = 4
 
-    def seconds(self):
-        if self.value == TimeMetric.SECOND:
-            return 1
-        elif self.value == TimeMetric.MINUTE:
-            return 60
-        elif self.value == TimeMetric.HOUR:
-            return 3600
+    def seconds(self, amount: int = 1):
+        if self == TimeMetric.SECOND:
+            return amount
+        elif self == TimeMetric.MINUTE:
+            return amount * 60
+        elif self == TimeMetric.HOUR:
+            return amount * 3600
         else:
-            return 86400
+            return amount * 86400
 
     def abbreviation(self):
-        if self.value == TimeMetric.SECOND:
+        if self == TimeMetric.SECOND:
             return 'sec'
-        elif self.value == TimeMetric.MINUTE:
+        elif self == TimeMetric.MINUTE:
             return 'min'
-        elif self.value == TimeMetric.HOUR:
+        elif self == TimeMetric.HOUR:
             return 'hour'
         else:
             return 'day'
 
 
-@dataclass
 class Incremental(Slots):
-    _base_ref: utils.DictRef
-    _time_ref: utils.DictRef
-    _metric: TimeMetric
-    _increment: int
+    def __init__(self, base_ref: utils.DictRef, time_ref: utils.DictRef, metric: TimeMetric, increment: int):
+        self._base_ref = base_ref
+        self._time_ref = time_ref
+        self._metric = metric
+        self._increment = increment
 
-    def get(self) -> int:
-        q, mod = divmod(utils.now() - self._time_ref.get(), self._metric.seconds())
-        whole = q * self._increment + int((mod / self._metric.seconds()) * self._increment)
+    def get(self, override_now: int = None) -> int:
+        if override_now is None:
+            override_now = utils.now()
+        q, mod = divmod(override_now - self._time_ref.get(), self._metric.seconds())
+        whole = q * self._increment + int((float(mod) / self._metric.seconds()) * self._increment)
         return whole + self._base_ref.get()
 
-    def change(self, amount: int):
-        self.set(self.get() + amount)
+    def change(self, amount: int, override_now: int = None) -> None:
+        if override_now is None:
+            override_now = utils.now()
+        self.set(self.get(override_now) + amount, override_now)
 
-    def set(self, amount: int):
-        mod = (utils.now() - self._time_ref.get()) % self._metric.seconds()
-        self._time_ref.set(utils.now() + mod)
+    def set(self, amount: int, override_now: int = None) -> None:
+        if override_now is None:
+            override_now = utils.now()
+        current = self.get(override_now) - self._base_ref.get()
+        last_whole = self._time_ref.get() + round(current / (self._increment / self._metric.seconds()))
+        self._time_ref.set(override_now - (override_now - last_whole))
         self._base_ref.set(amount)
 
-    def set_increment(self, increment: int):
-        self.set(self.get())
+    def set_increment(self, increment: int, override_now: int = None) -> None:
+        self.set(self.get(override_now), override_now)
         self._increment = increment
+
+    def print_rate(self) -> str:
+        increment_str = utils.print_money(self._increment)
+        return f"+{increment_str}/{self._metric.abbreviation()}"

@@ -1,34 +1,34 @@
-from commands.command import Command
 import utils
+from commands.command import Command
+from data.guild import Guild
+
 
 async def check(cmd: Command):
-    money = cmd.guild.get_table_money()
-    money_str = utils.print_money(money)
-    rate_str = cmd.guild.get_table_rate()
+    money = cmd.guild.get_table()
     if money == 0:
-        await cmd.send_hidden(f'There is no money on the table!')
+        await cmd.send_hidden("There is no money on the table")
     else:
-        if rate_str:
-            await cmd.send(f'There is {money_str} on the table ({rate_str})')
+        rate_str = cmd.guild.print_table_rate()
+        if len(rate_str) > 0:
+            await cmd.send(f'There is {utils.print_money(money)} on the table ({rate_str})')
         else:
-            await cmd.send(f'There is {money_str} on the table')
+            await cmd.send(f'There is {utils.print_money(money)} on the table')
+
 
 async def place(cmd: Command, money: int):
-    money_str = utils.print_money(money)
-    if money < 10:
-        await cmd.send_hidden(f"You cannot place less than $10!")
-    elif cmd.user.change_money(-money):
-        cmd.guild.place_table_money(money)
-        await cmd.send(f"You placed {money_str} on the table")
+    if money < Guild.TABLE_MIN:
+        await cmd.error(f"You must place a minimum of {utils.print_money(Guild.TABLE_MIN)}!")
+        return
+    placed = cmd.guild.place_table(cmd.user, money)
+    if placed:
+        await cmd.send(f"You placed {utils.print_money(money)} on the table")
     else:
-        await cmd.send_hidden(f"You don't have {money_str}!")
+        await cmd.error(f"You don't have {utils.print_money(money)}!")
+
 
 async def take(cmd: Command):
-    money = cmd.guild.get_table_money()
-    money_str = utils.print_money(money)
-    if money == 0:
-        await cmd.send_hidden(f'There is no money on the table!')
+    if cmd.user.get_total_money_space() == 0:
+        await cmd.error("You cannot hold more money!")
     else:
-        await cmd.send(f'You took {money_str} from the table')
-        cmd.user.change_money(money)
-        cmd.guild.take_table_money()
+        took = cmd.guild.retrieve_table(cmd.user)
+        await cmd.send(f"{cmd.user.get_name()} took {utils.print_money(took)} from the table!")
