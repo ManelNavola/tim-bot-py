@@ -24,26 +24,35 @@ class DictRef(Slots):
         self.set(self.get())
 
 
-EMOJI_DICT = {
-    'money': '💵',
-    'bank': '💰',
-    'garden': '🌲',
-    'scroll': '📜',
-    'robot': '🤖',
-    'forbidden': '⛔',
-    'increase': '🔺',
-    'poor': '💸',
-    'sparkle': '✨',
-    'cowboy': '🤠',
-    'sunglasses': '😎'
-}
+# @unique
+# class Emoji(Enum):
+class Emoji:
+    # User profile
+    MONEY = '\💵'
+    BANK = '\💰'
+    GARDEN = '\🌲'
+    SCROLL = '\📜'
 
+    # Betting
+    ROBOT = '\🤖'
+    COWBOY = '\🤠'
+    SUNGLASSES = '\😎'
+    SPARKLE = '\✨'
+    MONEY_FLY = '\💸'
+    INCREASE = '\🔺'
 
-def emoji(emoji_name: str, no_back: bool = False):
-    if no_back:
-        return f"{EMOJI_DICT[emoji_name]}"
-    else:
-        return f"\\{EMOJI_DICT[emoji_name]}"
+    # Commands
+    ERROR = '\⛔'
+
+    # Crate
+    BOX = '\📦'
+    CLOCK = '\🕓'
+
+    # Leaderboard
+    TROPHY = '\🏆'
+    FIRST_PLACE = '\🥇'
+    SECOND_PLACE = '\🥈'
+    THIRD_PLACE = '\🥉'
 
 
 def now():

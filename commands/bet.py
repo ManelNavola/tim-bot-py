@@ -8,8 +8,7 @@ BET_INFO = f"Bet money with other users against the bot to win the Jackpot! " \
 
 
 async def info(cmd: Command):
-    await cmd.send_hidden(
-        "Bet money against the bot to win the Jackpot! The bot will always bid double of the maximum bet.")
+    await cmd.send_hidden(BET_INFO)
 
 
 async def add(cmd: Command, amount: int):
@@ -29,16 +28,16 @@ async def add(cmd: Command, amount: int):
         to_send = []
         if was_not_active:
             to_send.append(f"{cmd.user.get_name()} started a bet with {utils.print_money(amount)}! "
-                           f"{utils.emoji('poor')}")
+                           f"{utils.Emoji.MONEY_FLY}")
         else:
             if previous_bet == 0:
-                to_send.append(f"{cmd.user.get_name()} has bet {utils.print_money(amount)} {utils.emoji('poor')}")
+                to_send.append(f"{cmd.user.get_name()} has bet {utils.print_money(amount)} {utils.Emoji.MONEY_FLY}")
             else:
                 to_send.append(f"{cmd.user.get_name()} has increased their bet "
-                               f"to {utils.print_money(amount + previous_bet)} {utils.emoji('increase')}")
+                               f"to {utils.print_money(amount + previous_bet)} {utils.Emoji.INCREASE}")
         if response:
             to_send.append(f"{response[1]} has increased their bet to {utils.print_money(response[0])} "
-                           f"{utils.emoji('increase')}")
+                           f"{utils.Emoji.INCREASE}")
         await cmd.send('\n'.join(to_send))
     else:
         if response:

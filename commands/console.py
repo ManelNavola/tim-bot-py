@@ -51,6 +51,9 @@ async def execute():
                 mock_cmd = MockCommand()
                 guild = storage.get_guild(824723874544746507)
                 await guild.bet.end_bet(mock_cmd.ctx)
+            elif args[0] == 'set_lvl':
+                user = storage.get_user(116901729823358977)
+                user.upgrades[args[1]].set_level(int(args[2]))
             elif len(args[0]) > 0:
                 print("Unknown command")
         except Exception as e:

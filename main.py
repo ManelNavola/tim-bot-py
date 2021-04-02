@@ -7,7 +7,7 @@ from discord_slash import SlashCommand, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
 import utils
-from commands import command, simple, table, bet, upgrade
+from commands import command, simple, box, bet, upgrade
 from db import database
 
 # Load database
@@ -109,29 +109,35 @@ async def _inv(ctx):
     await command.call(ctx, simple.post_inv)
 
 
-@slash.subcommand(base="table", name="check", description="Check money on the table",
+@slash.subcommand(base="crate", name="check", description="Check money on the box",
                   guild_ids=registered_guild_ids)
-async def _table_check(ctx):
-    await command.call(ctx, table.check)
+async def _box_check(ctx):
+    await command.call(ctx, box.check)
 
 
-@slash.subcommand(base="table", name="place", description="Place money on the table",
+@slash.subcommand(base="crate", name="place", description="Place money in the box",
                   options=[
                       create_option(
                           name="money",
-                          description="Amount of money to place on the table",
+                          description="Amount of money to place on the box",
                           option_type=4,
                           required=True
                       )
                   ], guild_ids=registered_guild_ids)
-async def _table_place(ctx, money):
-    await command.call(ctx, table.place, money)
+async def _box_place(ctx, money):
+    await command.call(ctx, box.place, money)
 
 
-@slash.subcommand(base="table", name="take", description="Take money on the table",
+@slash.subcommand(base="crate", name="take", description="Take money from the box",
                   guild_ids=registered_guild_ids)
-async def _table_take(ctx):
-    await command.call(ctx, table.take)
+async def _box_take(ctx):
+    await command.call(ctx, box.take)
+
+
+@slash.slash(name="leaderboard", description="Check out who's got the most money",
+                  guild_ids=registered_guild_ids)
+async def _leaderboard(ctx):
+    await command.call(ctx, simple.leaderboard)
 
 
 # Hacky uwu

@@ -6,14 +6,14 @@ from db.database import load_test_database
 class TestDatabase(TestCase):
     def setUp(self):
         self.db = load_test_database()
-        self.db.cursor.execute("DELETE FROM testing")
-        self.db.cursor.execute("INSERT INTO testing (int_id, text_id, data, number) VALUES (123, '123', '{}', "
+        self.db._cursor.execute("DELETE FROM testing")
+        self.db._cursor.execute("INSERT INTO testing (int_id, text_id, data, number) VALUES (123, '123', '{}', "
                                "123123123123)")
         for i in range(50):
             index = i + 321
-            self.db.cursor.execute(f"INSERT INTO testing (int_id, text_id, data, number) VALUES ({index}, '124', '{{"
+            self.db._cursor.execute(f"INSERT INTO testing (int_id, text_id, data, number) VALUES ({index}, '124', '{{"
                                    f"}}', 123123123123)")
-        self.db.connection.commit()
+        self.db._connection.commit()
 
     def test_insert_data(self):
         to_insert = {
@@ -24,8 +24,8 @@ class TestDatabase(TestCase):
         }
         self.db.insert_data('testing', to_insert)
 
-        self.db.cursor.execute("SELECT data FROM testing WHERE int_id = 1 AND text_id = '1' AND number = 999999999")
-        res = self.db.cursor.fetchone()
+        self.db._cursor.execute("SELECT data FROM testing WHERE int_id = 1 AND text_id = '1' AND number = 999999999")
+        res = self.db._cursor.fetchone()
         self.assertDictEqual({k: v for k, v in res.items()}, {
             'data': {"hello": 3}
         })
@@ -56,8 +56,8 @@ class TestDatabase(TestCase):
             'text_id': '123'
         }, update_with)
 
-        self.db.cursor.execute("SELECT number, data FROM testing WHERE text_id = '123'")
-        res = self.db.cursor.fetchone()
+        self.db._cursor.execute("SELECT number, data FROM testing WHERE text_id = '123'")
+        res = self.db._cursor.fetchone()
         self.assertDictEqual({k: v for k, v in res.items()}, update_with)
 
     def test_delete_rows(self):
@@ -65,5 +65,5 @@ class TestDatabase(TestCase):
             'int_id': 123
         })
 
-        self.db.cursor.execute("SELECT * FROM testing WHERE int_id = 123")
-        self.assertEqual(len(self.db.cursor.fetchall()), 0)
+        self.db._cursor.execute("SELECT * FROM testing WHERE int_id = 123")
+        self.assertEqual(len(self.db._cursor.fetchall()), 0)

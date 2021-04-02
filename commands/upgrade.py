@@ -1,6 +1,6 @@
 import utils
 from commands.command import Command
-from data.upgrades import Upgrade
+from data.upgrades import UpgradeLink
 
 
 def format_row(info) -> str:
@@ -9,14 +9,14 @@ def format_row(info) -> str:
     return f"{info[0]:<22s}|{info[1]:^7}|{info[2]:^16}|{info[3]:^14}|{info[4]:^16}"
 
 
-def custom_print(upg: Upgrade, f) -> str:
+def custom_print(upg: UpgradeLink, f) -> str:
     s = f(upg.get_value())
     if upg.is_max_level():
-        return format_row([upg.name, 'MAX', s])
+        return format_row([upg.get_name(), 'MAX', s])
     else:
-        s3 = upg.get_next_value()
+        s3 = upg.get_value(upg.get_level() + 1)
         s3 = f(s3)
-        return format_row([upg.name, upg.get_level() + 1, s, f"-{utils.print_money(upg.get_cost())}", s3])
+        return format_row([upg.get_name(), upg.get_level(), s, f"-{utils.print_money(upg.get_cost())}", s3])
 
 
 def rate_hour(value):
@@ -35,14 +35,15 @@ async def menu(cmd: Command):
 
 
 async def upgrade(cmd: Command, key: str):
-    cost = cmd.user.upgrades[key].get_cost()
-    if cost:
+    upgrade_link = cmd.user.upgrades[key]
+    if upgrade_link.is_max_level():
+        await cmd.error("You are already at max level!")
+    else:
+        cost = upgrade_link.get_cost()
         if cmd.user.remove_money(cost):
-            cmd.user.upgrades[key].level_up()
-            await cmd.send_hidden(f"{utils.emoji(cmd.user.upgrades[key].icon)} Upgraded {key} "
-                                  f"to Level {cmd.user.upgrades[key].get_level() + 1}!"
-                                  f"{utils.emoji(cmd.user.upgrades[key].icon)}")
+            upgrade_link.level_up()
+            await cmd.send_hidden(f"{upgrade_link.get_icon()} Upgraded {key} "
+                                  f"to Level {upgrade_link.get_level()}!"
+                                  f"{upgrade_link.get_icon()}")
         else:
             await cmd.error(f"You need {utils.print_money(cost)} for the upgrade!")
-    else:
-        await cmd.error("You are already at max level!")

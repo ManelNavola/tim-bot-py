@@ -8,27 +8,35 @@ from psycopg2.extras import RealDictCursor
 
 class Database:
     @abstractmethod
+    def execute(self, query: str) -> None:
+        pass
+
+    @abstractmethod
     def get_row_data(self, table_name: str, match_columns: dict, columns=None, limit: int = 1):
         pass
 
     @abstractmethod
-    def insert_data(self, table_name: str, column_data: dict):
+    def insert_data(self, table_name: str, column_data: dict) -> None:
         pass
 
     @abstractmethod
-    def update_data(self, table_name: str, match_columns: dict, column_data: dict):
+    def update_data(self, table_name: str, match_columns: dict, column_data: dict) -> None:
         pass
 
     @abstractmethod
-    def delete_row(self, table_name: str, match_columns: dict):
+    def delete_row(self, table_name: str, match_columns: dict) -> None:
         pass
 
     @abstractmethod
-    def commit(self):
+    def get_cursor(self):
+        pass
+
+    @abstractmethod
+    def commit(self) -> None:
         pass
 
 
-INSTANCE = None
+INSTANCE: Database
 
 
 def convert_sql_value(value):
@@ -37,6 +45,8 @@ def convert_sql_value(value):
         return "'" + value + "'"
     if t == dict:
         return "'" + json.dumps(value) + "'"
+    if t == list:
+        return "'{" + ', '.join([str(x) for x in value]) + "}'"
     return str(value)
 
 
@@ -47,7 +57,7 @@ def get_where_info(match_columns: dict):
 
 def load_test_database():
     global INSTANCE
-    with open('local/b.txt', 'r') as f:
+    with open('C:/Users/Manel/git/tim-bot-py/local/b.txt', 'r') as f:
         INSTANCE = PostgreSQL(host="localhost", user="postgres", password=f.readline(), database='testing')
         return INSTANCE
 
@@ -60,9 +70,9 @@ def load_database():
 
 class PostgreSQL(Database):
     def __init__(self, *args, **kwargs):
-        self.connection = psycopg2.connect(*args, **kwargs, cursor_factory=RealDictCursor)
-        self.cursor = self.connection.cursor()
-        self.pending_commit = False
+        self._connection = psycopg2.connect(*args, **kwargs, cursor_factory=RealDictCursor)
+        self._cursor = self._connection.cursor()
+        self._pending_commit = False
 
     # noinspection PyDefaultArgument
     def get_row_data(self, table_name: str, match_columns: dict, columns: list = [], limit: int = 1):
@@ -71,33 +81,39 @@ class PostgreSQL(Database):
         else:
             column_names = '*'
         where_info = get_where_info(match_columns)
-        self.cursor.execute(f"SELECT {column_names} from {table_name} WHERE {where_info}")
+        self._cursor.execute(f"SELECT {column_names} from {table_name} WHERE {where_info}")
         if limit == 1:
-            return self.cursor.fetchone()
+            return self._cursor.fetchone()
         else:
-            return self.cursor.fetchmany(limit)
+            return self._cursor.fetchmany(limit)
 
     def insert_data(self, table_name: str, column_data: dict):
         keys = '(' + ', '.join(list(column_data.keys())) + ')'
         values = '(' + ', '.join(map(convert_sql_value, column_data.values())) + ')'
-        self.cursor.execute(f"INSERT INTO {table_name} {keys} VALUES {values}")
-        self.pending_commit = True
+        self._cursor.execute(f"INSERT INTO {table_name} {keys} VALUES {values}")
+        self._pending_commit = True
 
     def update_data(self, table_name: str, match_columns: dict, column_data: dict):
         where_info = get_where_info(match_columns)
         set_values = ', '.join(map(lambda x: x[0] + ' = ' + convert_sql_value(x[1]), column_data.items()))
-        self.cursor.execute(f"UPDATE {table_name} SET {set_values} WHERE {where_info}")
-        self.pending_commit = True
+        self._cursor.execute(f"UPDATE {table_name} SET {set_values} WHERE {where_info}")
+        self._pending_commit = True
 
     def delete_row(self, table_name: str, match_columns: dict):
         where_info = get_where_info(match_columns)
-        self.cursor.execute(f"DELETE FROM {table_name} WHERE {where_info}")
-        self.pending_commit = True
+        self._cursor.execute(f"DELETE FROM {table_name} WHERE {where_info}")
+        self._pending_commit = True
+
+    def get_cursor(self):
+        return self._cursor
+
+    def execute(self, query: str):
+        self._cursor.execute(query)
 
     def commit(self, force=False):
-        if self.pending_commit or force:
-            self.connection.commit()
-            self.pending_commit = False
+        if self._pending_commit or force:
+            self._connection.commit()
+            self._pending_commit = False
 
 
 JSON_DEFAULTS = {

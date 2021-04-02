@@ -53,14 +53,16 @@ class Bet:
             if limit <= x[0]:
                 pool = x[1]
                 break
-        found = None
+        infinite_check = 100
         i = 0
-        while not found:
+        while infinite_check > 0:
             if random.random() < 0.5:
                 break
             i += 1
+            infinite_check += 1
             if i == len(pool):
                 i = 0
+        print(i)
         self._bot = create_bot(pool[i], limit)
         self._limit = limit
         self._bet_ref.set({
@@ -97,7 +99,7 @@ class Bet:
         total_bet = self.get_bet_sum() + self._bot.get_bet()
         money_str = utils.print_money(total_bet)
         if winner_id == 'BOT':
-            result.append(f"{utils.emoji(self._bot.icon)} won the jackpot ({money_str}), bad luck!")
+            result.append(f"{self._bot.icon} won the jackpot ({money_str}), bad luck!")
         else:
             name = self._bet_ref['bets'][winner_id][0]
             result.append(f"{name} won the jackpot! ({money_str})")
@@ -116,11 +118,11 @@ class Bet:
             # Sort bet data
             total_bet = self.get_bet_sum() + self._bot.get_bet()
             bets = list(self._bet_ref['bets'].values())
-            bets.append((utils.emoji(self._bot.icon), self._bot.get_bet()))
+            bets.append((self._bot.icon, self._bot.get_bet()))
             bets.sort(key=lambda x: x[1], reverse=True)
             total_bet_str = utils.print_money(total_bet)
             # Jackpot
-            self._stored_info.append(f"{utils.emoji('sparkle')} **Jackpot** {total_bet_str} {utils.emoji('sparkle')} "
+            self._stored_info.append(f"{utils.Emoji.SPARKLE} **Jackpot** {total_bet_str} {utils.Emoji.SPARKLE} "
                                      f"(Max. bet {utils.print_money(self._limit)})")
             # Player+bot bets
             for single_bet in bets:
@@ -169,7 +171,7 @@ class Bet:
 
             self.update_bet()
             if old_bet != self._bot.data['bet']:
-                return True, (self._bot.data['bet'], utils.emoji(self._bot.icon))
+                return True, (self._bot.data['bet'], self._bot.icon)
             else:
                 return True, None
         return False, None
@@ -199,7 +201,7 @@ class BetBot:
 
 class Cowboy(BetBot):
     def __init__(self, limit: int):
-        super().__init__('cowboy', limit)
+        super().__init__(utils.Emoji.COWBOY, limit)
         self.brave = 0
         self.limit = limit
 
@@ -217,7 +219,7 @@ class Cowboy(BetBot):
 
 class Sunglasses(BetBot):
     def __init__(self, limit: int):
-        super().__init__('sunglasses', limit)
+        super().__init__(utils.Emoji.SUNGLASSES, limit)
         self.scared = 0
         self.limit = limit
 
@@ -238,7 +240,7 @@ class Sunglasses(BetBot):
 
 class Robot(BetBot):
     def __init__(self, limit: int):
-        super().__init__('robot', limit)
+        super().__init__(utils.Emoji.ROBOT, limit)
         self.scared = 0
         self.limit = limit
         self.limit_pct = 1

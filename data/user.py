@@ -6,20 +6,21 @@ from utils import DictRef
 
 
 class User(Row):
-    VERSION = 1
-
     def __init__(self, user_id: int):
         super().__init__("users", dict(id=user_id))
         self.id = user_id
         self.upgrades = {
-            'bank': upgrades.Bank(DictRef(self.data, 'bank_lvl'), self._update_bank_limit),
-            'money_limit': upgrades.MoneyLimit(DictRef(self.data, 'money_limit_lvl')),
-            'garden': upgrades.Garden(DictRef(self.data, 'garden_lvl'), self._update_bank_increment)
+            'bank': upgrades.UpgradeLink(upgrades.BANK_LIMIT,
+                                         DictRef(self._data, 'bank_lvl'), before=self._update_bank_limit),
+            'money_limit': upgrades.UpgradeLink(upgrades.MONEY_LIMIT,
+                                                DictRef(self._data, 'money_limit_lvl')),
+            'garden': upgrades.UpgradeLink(upgrades.GARDEN_PROD,
+                                           DictRef(self._data, 'garden_lvl'), after=self._update_bank_increment)
         }
-        self._bank = Incremental(DictRef(self.data, 'bank'), DictRef(self.data, 'bank_time'),
+        self._bank = Incremental(DictRef(self._data, 'bank'), DictRef(self._data, 'bank_time'),
                                  TimeMetric.HOUR, self.upgrades['garden'].get_value())
 
-        print("TODO: Fetch inventory")
+        # TODO: Fetch inventory
 
     def load_defaults(self):
         return {
@@ -29,22 +30,21 @@ class User(Row):
             'bank': 0,  # bigint
             'bank_time': utils.now(),  # bigint
 
-            'bank_lvl': 0,  # smallint
-            'money_limit_lvl': 0,  # smallint
-            'garden_lvl': 0,  # smallint
-            'inventory_lvl': 0,  # smallint
-
-            'version': User.VERSION  # int
+            'bank_lvl': 1,  # smallint
+            'money_limit_lvl': 1,  # smallint
+            'garden_lvl': 1,  # smallint
+            'inventory_lvl': 1,  # smallint
         }
 
     def update_name(self, name: str):
-        self.data['last_name'] = name
+        if self._data['last_name'] != name:
+            self._data['last_name'] = name
 
     def get_name(self) -> str:
-        return self.data['last_name']
+        return self._data['last_name']
 
     def get_money(self) -> int:
-        return self.data['money']
+        return self._data['money']
 
     def get_money_limit(self) -> int:
         return self.upgrades['money_limit'].get_value()
@@ -53,7 +53,7 @@ class User(Row):
         return max(0, self.get_money_limit() - self.get_money())
 
     def set_money(self, amount: int) -> None:
-        self.data['money'] = amount
+        self._data['money'] = amount
 
     def add_money(self, amount: int) -> int:
         assert amount >= 0, "Cannot add negative money"
@@ -123,24 +123,26 @@ class User(Row):
     def get_total_money_space(self) -> int:
         return self.get_money_space() + self.get_bank_space()
 
+    def get_average_level(self) -> int:
+        return int(round(sum([x.get_level() + 1 for x in self.upgrades.values()]) / len(self.upgrades.values())))
+
     def print(self, private=True, checking=False) -> str:
         to_print = []
         if checking:
             to_print.append(f"{self.get_name()} User Profile:")
         if private:
-            to_print.append(f"{utils.emoji('money')} Money: {utils.print_money(self.get_money())} "
+            to_print.append(f"{utils.Emoji.MONEY} Money: {utils.print_money(self.get_money())} "
                             f"/ {utils.print_money(self.get_money_limit())}")
-            to_print.append(f"{utils.emoji('bank')} Bank: {utils.print_money(self.get_bank())} "
+            to_print.append(f"{utils.Emoji.BANK} Bank: {utils.print_money(self.get_bank())} "
                             f"/ {utils.print_money(self.get_bank_limit())} "
-                            f"({self.print_garden_rate()} {utils.emoji('garden')})")
+                            f"({self.print_garden_rate()} {utils.Emoji.GARDEN})")
         else:
-            upgrade_levels = int(sum([x.get_level() + 1 for x in self.upgrades.values()]) / len(self.upgrades.values()))
-            to_print.append(f"{utils.emoji('money')} Money: {utils.print_money(self.get_money())}")
-            to_print.append(f"{utils.emoji('scroll')} Avg level: {upgrade_levels}")
+            to_print.append(f"{utils.Emoji.MONEY} Money: {utils.print_money(self.get_money())}")
+            to_print.append(f"{utils.Emoji.SCROLL} Avg level: {self.get_average_level()}")
         return '\n'.join(to_print)
 
     def _update_bank_increment(self) -> None:
         self._bank.set_increment(self.upgrades['garden'].get_value())
 
     def _update_bank_limit(self) -> None:
-        self._bank.set(self._bank.get())
+        self._bank.set_absolute(self.get_bank())

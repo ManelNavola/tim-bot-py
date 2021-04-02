@@ -14,7 +14,7 @@ class TimeMetric(Enum):
     HOUR = 3,
     DAY = 4
 
-    def seconds(self, amount: int = 1):
+    def seconds(self, amount: int = 1) -> int:
         if self == TimeMetric.SECOND:
             return amount
         elif self == TimeMetric.MINUTE:
@@ -24,7 +24,7 @@ class TimeMetric(Enum):
         else:
             return amount * 86400
 
-    def abbreviation(self):
+    def abbreviation(self) -> str:
         if self == TimeMetric.SECOND:
             return 'sec'
         elif self == TimeMetric.MINUTE:
@@ -33,6 +33,9 @@ class TimeMetric(Enum):
             return 'hour'
         else:
             return 'day'
+
+    def from_seconds(self, diff: int) -> int:
+        return diff // self.seconds()
 
 
 class Incremental(Slots):
@@ -60,6 +63,12 @@ class Incremental(Slots):
         current = self.get(override_now) - self._base_ref.get()
         last_whole = self._time_ref.get() + round(current / (self._increment / self._metric.seconds()))
         self._time_ref.set(override_now - (override_now - last_whole))
+        self._base_ref.set(amount)
+
+    def set_absolute(self, amount: int, override_now: int = None) -> None:
+        if override_now is None:
+            override_now = utils.now()
+        self._time_ref.set(override_now)
         self._base_ref.set(amount)
 
     def set_increment(self, increment: int, override_now: int = None) -> None:

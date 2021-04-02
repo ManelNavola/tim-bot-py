@@ -20,7 +20,7 @@ class Command:
         await self.ctx.send(msg, hidden=True)
 
     async def error(self, msg: str, hidden: bool = True):
-        await self.ctx.send(f"{utils.emoji('forbidden')} {msg}", hidden=hidden)
+        await self.ctx.send(f"{utils.Emoji.ERROR} {msg}", hidden=hidden)
 
 
 class MockSlashContext(SlashContext):
@@ -53,8 +53,15 @@ class MockCommand(Command):
 
 async def call(ctx: SlashContext, func, *args):
     cmd = Command(ctx)  # Load command
-    await func(cmd, *args)  # Execute command
+
+    # PREVIOUS UPDATES
+    cmd.guild.register_user_id(cmd.user.id)
     cmd.user.update_name(ctx.author.display_name)
+
+    # CALL COMMAND
+    await func(cmd, *args)  # Execute command
+
+    # SAVE
     cmd.user.save()  # Save user data (if any changed)
     cmd.guild.save()  # Save server data (if any changed)
     database.INSTANCE.commit()  # Commit changes (if any)

@@ -22,10 +22,10 @@ class DataChanges(UserDict):
 
 class Row(Slots):
     def __init__(self, table_name: str, pkey_dict: dict, insert_data: dict = None):
-        self.table = table_name
-        self.pkey_dict = pkey_dict
+        self._table_name = table_name
+        self._pkey_dict = pkey_dict
         if insert_data:
-            self.data = DataChanges(insert_data.copy())
+            self._data = DataChanges(insert_data.copy())
             insert_data.update(pkey_dict)
             database.INSTANCE.insert_data(table_name, insert_data)
         else:
@@ -35,16 +35,16 @@ class Row(Slots):
                 to_insert = data.copy()
                 to_insert.update(pkey_dict)
                 database.INSTANCE.insert_data(table_name, to_insert)
-            self.data = DataChanges(data)
+            self._data = DataChanges(data)
 
     def __getitem__(self, key: str):
-        return self.data[key]
+        return self._data[key]
 
     def load_defaults(self):
         raise MemoryError('Tried loading missing defaults')
 
     def save(self):
-        change_list = self.data.pop_changes()
+        change_list = self._data.pop_changes()
         if change_list:
-            database.INSTANCE.update_data(self.table, self.pkey_dict,
-                                          {k: self.data[k] for k in change_list})
+            database.INSTANCE.update_data(self._table_name, self._pkey_dict,
+                                          {k: self._data[k] for k in change_list})
