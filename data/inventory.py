@@ -1,17 +1,10 @@
-from db.row import Row
-
-class Item(Row):
-    def __init__(self, item_id: int):
-        super().__init__("items", dict(id=item_id))
-
-    def print(self):
-        return "Item"
+from data.items import Item
 
 
 class Inventory:
     def __init__(self, inv_limit: int, items: list):
-        self.set_limit(inv_limit)
         self.items = items
+        self.limit = inv_limit
 
     def set_limit(self, inv_limit: int):
         self.limit = inv_limit

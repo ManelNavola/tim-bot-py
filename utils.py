@@ -1,40 +1,71 @@
-import os, calendar, time
-from enum import Enum
+import calendar
+import os
+import time
 
-class TimeMetric(Enum):
-    SECOND = 1,
-    MINUTE = 2,
-    HOUR = 3,
-    DAY = 4
+from autoslot import Slots
 
-def metric_to_seconds(metric: TimeMetric):
-    if metric == TimeMetric.SECOND:
-        return 1
-    elif metric == TimeMetric.MINUTE:
-        return 60
-    elif metric == TimeMetric.HOUR:
-        return 3600
-    else:
-        return 86400
 
-def metric_to_abv(metric: TimeMetric):
-    if metric == TimeMetric.SECOND:
-        return 'sec'
-    elif metric == TimeMetric.MINUTE:
-        return 'min'
-    elif metric == TimeMetric.HOUR:
-        return 'hour'
-    else:
-        return 'day'
+class DictRef(Slots):
+    def __init__(self, dictionary: dict, key: object):
+        self.dictionary = dictionary
+        self.key = key
+
+    def get(self):
+        return self.dictionary[self.key]
+
+    def __getitem__(self, key):
+        return self.dictionary[self.key][key]
+
+    def set(self, value: object):
+        self.dictionary[self.key] = value
+
+    def __setitem__(self, key, value):
+        self.dictionary[self.key][key] = value
+        self.set(self.get())
+
+
+# @unique
+# class Emoji(Enum):
+class Emoji:
+    # User profile
+    MONEY = '\💵'
+    BANK = '\💰'
+    GARDEN = '\🌲'
+    SCROLL = '\📜'
+
+    # Betting
+    ROBOT = '\🤖'
+    COWBOY = '\🤠'
+    SUNGLASSES = '\😎'
+    SPARKLE = '\✨'
+    MONEY_FLY = '\💸'
+    INCREASE = '\🔺'
+
+    # Commands
+    ERROR = '\⛔'
+
+    # Crate
+    BOX = '\📦'
+    CLOCK = '\🕓'
+
+    # Leaderboard
+    TROPHY = '\🏆'
+    FIRST_PLACE = '\🥇'
+    SECOND_PLACE = '\🥈'
+    THIRD_PLACE = '\🥉'
+
 
 def now():
     return int(calendar.timegm(time.gmtime()))
 
-def print_money(money: int, decimals: int=0):
+
+def print_money(money: int, decimals: int = 0):
     return f"${money:,.{decimals}f}"
+
 
 def is_test():
     return 'DATABASE_URL' not in os.environ
+
 
 def print_time(seconds: int):
     minutes = seconds // 60

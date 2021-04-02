@@ -1,2 +1,0 @@
-postgres://itxorqbakpxyhm:f4c520b2cb82ec7130e3c80f759ac8b7466d2be2f002106708eabb928fca445f@ec2-52-71-161-140.compute-1.amazonaws.com:5432/d54ddckn40qo67
-ODI0NzIwMzgzNTk2NTYwNDQ0
