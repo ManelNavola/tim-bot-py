@@ -42,8 +42,8 @@ async def upgrade(cmd: Command, key: str):
         cost = upgrade_link.get_cost()
         if cmd.user.remove_money(cost):
             upgrade_link.level_up()
-            await cmd.send_hidden(f"{upgrade_link.get_icon()} Upgraded {key} "
+            await cmd.send_hidden(f"{upgrade_link.get_icon()} Upgraded {upgrade_link.get_name()} "
                                   f"to Level {upgrade_link.get_level()}!"
-                                  f"{upgrade_link.get_icon()}")
+                                  f" {upgrade_link.get_icon()}")
         else:
             await cmd.error(f"You need {utils.print_money(cost)} for the upgrade!")

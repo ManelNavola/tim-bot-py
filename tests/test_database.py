@@ -8,11 +8,11 @@ class TestDatabase(TestCase):
         self.db = load_test_database()
         self.db._cursor.execute("DELETE FROM testing")
         self.db._cursor.execute("INSERT INTO testing (int_id, text_id, data, number) VALUES (123, '123', '{}', "
-                               "123123123123)")
+                                "123123123123)")
         for i in range(50):
             index = i + 321
             self.db._cursor.execute(f"INSERT INTO testing (int_id, text_id, data, number) VALUES ({index}, '124', '{{"
-                                   f"}}', 123123123123)")
+                                    f"}}', 123123123123)")
         self.db._connection.commit()
 
     def test_insert_data(self):
@@ -63,7 +63,7 @@ class TestDatabase(TestCase):
     def test_delete_rows(self):
         self.db.delete_row('testing', {
             'int_id': 123
-        })
+        }, limit=None)
 
         self.db._cursor.execute("SELECT * FROM testing WHERE int_id = 123")
         self.assertEqual(len(self.db._cursor.fetchall()), 0)

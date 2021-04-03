@@ -59,7 +59,12 @@ async def call(ctx: SlashContext, func, *args):
     cmd.user.update_name(ctx.author.display_name)
 
     # CALL COMMAND
-    await func(cmd, *args)  # Execute command
+    try:
+        await func(cmd, *args)  # Execute command
+    except Exception as e:
+        raise_later = e
+        database.INSTANCE.get_connection().rollback()
+        raise raise_later
 
     # SAVE
     cmd.user.save()  # Save user data (if any changed)

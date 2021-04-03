@@ -24,7 +24,7 @@ async def place(cmd: Command, money: int):
     if placed:
         rate_str = cmd.guild.print_box_rate()
         await cmd.send(f"{utils.Emoji.BOX} {cmd.user.get_name()} placed {utils.print_money(money)} "
-                       f"in the crate ({rate_str})")
+                       f"in the crate ({rate_str}{utils.Emoji.CLOCK})")
     else:
         await cmd.error(f"You don't have {utils.print_money(money)}!")
 

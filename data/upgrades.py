@@ -105,3 +105,16 @@ GARDEN_PROD = Upgrade('Garden Production', utils.Emoji.GARDEN, {
     9: (200, 374154),
     10: (225, 823138)
 })
+
+INVENTORY_LIMIT = Upgrade('Inventory Limit', utils.Emoji.BAG, {
+    1: (4, 0),
+    2: (5, 1000),
+    3: (6, 2000),
+    4: (7, 5000),
+    5: (8, 10000),
+    6: (9, 50000),
+    7: (10, 100000),
+    8: (11, 200000),
+    9: (12, 500000),
+    10: (13, 1000000)
+})

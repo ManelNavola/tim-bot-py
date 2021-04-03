@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from data.incremental import Incremental, TimeMetric
-from utils import DictRef
+from data.incremental import Incremental
+from utils import DictRef, TimeSlot, TimeMetric
 
 
 class TestIncremental(TestCase):
@@ -10,7 +10,7 @@ class TestIncremental(TestCase):
             'base': 5,
             'time': 0
         }
-        self.inc = Incremental(DictRef(self.d, 'base'), DictRef(self.d, 'time'), TimeMetric.MINUTE, 27)
+        self.inc = Incremental(DictRef(self.d, 'base'), DictRef(self.d, 'time'), TimeSlot(TimeMetric.MINUTE, 27))
 
     def test_get(self):
         expected = {

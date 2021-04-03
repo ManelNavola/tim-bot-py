@@ -22,7 +22,7 @@ async def check(cmd: Command, member: discord.Member):
     if not user:
         await cmd.send(f"This user hasn't interacted with me yet")
         return
-    await cmd.send(user.print(private=False, checking=True))
+    await cmd.send(user.print_inventory(private=False, checking=True))
 
 
 async def transfer(cmd: Command):
@@ -39,3 +39,23 @@ async def transfer(cmd: Command):
 
 async def leaderboard(cmd: Command):
     await cmd.send(cmd.guild.print_leaderboard())
+
+
+async def stats(cmd: Command):
+    await cmd.send(cmd.user.inventory.print_stats())
+
+
+async def equip(cmd: Command, index: int):
+    result = cmd.user.inventory.equip(index - 1)
+    if result is not None:
+        await cmd.send(f"Equipped {result}")
+    else:
+        await cmd.error(f"Invalid item index!")
+
+
+async def unequip(cmd: Command, index: int):
+    result = cmd.user.inventory.unequip(index - 1)
+    if result is not None:
+        await cmd.send(f"Unequipped {result}")
+    else:
+        await cmd.error(f"Invalid item index!")

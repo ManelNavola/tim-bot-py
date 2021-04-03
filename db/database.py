@@ -1,42 +1,73 @@
 import json
 import os
-from abc import abstractmethod
+from typing import Optional, Any
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
 
-class Database:
-    @abstractmethod
-    def execute(self, query: str) -> None:
-        pass
+class PostgreSQL:
+    def __init__(self, *args, **kwargs):
+        self._connection = psycopg2.connect(*args, **kwargs, cursor_factory=RealDictCursor)
+        self._cursor = self._connection.cursor()
+        self._pending_commit = False
 
-    @abstractmethod
-    def get_row_data(self, table_name: str, match_columns: dict, columns=None, limit: int = 1):
-        pass
+    # noinspection PyDefaultArgument
+    def get_row_data(self, table_name: str, match_columns: dict, columns: list = [], limit: int = 1) -> dict:
+        if columns:
+            column_names = ', '.join(columns)
+        else:
+            column_names = '*'
+        where_info = get_where_info(match_columns)
+        self._cursor.execute(f"SELECT {column_names} FROM {table_name} WHERE {where_info}")
+        if limit == 1:
+            return self._cursor.fetchone()
+        else:
+            return self._cursor.fetchmany(limit)
 
-    @abstractmethod
-    def insert_data(self, table_name: str, column_data: dict) -> None:
-        pass
+    def insert_data(self, table_name: str, column_data: dict, must_return: list = None) -> Optional[dict]:
+        keys = '(' + ', '.join(column_data.keys()) + ')'
+        values = '(' + ', '.join(map(convert_sql_value, column_data.values())) + ')'
+        if must_return:
+            must_return = '(' + ', '.join(must_return) + ')'
+            self._cursor.execute(f"INSERT INTO {table_name} {keys} VALUES {values} RETURNING {must_return}")
+            self._pending_commit = True
+            return self._cursor.fetchone()
+        else:
+            self._cursor.execute(f"INSERT INTO {table_name} {keys} VALUES {values}")
+            self._pending_commit = True
 
-    @abstractmethod
     def update_data(self, table_name: str, match_columns: dict, column_data: dict) -> None:
-        pass
+        where_info = get_where_info(match_columns)
+        set_values = ', '.join(map(lambda x: x[0] + ' = ' + convert_sql_value(x[1]), column_data.items()))
+        self._cursor.execute(f"UPDATE {table_name} SET {set_values} WHERE {where_info}")
+        self._pending_commit = True
 
-    @abstractmethod
-    def delete_row(self, table_name: str, match_columns: dict) -> None:
-        pass
+    def delete_row(self, table_name: str, match_columns: dict, limit: int = 1) -> None:
+        where_info = get_where_info(match_columns)
+        if limit is None:
+            self._cursor.execute(f"DELETE FROM {table_name} WHERE {where_info}")
+        else:
+            column_match = ', '.join(match_columns.keys())
+            self._cursor.execute(f"DELETE FROM {table_name} WHERE ({column_match}) IN "
+                                 f"(SELECT {column_match} FROM {table_name} "
+                                 f"WHERE {where_info} LIMIT {limit})")
+        self._pending_commit = True
 
-    @abstractmethod
-    def get_cursor(self):
-        pass
+    def get_connection(self) -> Any:
+        return self._connection
 
-    @abstractmethod
+    def get_cursor(self) -> RealDictCursor:
+        return self._cursor
+
+    def execute(self, query: str) -> None:
+        self._cursor.execute(query)
+
     def commit(self) -> None:
-        pass
+        self._connection.commit()
 
 
-INSTANCE: Database
+INSTANCE: PostgreSQL
 
 
 def convert_sql_value(value):
@@ -66,63 +97,6 @@ def load_database():
     global INSTANCE
     INSTANCE = PostgreSQL(os.environ['DATABASE_URL'], sslmode='require')
     return INSTANCE
-
-
-class PostgreSQL(Database):
-    def __init__(self, *args, **kwargs):
-        self._connection = psycopg2.connect(*args, **kwargs, cursor_factory=RealDictCursor)
-        self._cursor = self._connection.cursor()
-        self._pending_commit = False
-
-    # noinspection PyDefaultArgument
-    def get_row_data(self, table_name: str, match_columns: dict, columns: list = [], limit: int = 1):
-        if columns:
-            column_names = ', '.join(columns)
-        else:
-            column_names = '*'
-        where_info = get_where_info(match_columns)
-        self._cursor.execute(f"SELECT {column_names} from {table_name} WHERE {where_info}")
-        if limit == 1:
-            return self._cursor.fetchone()
-        else:
-            return self._cursor.fetchmany(limit)
-
-    def insert_data(self, table_name: str, column_data: dict):
-        keys = '(' + ', '.join(list(column_data.keys())) + ')'
-        values = '(' + ', '.join(map(convert_sql_value, column_data.values())) + ')'
-        self._cursor.execute(f"INSERT INTO {table_name} {keys} VALUES {values}")
-        self._pending_commit = True
-
-    def update_data(self, table_name: str, match_columns: dict, column_data: dict):
-        where_info = get_where_info(match_columns)
-        set_values = ', '.join(map(lambda x: x[0] + ' = ' + convert_sql_value(x[1]), column_data.items()))
-        self._cursor.execute(f"UPDATE {table_name} SET {set_values} WHERE {where_info}")
-        self._pending_commit = True
-
-    def delete_row(self, table_name: str, match_columns: dict):
-        where_info = get_where_info(match_columns)
-        self._cursor.execute(f"DELETE FROM {table_name} WHERE {where_info}")
-        self._pending_commit = True
-
-    def get_cursor(self):
-        return self._cursor
-
-    def execute(self, query: str):
-        self._cursor.execute(query)
-
-    def commit(self, force=False):
-        if self._pending_commit or force:
-            self._connection.commit()
-            self._pending_commit = False
-
-
-JSON_DEFAULTS = {
-    "users": [],
-    "guilds": [],
-    "items": [],
-    "user_items": [],
-    "guild_items": []
-}
 
 
 def columns_match(row: dict, match_columns: dict):

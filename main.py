@@ -7,7 +7,7 @@ from discord_slash import SlashCommand, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
 import utils
-from commands import command, simple, box, bet, upgrade
+from commands import command, simple, box, bet, upgrade, shop
 from db import database
 
 # Load database
@@ -109,7 +109,7 @@ async def _inv(ctx):
     await command.call(ctx, simple.post_inv)
 
 
-@slash.subcommand(base="crate", name="check", description="Check money on the box",
+@slash.subcommand(base="crate", name="check", description="Check money in the box",
                   guild_ids=registered_guild_ids)
 async def _box_check(ctx):
     await command.call(ctx, box.check)
@@ -135,9 +135,63 @@ async def _box_take(ctx):
 
 
 @slash.slash(name="leaderboard", description="Check out who's got the most money",
-                  guild_ids=registered_guild_ids)
+             guild_ids=registered_guild_ids)
 async def _leaderboard(ctx):
     await command.call(ctx, simple.leaderboard)
+
+
+@slash.subcommand(base="shop", name="check", description="Check the guild shop",
+                  guild_ids=registered_guild_ids)
+async def _shop_check(ctx):
+    await command.call(ctx, shop.check)
+
+
+@slash.subcommand(base="shop", name="buy", description="Buy an item shop",
+                  options=[
+                      create_option(
+                          name="number",
+                          description="Number of the item to buy",
+                          option_type=4,
+                          required=True
+                      )
+                  ],
+                  guild_ids=registered_guild_ids)
+async def _shop_buy(ctx, number: int):
+    await command.call(ctx, shop.buy, number)
+
+
+@slash.slash(name="stats", description="Check your stats",
+             guild_ids=registered_guild_ids)
+async def _stats(ctx):
+    await command.call(ctx, simple.stats)
+
+
+@slash.slash(name="equip", description="Equip an item",
+             options=[
+                 create_option(
+                     name="number",
+                     description="Number of the item to equip",
+                     option_type=4,
+                     required=True
+                 )
+             ],
+             guild_ids=registered_guild_ids)
+async def _stats(ctx, number: int):
+    await command.call(ctx, simple.equip, number)
+
+
+@slash.slash(name="unequip", description="Unequip an item",
+             options=[
+                 create_option(
+                     name="number",
+                     description="Number of the item to unequip",
+                     option_type=4,
+                     required=True
+                 )
+             ],
+             guild_ids=registered_guild_ids)
+async def _stats(ctx, number: int):
+    await command.call(ctx, simple.unequip, number)
 
 
 # Hacky uwu

@@ -6,9 +6,8 @@ from discord_slash import SlashContext
 
 import utils
 from data import storage
-from data.incremental import TimeMetric
 from data.user import User
-from utils import DictRef
+from utils import DictRef, TimeSlot, TimeMetric
 
 
 def create_bot(bot_name: str, limit: int):
@@ -21,7 +20,7 @@ def create_bot(bot_name: str, limit: int):
 
 
 class Bet:
-    DURATION = TimeMetric.MINUTE.seconds() * 10
+    DURATION = TimeSlot(TimeMetric.MINUTE, 10).seconds()
     INFO_DELAY = 30
     MIN_BET = 50
     MIN_INCR = 10
@@ -31,10 +30,9 @@ class Bet:
         (999999999999, ['robot', 'sunglasses', 'cowboy'])
     ]
 
-    def __init__(self, bet_ref: DictRef, metric: TimeMetric, duration: int):
-        self._bet_ref = bet_ref
-        self._duration = metric.seconds() * duration
-        self._info_changed = False
+    def __init__(self, bet_ref: DictRef):
+        self._bet_ref: DictRef = bet_ref
+        self._info_changed: bool = False
         self._stored_info = None
         self._bot: BetBot
         self._limit: int = 0
@@ -56,10 +54,10 @@ class Bet:
         infinite_check = 100
         i = 0
         while infinite_check > 0:
-            if random.random() < 0.5:
+            if random.random() < 0.4:
                 break
             i += 1
-            infinite_check += 1
+            infinite_check -= 1
             if i == len(pool):
                 i = 0
         print(i)

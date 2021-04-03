@@ -1,8 +1,12 @@
 import utils
 from data import upgrades
-from data.incremental import Incremental, TimeMetric
+from data.incremental import Incremental
+from inventory_data.inventory import Inventory
+from db import database
 from db.row import Row
-from utils import DictRef
+from inventory_data import items
+from inventory_data.items import Item
+from utils import DictRef, TimeMetric, TimeSlot
 
 
 class User(Row):
@@ -15,12 +19,25 @@ class User(Row):
             'money_limit': upgrades.UpgradeLink(upgrades.MONEY_LIMIT,
                                                 DictRef(self._data, 'money_limit_lvl')),
             'garden': upgrades.UpgradeLink(upgrades.GARDEN_PROD,
-                                           DictRef(self._data, 'garden_lvl'), after=self._update_bank_increment)
+                                           DictRef(self._data, 'garden_lvl'), after=self._update_bank_increment),
+            'inventory': upgrades.UpgradeLink(upgrades.INVENTORY_LIMIT,
+                                              DictRef(self._data, 'inventory_lvl'), after=self._update_inventory_limit)
         }
         self._bank = Incremental(DictRef(self._data, 'bank'), DictRef(self._data, 'bank_time'),
-                                 TimeMetric.HOUR, self.upgrades['garden'].get_value())
+                                 TimeSlot(TimeMetric.HOUR, self.upgrades['garden'].get_value()))
 
-        # TODO: Fetch inventory
+        # Fill inventory
+        slots = self.upgrades['inventory'].get_value()
+        database.INSTANCE.execute(f"SELECT I.* FROM users U "
+                                  f"INNER JOIN user_items UI ON U.id = UI.user_id "
+                                  f"INNER JOIN items I ON I.id = UI.item_id")
+        fetched_items = database.INSTANCE.get_cursor().fetchall()
+        if len(fetched_items) > slots:
+            # Too many item_data... log
+            print(f"{user_id} exceeded {slots} items: {len(fetched_items)}!")
+        self.inventory = Inventory(DictRef(self._data, 'equipped'), slots, [
+            Item(item_data=items.parse_item_data_from_dict(item['data']), item_id=item['id']) for item in fetched_items
+        ], self._data['equipped'])
 
     def load_defaults(self):
         return {
@@ -34,6 +51,8 @@ class User(Row):
             'money_limit_lvl': 1,  # smallint
             'garden_lvl': 1,  # smallint
             'inventory_lvl': 1,  # smallint
+
+            'equipped': []  # smallint[]
         }
 
     def update_name(self, name: str):
@@ -117,6 +136,9 @@ class User(Row):
         self.add_money(need)
         return need
 
+    def get_inventory_limit(self) -> int:
+        return self.upgrades['inventory'].get_value()
+
     def print_garden_rate(self) -> str:
         return self._bank.print_rate()
 
@@ -136,6 +158,7 @@ class User(Row):
             to_print.append(f"{utils.Emoji.BANK} Bank: {utils.print_money(self.get_bank())} "
                             f"/ {utils.print_money(self.get_bank_limit())} "
                             f"({self.print_garden_rate()} {utils.Emoji.GARDEN})")
+            to_print.append(self.inventory.print_inventory())
         else:
             to_print.append(f"{utils.Emoji.MONEY} Money: {utils.print_money(self.get_money())}")
             to_print.append(f"{utils.Emoji.SCROLL} Avg level: {self.get_average_level()}")
@@ -146,3 +169,6 @@ class User(Row):
 
     def _update_bank_limit(self) -> None:
         self._bank.set_absolute(self.get_bank())
+
+    def _update_inventory_limit(self) -> None:
+        self.inventory.set_limit(self.get_inventory_limit())

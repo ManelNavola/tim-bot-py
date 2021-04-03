@@ -21,20 +21,22 @@ class DataChanges(UserDict):
 
 
 class Row(Slots):
-    def __init__(self, table_name: str, pkey_dict: dict, insert_data: dict = None):
+    def __init__(self, table_name: str, pkey_dict: dict, insert_data: dict = None, no_update: bool = False):
         self._table_name = table_name
         self._pkey_dict = pkey_dict
         if insert_data:
             self._data = DataChanges(insert_data.copy())
-            insert_data.update(pkey_dict)
-            database.INSTANCE.insert_data(table_name, insert_data)
+            if not no_update:
+                insert_data.update(pkey_dict)
+                database.INSTANCE.insert_data(table_name, insert_data)
         else:
             data = database.INSTANCE.get_row_data(table_name, pkey_dict)
             if not data:
                 data = self.load_defaults().copy()
-                to_insert = data.copy()
-                to_insert.update(pkey_dict)
-                database.INSTANCE.insert_data(table_name, to_insert)
+                if not no_update:
+                    to_insert = data.copy()
+                    to_insert.update(pkey_dict)
+                    database.INSTANCE.insert_data(table_name, to_insert)
             self._data = DataChanges(data)
 
     def __getitem__(self, key: str):
