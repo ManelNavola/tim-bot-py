@@ -21,24 +21,14 @@ class TestIncremental(TestCase):
         for curr_time, v in expected.items():
             self.assertEqual(v + base, self.inc.get(curr_time))
 
-    def test_change_set(self):
-        tests = {
-            24: (27, 42),
-            47: (43, 96),
-            1717: (0, 847)
-        }
-        for curr_time, v in tests.items():
-            self.inc.change(v[0], curr_time)
-            self.assertEqual(v[1], self.inc.get(curr_time))
-
-    def test_set_absolute(self):
+    def test_set(self):
         tests = {
             24: (27, 27),
             47: (43, 43),
             1717: (847, 847)
         }
         for curr_time, v in tests.items():
-            self.inc.set_absolute(v[0], curr_time)
+            self.inc.set(v[0], curr_time)
             self.assertEqual(v[1], self.inc.get(curr_time))
 
     def test_set_increment(self):

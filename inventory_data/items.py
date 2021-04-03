@@ -76,18 +76,23 @@ for item in _ITEMS:
 
 
 class ItemData(Slots):
-    def __init__(self, rarity: RarityInstance, desc_id: int, stats: dict[StatInstance, int]):
+    def __init__(self, rarity: RarityInstance, desc_id: int, stats: dict[StatInstance, int], price_modifier: float = 1,
+                 durability: int = 100):
         self.rarity: RarityInstance = rarity
         self.stats: dict[StatInstance, int] = stats
         self.desc_id: int = desc_id
+        self.price_modifier: float = price_modifier
+        self.durability: int = durability
 
     def get_description(self) -> ItemDescription:
         return INDEX_TO_ITEM[self.desc_id]
 
 
 def parse_item_data_from_dict(dictionary: dict):
+    price_modifier = dictionary.get('price')
+    durability = dictionary.get('durability')
     return ItemData(Rarity.get_by_index(dictionary['rarity']), dictionary['desc_id'],
-                    {Stats.get_by_name(k): v for k, v in dictionary['stats'].items()})
+                    {Stats.get_by_name(k): v for k, v in dictionary['stats'].items()}, price_modifier, durability)
 
 
 class Item(Slots):
@@ -96,12 +101,15 @@ class Item(Slots):
         self.id: int = item_id
         self.data: ItemData = item_data
         self._price: Optional[int] = None
+        self.durability: int = 100
 
     def get_row_data(self):
         row_data = {
             'desc_id': self.data.desc_id,
             'stats': {k.name: v for k, v in self.data.stats.items()},
-            'rarity': self.data.rarity.id
+            'rarity': self.data.rarity.id,
+            'price': self.data.price_modifier,
+            'durability': self.data.durability
         }
         return row_data
 
@@ -113,7 +121,8 @@ class Item(Slots):
     def _calculate_price(self) -> None:
         stat_sum = sum([v * (k.cost + 1) for k, v in self.data.stats.items()])
         rarity = self.data.rarity.id + 1
-        self._price = round((pow(stat_sum, 0.9) * pow(rarity, 1.1) * 10) / 10) * 10
+        before_round = (pow(stat_sum, 0.9) * pow(rarity, 1.1) * 10) * self.data.price_modifier
+        self._price = round(before_round / 10) * 10
 
     def print(self) -> str:
         stats = ', '.join([f"+{v} {k.abv}" for k, v in self.data.stats.items()])

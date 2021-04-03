@@ -91,6 +91,7 @@ class Emoji:
     SPARKLE = '\✨'
     MONEY_FLY = '\💸'
     INCREASE = '\🔺'
+    DECREASE = '\🔻'
 
     # Commands
     ERROR = '\⛔'

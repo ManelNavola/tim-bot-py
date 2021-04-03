@@ -37,7 +37,7 @@ class User(Row):
             print(f"{user_id} exceeded {slots} items: {len(fetched_items)}!")
         self.inventory = Inventory(DictRef(self._data, 'equipped'), slots, [
             Item(item_data=items.parse_item_data_from_dict(item['data']), item_id=item['id']) for item in fetched_items
-        ], self._data['equipped'])
+        ])
 
     def load_defaults(self):
         return {
@@ -117,7 +117,7 @@ class User(Row):
             self._bank.set(bank_limit)
             return excess
         else:
-            self._bank.change(amount)
+            self._bank.set(bank + amount)
             return 0
 
     def withdraw_bank(self) -> int:
@@ -132,7 +132,7 @@ class User(Row):
             self._bank.set(0)
             self.add_money(withdraw)
             return withdraw
-        self._bank.change(-need)
+        self._bank.set(bank - need)
         self.add_money(need)
         return need
 
@@ -168,7 +168,7 @@ class User(Row):
         self._bank.set_increment(self.upgrades['garden'].get_value())
 
     def _update_bank_limit(self) -> None:
-        self._bank.set_absolute(self.get_bank())
+        self._bank.set(self.get_bank())
 
     def _update_inventory_limit(self) -> None:
         self.inventory.set_limit(self.get_inventory_limit())

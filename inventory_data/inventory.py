@@ -7,7 +7,7 @@ from inventory_data.stats import Stats, StatInstance
 
 
 class Inventory:
-    def __init__(self, equipped_ref: DictRef, inv_limit: int, items: list[Item], equipped: list[int]):
+    def __init__(self, equipped_ref: DictRef, inv_limit: int, items: list[Item]):
         self.items: list[Item] = items
         self._equipped_ref: DictRef = equipped_ref
         self.limit: int = inv_limit
@@ -31,24 +31,25 @@ class Inventory:
     def equip(self, index: int) -> Optional[str]:
         if 0 <= index < len(self.items):
             item = self.items[index]
-            item_type = item.data.get_description().type
-            for other_index in range(len(self.items)):
-                if self.items[other_index].data.get_description().type == item_type:
-                    print("unequip", other_index)
-                    self.unequip(other_index)
-                    break
-            self._equipped_ref.get().append(index)
-            self._equipped_ref.update()
-            self._calculate_stats()
+            if index not in self._equipped_ref.get():
+                item_type = item.data.get_description().type
+                for other_index in range(len(self.items)):
+                    if other_index != index and self.items[other_index].data.get_description().type == item_type:
+                        self.unequip(other_index)
+                        break
+                self._equipped_ref.get().append(index)
+                self._equipped_ref.update()
+                self._calculate_stats()
             return item.print()
         return None
 
     def unequip(self, index: int) -> Optional[str]:
         if 0 <= index < len(self.items):
-            self._equipped_ref.get().remove(index)
-            self._equipped_ref.update()
-            self._calculate_stats()
-            return self.items[index].print()
+            if index in self._equipped_ref:
+                self._equipped_ref.get().remove(index)
+                self._equipped_ref.update()
+                self._calculate_stats()
+                return self.items[index].print()
         return None
 
     def set_limit(self, inv_limit: int):
@@ -70,9 +71,9 @@ class Inventory:
             index = i + 1
             item_str = self.items[i].print()
             if i in self._equipped_ref.get():
-                tr.append(f"{index}: {item_str} {utils.Emoji.EQUIPPED}")
+                tr.append(f"{index}: {item_str} {utils.Emoji.EQUIPPED} ({self.items[i].durability}%)")
             else:
-                tr.append(f"{index}: {item_str}")
+                tr.append(f"{index}: {item_str} ({self.items[i].durability}%)")
         return '\n'.join(tr)
 
     def print_stats(self) -> str:
