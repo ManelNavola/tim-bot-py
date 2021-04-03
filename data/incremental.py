@@ -60,9 +60,7 @@ class Incremental(Slots):
     def set(self, amount: int, override_now: int = None) -> None:
         if override_now is None:
             override_now = utils.now()
-        current = self.get(override_now) - self._base_ref.get()
-        last_whole = self._time_ref.get() + round(current / (self._increment / self._metric.seconds()))
-        self._time_ref.set(override_now - (override_now - last_whole))
+        self._time_ref.set(override_now)
         self._base_ref.set(amount)
 
     def set_absolute(self, amount: int, override_now: int = None) -> None:

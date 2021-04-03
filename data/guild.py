@@ -58,6 +58,7 @@ class Guild(Row):
 
     def get_box(self) -> int:
         if self._data['table_money'] > 0:
+            print(utils.now(), self._get_box_end())
             now = min(utils.now(), self._get_box_end())
             return self._box.get(now)
         else:
@@ -74,7 +75,7 @@ class Guild(Row):
         to_retrieve = min(self.get_box(), space)
         if to_retrieve == 0:
             return 0
-        self._box.change(-to_retrieve)
+        self._box.set_absolute(self.get_box()-to_retrieve)
         user.add_money(to_retrieve)
         return to_retrieve
 
