@@ -58,7 +58,6 @@ class Guild(Row):
 
     def get_box(self) -> int:
         if self._data['table_money'] > 0:
-            print(utils.now(), self._get_box_end())
             now = min(utils.now(), self._get_box_end())
             return self._box.get(now)
         else:
