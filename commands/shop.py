@@ -12,7 +12,7 @@ async def buy(cmd: Command, number: int):
     if number < 1 or number > 5:
         await cmd.error(f"Invalid item index!")
         return
-    success, result = cmd.guild.shop.purchase_item(cmd.user, number)
+    success, result = cmd.guild.shop.purchase_item(cmd.user, number - 1)
     if success:
         await cmd.send(f"{utils.Emoji.PURCHASE} {cmd.user.get_name()} purchased {result}!")
     else:

@@ -130,6 +130,7 @@ class Emoji:
     CRIT = '\🌟'
     STUN = '\🛑'
     VAMP = '\🧛'
+    BATTLE = '\⚔️'
 
 
 def now():

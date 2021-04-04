@@ -1,3 +1,6 @@
+from typing import Optional, Union
+
+from discord import Message
 from discord_slash import SlashContext
 
 import utils
@@ -60,9 +63,6 @@ async def call(ctx: SlashContext, func, *args):
 
     # CALL COMMAND
     await func(cmd, *args)  # Execute command
-
-    # AFTER UPDATES
-    cmd.guild.check_battle(cmd.user)
 
     # SAVE
     cmd.user.save()  # Save user data (if any changed)

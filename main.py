@@ -1,5 +1,6 @@
 # Imports
 import os
+from typing import Optional
 
 import discord
 from discord.ext import commands
@@ -7,14 +8,16 @@ from discord_slash import SlashCommand, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
 import utils
-from commands import command, simple, box, bet, upgrade, shop, battle
+from commands import command, simple, crate, bet, upgrade, shop
 from commands.command import Command
+from common import storage
 from db import database
 
+from guild_data.battle import Battle
+from guild_data.guild import Guild
+
 # Load database
-from guild_data.battle import BattleAction
-from inventory_data.stat_being import StatBeing
-from inventory_data.stats import Stats
+from user_data.user import User
 
 registered_guild_ids = None
 if utils.is_test():
@@ -29,6 +32,7 @@ bot = commands.Bot(command_prefix='/')
 slash = SlashCommand(bot, sync_commands=True)
 
 
+# Ready event
 @bot.event
 async def on_ready():
     print("Ready!")
@@ -37,6 +41,22 @@ async def on_ready():
         await console.execute()
 
 
+@bot.event
+async def on_reaction_add(reaction: discord.Reaction, discord_user: discord.User):
+    user: User = storage.get_user(discord_user.id)
+    guild: Guild = storage.get_guild(reaction.message.guild.id)
+    battle: Battle = guild.get_battle(user)
+    if battle is not None:
+        if reaction.message.id == battle.get_message_id():
+            if battle.action(user, Battle.BATTLE_ACTIONS.get(reaction.emoji)):
+                await reaction.message.edit(content=battle.pop_log())
+            await reaction.remove(user)
+        if battle.battle_ended:
+            guild.end_battle(battle)
+
+
+# Register commands
+# Inventory management
 @slash.slash(name="check", description="Check information about a user",
              options=[
                  create_option(
@@ -56,12 +76,25 @@ async def _inv(ctx):
     await command.call(ctx, simple.inv)
 
 
+@slash.slash(name="post_inv", description="Post your inventory",
+             guild_ids=registered_guild_ids)
+async def _inv(ctx):
+    await command.call(ctx, simple.post_inv)
+
+
 @slash.slash(name="transfer", description="Retrieves money from the bank",
              guild_ids=registered_guild_ids)
-async def _bank(ctx):
+async def _transfer(ctx):
     await command.call(ctx, simple.transfer)
 
 
+@slash.slash(name="leaderboard", description="Check out the top players",
+             guild_ids=registered_guild_ids)
+async def _leaderboard(ctx):
+    await command.call(ctx, simple.leaderboard)
+
+
+# Betting
 @slash.subcommand(base="bet", name="info", description="Get information about betting", guild_ids=registered_guild_ids)
 async def _bet_info(ctx):
     await command.call(ctx, bet.info)
@@ -86,6 +119,7 @@ async def _bet_check(ctx):
     await command.call(ctx, bet.check)
 
 
+# Upgrades
 @slash.subcommand(base="upgrade", name="menu", description="View available upgrades", guild_ids=registered_guild_ids)
 async def _upgrade(ctx):
     await command.call(ctx, upgrade.menu)
@@ -114,43 +148,33 @@ async def _upgrade(ctx):
     await command.call(ctx, upgrade.upgrade, 'inventory')
 
 
-@slash.slash(name="post_inv", description="Post your inventory",
-             guild_ids=registered_guild_ids)
-async def _inv(ctx):
-    await command.call(ctx, simple.post_inv)
-
-
-@slash.subcommand(base="crate", name="check", description="Check money in the box",
+# Crate
+@slash.subcommand(base="crate", name="check", description="Check money in the crate",
                   guild_ids=registered_guild_ids)
-async def _box_check(ctx):
-    await command.call(ctx, box.check)
+async def _crate_check(ctx):
+    await command.call(ctx, crate.check)
 
 
-@slash.subcommand(base="crate", name="place", description="Place money in the box",
+@slash.subcommand(base="crate", name="place", description="Place money in the crate",
                   options=[
                       create_option(
                           name="money",
-                          description="Amount of money to place on the box",
+                          description="Amount of money to place in the crate",
                           option_type=4,
                           required=True
                       )
                   ], guild_ids=registered_guild_ids)
-async def _box_place(ctx, money):
-    await command.call(ctx, box.place, money)
+async def _crate_place(ctx, money):
+    await command.call(ctx, crate.place, money)
 
 
-@slash.subcommand(base="crate", name="take", description="Take money from the box",
+@slash.subcommand(base="crate", name="take", description="Take money from the crate",
                   guild_ids=registered_guild_ids)
-async def _box_take(ctx):
-    await command.call(ctx, box.take)
+async def _crate_take(ctx):
+    await command.call(ctx, crate.take)
 
 
-@slash.slash(name="leaderboard", description="Check out the top players",
-             guild_ids=registered_guild_ids)
-async def _leaderboard(ctx):
-    await command.call(ctx, simple.leaderboard)
-
-
+# Shop
 @slash.subcommand(base="shop", name="check", description="Check the guild shop",
                   guild_ids=registered_guild_ids)
 async def _shop_check(ctx):
@@ -185,6 +209,7 @@ async def _shop_sell(ctx, number: int):
     await command.call(ctx, shop.sell, number)
 
 
+# RPG management
 @slash.slash(name="stats", description="Check your stats",
              guild_ids=registered_guild_ids)
 async def _stats(ctx):
@@ -201,7 +226,7 @@ async def _stats(ctx):
                  )
              ],
              guild_ids=registered_guild_ids)
-async def _stats(ctx, number: int):
+async def _equip(ctx, number: int):
     await command.call(ctx, simple.equip, number)
 
 
@@ -219,30 +244,25 @@ async def _stats(ctx, number: int):
     await command.call(ctx, simple.unequip, number)
 
 
-@slash.slash(name="attack", description="Attack while in battle",
-             guild_ids=registered_guild_ids)
-async def _attack(ctx):
-    await command.call(ctx, battle.action, BattleAction.ATTACK)
-
-
+# Register test command
+saved: Optional[User] = None
 if utils.is_test():
     @slash.slash(name="test", description="Quickly test anything!",
                  guild_ids=registered_guild_ids)
     async def _test(ctx):
         async def to_test(cmd: Command):
-            d = {
-                'name': 'THE BEAST',
-                Stats.HP.abv: 100,
-                Stats.MP.abv: 200
-            }
-            being_b = StatBeing(utils.DictRef(d, 'name'), utils.DictRef(d, Stats.HP.abv),
-                                utils.DictRef(d, Stats.MP.abv))
-            await cmd.guild.start_battle(cmd.ctx, cmd.user.inventory.stat_being, being_b)
-            await cmd.send("BATEL START")
+            global saved
+            # being_b = BotEntity('THE BEAST', 100, 200, {
+            #                        Stats.STR: 2
+            #                    })
+            if saved is None:
+                saved = cmd.user
+            else:
+                await cmd.guild.start_battle(cmd.ctx, cmd.user.entity, saved.entity, saved.id)
         await command.call(ctx, to_test)
 
 
-# Hacky uwu
+# Run bot based on test
 if utils.is_test():
     with open('local/d.txt') as f:
         bot.run(f.readline())

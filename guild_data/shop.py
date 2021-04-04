@@ -65,10 +65,11 @@ class Shop:
         if not self.last_valid_check:
             return False, -1
 
-        item = self._shop_items[item_index - 1]
+        item = self._shop_items[item_index]
         if user.inventory.get_empty_slots() > 0:
             if user.remove_money(item.get_price()):
                 items.transfer(self._guild_id, user.id, item.id)
+                del self._shop_items[item_index]
                 user.inventory.add_item(item)
                 self.last_valid_check = None
                 self._restock_shop()

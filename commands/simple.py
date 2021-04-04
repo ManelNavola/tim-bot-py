@@ -42,12 +42,13 @@ async def leaderboard(cmd: Command):
 
 
 async def stats(cmd: Command):
-    await cmd.send(cmd.user.stat_being.print())
+    await cmd.send(cmd.user.entity.print_detailed())
 
 
 async def equip(cmd: Command, index: int):
     result = cmd.user.inventory.equip(index - 1)
     if result is not None:
+        cmd.user.entity.update_items(cmd.user.inventory.get_equipment())
         await cmd.send(f"Equipped {result}")
     else:
         await cmd.error(f"Invalid item index!")
@@ -56,6 +57,7 @@ async def equip(cmd: Command, index: int):
 async def unequip(cmd: Command, index: int):
     result = cmd.user.inventory.unequip(index - 1)
     if result is not None:
+        cmd.user.entity.update_items(cmd.user.inventory.get_equipment())
         await cmd.send(f"Unequipped {result}")
     else:
         await cmd.error(f"Invalid item index!")

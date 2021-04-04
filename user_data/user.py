@@ -1,5 +1,5 @@
 import utils
-from inventory_data.stat_being import StatBeing
+from inventory_data.entity import UserEntity
 from inventory_data.stats import Stats
 from user_data import upgrades
 from common.incremental import Incremental
@@ -37,12 +37,13 @@ class User(Row):
         if len(fetched_items) > slots:
             # Too many item_data... log
             print(f"{user_id} exceeded {slots} items: {len(fetched_items)}!")
-        self.stat_being = StatBeing(DictRef(self._data, 'last_name'),
-                                    DictRef(self._data['persistent_stats'], Stats.HP.abv),
-                                    DictRef(self._data['persistent_stats'], Stats.MP.abv))
-        self.inventory = Inventory(DictRef(self._data, 'equipped'), self.stat_being, slots, [
+        self.inventory = Inventory(DictRef(self._data, 'equipped'), slots, [
             Item(item_data=items.parse_item_data_from_dict(item['data']), item_id=item['id']) for item in fetched_items
         ])
+        self.entity: UserEntity = UserEntity(DictRef(self._data, 'last_name'),
+                                             DictRef(self._data['persistent_stats'], Stats.HP.abv),
+                                             DictRef(self._data['persistent_stats'], Stats.MP.abv))
+        self.entity.update_items(self.inventory.get_equipment())
 
     def load_defaults(self):
         return {
@@ -58,7 +59,7 @@ class User(Row):
             'inventory_lvl': 1,  # smallint
 
             'equipped': [],  # smallint[]
-            'persistent_stats': {
+            'persistent_stats': {  # json
                 Stats.HP.abv: Stats.HP.base,
                 Stats.MP.abv: Stats.MP.base
             }
@@ -168,12 +169,12 @@ class User(Row):
                             f"/ {utils.print_money(self.get_bank_limit())} "
                             f"({self.print_garden_rate()} {utils.Emoji.GARDEN})")
             if checking:
-                to_print.append(f"{utils.Emoji.STATS} Stats: {self.inventory.stat_being.stat_sum}")
+                to_print.append(f"{utils.Emoji.STATS} Stats: {self.entity.get_stat_sum()}")
             to_print.append(self.inventory.print())
         else:
             to_print.append(f"{utils.Emoji.MONEY} Money: {utils.print_money(self.get_money())}")
             to_print.append(f"{utils.Emoji.SCROLL} Avg level: {self.get_average_level()}")
-            to_print.append(f"{utils.Emoji.STATS} Stats: {self.inventory.stat_being.stat_sum}")
+            to_print.append(f"{utils.Emoji.STATS} Stats: {self.entity.get_stat_sum()}")
         return '\n'.join(to_print)
 
     def _update_bank_increment(self) -> None:

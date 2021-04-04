@@ -7,7 +7,7 @@ from guild_data.battle import Battle
 from guild_data.bet import Bet
 from common.incremental import Incremental
 from guild_data.shop import Shop
-from inventory_data.stat_being import StatBeing
+from inventory_data.entity import Entity
 from user_data.user import User
 from db import database
 from db.row import Row
@@ -101,22 +101,20 @@ class Guild(Row):
         else:
             return f"{self._box.print_rate()} for {utils.print_time(diff)}"
 
-    async def start_battle(self, ctx: SlashContext, a: StatBeing, b: StatBeing) -> None:
-        battle: Battle = Battle(a, b)
+    async def start_battle(self, ctx: SlashContext, a: Entity, b: Entity, user_b_id: Optional[int] = None) -> None:
+        battle: Battle = Battle(a, b, user_b_id)
         self.stat_being_to_battle[a] = battle
         self.stat_being_to_battle[b] = battle
-        log = battle.pop_log()
+        log = f"⚔️ Battle between {a.get_name()} and {b.get_name()}!\n" + battle.pop_log()
         if len(log) > 0:
-            await ctx.send(log, hidden=True)
+            await ctx.send(log)
+            await battle.init(ctx.message)
+
+    def end_battle(self, battle: Battle) -> None:
+        a = battle.entity_a
+        b = battle.entity_b
+        del self.stat_being_to_battle[a]
+        del self.stat_being_to_battle[b]
 
     def get_battle(self, user: User) -> Optional[Battle]:
-        return self.stat_being_to_battle.get(user.stat_being)
-
-    def check_battle(self, user: User) -> None:
-        battle: Optional[Battle] = self.get_battle(user)
-        if battle is not None:
-            if battle.battle_ended:
-                a: StatBeing = battle.being_a
-                b: StatBeing = battle.being_b
-                del self.stat_being_to_battle[a]
-                del self.stat_being_to_battle[b]
+        return self.stat_being_to_battle.get(user.entity)

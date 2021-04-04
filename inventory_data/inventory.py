@@ -2,18 +2,15 @@ from typing import Optional, Any
 
 import utils
 from inventory_data import items
-from inventory_data.stat_being import StatBeing
 from utils import DictRef
 from inventory_data.items import Item
 
 
 class Inventory:
-    def __init__(self, equipped_ref: DictRef, stat_being: StatBeing, inv_limit: int, item_list: list[Item]):
+    def __init__(self, equipped_ref: DictRef, inv_limit: int, item_list: list[Item]):
         self.items: list[Item] = item_list
         self._equipped_ref: DictRef = equipped_ref
         self.limit: int = inv_limit
-        self.stat_being: StatBeing = stat_being
-        self._update_stats()
 
     def sell(self, index: int, user_id: int) -> tuple[bool, Any]:
         if index < 0 or index >= len(self.items):
@@ -23,9 +20,6 @@ class Inventory:
         item = self.items[index]
         items.delete_user_item(user_id, item.id)
         return True, item
-
-    def _update_stats(self):
-        self.stat_being.update([self.items[index] for index in self._equipped_ref.get()])
 
     def equip(self, index: int) -> Optional[str]:
         if 0 <= index < len(self.items):
@@ -38,7 +32,6 @@ class Inventory:
                         break
                 self._equipped_ref.get().append(index)
                 self._equipped_ref.update()
-                self._update_stats()
             return item.print()
         return None
 
@@ -47,7 +40,6 @@ class Inventory:
             if index in self._equipped_ref:
                 self._equipped_ref.get().remove(index)
                 self._equipped_ref.update()
-                self._update_stats()
                 return self.items[index].print()
         return None
 
@@ -62,6 +54,9 @@ class Inventory:
 
     def set_items(self, item_list: list) -> None:
         self.items = item_list[:self.limit]
+
+    def get_equipment(self) -> list[Item]:
+        return [self.items[i] for i in range(len(self.items)) if i in self._equipped_ref.get()]
 
     def print(self) -> str:
         il = len(self.items)
