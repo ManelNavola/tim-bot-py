@@ -56,7 +56,7 @@ class Bet:
         infinite_check = 100
         i = 0
         while infinite_check > 0:
-            if random.random() < 0.5:
+            if random.random() < 0.4:
                 break
             i += 1
             infinite_check += 1
