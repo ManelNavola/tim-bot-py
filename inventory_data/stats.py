@@ -15,27 +15,42 @@ class StatInstance(Slots):
         self.rarity: RarityInstance = rarity
         self.cost: int = cost
 
-    def get_value(self, value: int) -> Any:
-        return self.base + value
+    def get_value(self, increment: int) -> Any:
+        return self.base + increment
 
-    def print(self, value: int) -> str:
-        if self.base > 0:
-            if value == 0:
-                return f"{self.icon} {self.abv}: {self.base}"
+    def print(self, value: int, persistent_value: Optional[int] = None) -> str:
+        if persistent_value:
+            if self.base > 0:
+                if value == 0:
+                    return f"{self.icon} {self.abv}: {persistent_value}/{self.base}"
+                else:
+                    return f"{self.icon} {self.abv}: {persistent_value}/{self.base} " \
+                           f"(+{self.get_value(value) - self.base})"
             else:
-                return f"{self.icon} {self.abv}: {self.base} (+{self.get_value(value) - self.base})"
+                return f"{self.icon} {self.abv}: {persistent_value} +{self.get_value(value)}"
         else:
-            return f"{self.icon} {self.abv}: +{self.get_value(value)}"
+            if self.base > 0:
+                if value == 0:
+                    return f"{self.icon} {self.abv}: {self.base}"
+                else:
+                    return f"{self.icon} {self.abv}: {self.base} (+{self.get_value(value) - self.base})"
+            else:
+                return f"{self.icon} {self.abv}: +{self.get_value(value)}"
 
 
 class HP(StatInstance):
     def __init__(self):
-        super().__init__('HP', "Health Points", utils.Emoji.HP, 10, Rarity.COMMON, 50)
+        super().__init__('HP', "Health Points", utils.Emoji.HP, 10, Rarity.COMMON, 20)
+
+
+class MP(StatInstance):
+    def __init__(self):
+        super().__init__('MP', "Mana", utils.Emoji.MP, 10, Rarity.COMMON, 2)
 
 
 class STR(StatInstance):
     def __init__(self):
-        super().__init__('STR', "Attack strength", utils.Emoji.STR, 8, Rarity.COMMON, 10)
+        super().__init__('STR', "Attack strength", utils.Emoji.STR, 8, Rarity.COMMON, 2)
 
 
 class DEF(StatInstance):
@@ -63,9 +78,6 @@ class CRIT(StatInstance):
     def __init__(self):
         super().__init__('CRIT', "Chance of attack with double damage", utils.Emoji.CRIT, 15, Rarity.UNCOMMON)
 
-    def print(self, value: int) -> str:
-        return f"{self.get_value(value):.0%}"
-
 
 class STUN(StatInstance):
     def __init__(self):
@@ -79,6 +91,7 @@ class VAMP(StatInstance):
 
 class Stats:
     HP: StatInstance = HP()
+    MP: StatInstance = MP()
     STR: StatInstance = STR()
     DEF: StatInstance = DEF()
     SPD: StatInstance = SPD()
@@ -87,12 +100,13 @@ class Stats:
     CRIT: StatInstance = CRIT()
     STUN: StatInstance = STUN()
     VAMP: StatInstance = VAMP()
-    _INDEX: dict[str, StatInstance] = {x.name: x for x in [HP, STR, DEF, SPD, EVA, CONT, CRIT, STUN, VAMP]}
+    _LIST_INDEX: list[StatInstance] = [HP, MP, STR, DEF, SPD, EVA, CONT, CRIT, STUN, VAMP]
+    _INDEX: dict[str, StatInstance] = {x.name: x for x in _LIST_INDEX}
 
     @staticmethod
     def get_by_name(name: str) -> StatInstance:
         return Stats._INDEX[name]
 
     @staticmethod
-    def get_all() -> dict[str, StatInstance]:
-        return Stats._INDEX
+    def get_all() -> list[StatInstance]:
+        return Stats._LIST_INDEX

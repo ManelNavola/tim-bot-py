@@ -15,14 +15,14 @@ ITEM_GENERATION_DATA: dict[str, dict[RarityInstance, tuple[int, int]]] = {
         Rarity.UNCOMMON: (2, 2),
         Rarity.RARE: (2, 3),
         Rarity.EPIC: (3, 4),
-        Rarity.LEGENDARY: (4, 5)
+        Rarity.LEGENDARY: (3, 5)
     },
     'stat_sum': {
         Rarity.COMMON: (2, 4),
         Rarity.UNCOMMON: (5, 7),
         Rarity.RARE: (8, 10),
-        Rarity.EPIC: (12, 14),
-        Rarity.LEGENDARY: (16, 18)
+        Rarity.EPIC: (11, 13),
+        Rarity.LEGENDARY: (14, 16)
     }
 }
 
@@ -47,7 +47,7 @@ class ItemType(Enum):
         return self.TYPE_ICONS.value[self.value]
 
     @staticmethod
-    def get_length():
+    def get_length() -> int:
         return 5
 
 
@@ -127,7 +127,7 @@ class Item(Slots):
     def print(self) -> str:
         stats = ', '.join([f"+{v} {k.abv}" for k, v in self.data.stats.items()])
         item_desc: ItemDescription = self.data.get_description()
-        return f"{item_desc.type.get_type_icon()}{item_desc.name} {self.data.rarity.name} ({stats})"
+        return f"{item_desc.type.get_type_icon()}{item_desc.name} {self.data.rarity.name} [{stats}]"
 
 
 def get_random_item(item_type: Optional[ItemType] = None, rarity: Optional[RarityInstance] = None):
@@ -179,6 +179,11 @@ def create_guild_item(guild_id: int, item_data: ItemData) -> Item:
     return item
 
 
-def transfer(guild_id: int, user_id: int, item_id: int):
+def delete_user_item(user_id: int, item_id: int) -> None:
+    database.INSTANCE.delete_row("user_items", dict(user_id=user_id, item_id=item_id))
+    database.INSTANCE.delete_row("items", dict(id=item_id))
+
+
+def transfer(guild_id: int, user_id: int, item_id: int) -> None:
     database.INSTANCE.delete_row("guild_items", dict(guild_id=guild_id, item_id=item_id))
     database.INSTANCE.insert_data("user_items", dict(user_id=user_id, item_id=item_id))

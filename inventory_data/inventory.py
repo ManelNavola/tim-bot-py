@@ -1,32 +1,31 @@
-from typing import Optional
+from typing import Optional, Any
 
 import utils
+from inventory_data import items
+from inventory_data.stat_being import StatBeing
 from utils import DictRef
 from inventory_data.items import Item
-from inventory_data.stats import Stats, StatInstance
 
 
 class Inventory:
-    def __init__(self, equipped_ref: DictRef, inv_limit: int, items: list[Item]):
-        self.items: list[Item] = items
+    def __init__(self, equipped_ref: DictRef, stat_being: StatBeing, inv_limit: int, item_list: list[Item]):
+        self.items: list[Item] = item_list
         self._equipped_ref: DictRef = equipped_ref
         self.limit: int = inv_limit
-        self.stats: dict[Stats, int] = {}
-        self._stats_print: str = ""
-        self._calculate_stats()
+        self.stat_being: StatBeing = stat_being
+        self._update_stats()
 
-    def _calculate_stats(self):
-        self.stats: dict[StatInstance, int] = {
-            stat_instance: 0 for stat_instance in Stats.get_all().values() if stat_instance.base > 0
-        }
-        tp = []
-        for index in self._equipped_ref.get():
-            item = self.items[index]
-            for stat, value in item.data.stats.items():
-                self.stats[stat] = self.stats.get(stat, 0) + value
-        for stat, value in self.stats.items():
-            tp.append(stat.print(value))
-        self._stats_print = '\n'.join(tp)
+    def sell(self, index: int, user_id: int) -> tuple[bool, Any]:
+        if index < 0 or index >= len(self.items):
+            return False, True
+        if index in self._equipped_ref.get():
+            return False, False
+        item = self.items[index]
+        items.delete_user_item(user_id, item.id)
+        return True, item
+
+    def _update_stats(self):
+        self.stat_being.update([self.items[index] for index in self._equipped_ref.get()])
 
     def equip(self, index: int) -> Optional[str]:
         if 0 <= index < len(self.items):
@@ -39,7 +38,7 @@ class Inventory:
                         break
                 self._equipped_ref.get().append(index)
                 self._equipped_ref.update()
-                self._calculate_stats()
+                self._update_stats()
             return item.print()
         return None
 
@@ -48,7 +47,7 @@ class Inventory:
             if index in self._equipped_ref:
                 self._equipped_ref.get().remove(index)
                 self._equipped_ref.update()
-                self._calculate_stats()
+                self._update_stats()
                 return self.items[index].print()
         return None
 
@@ -61,10 +60,10 @@ class Inventory:
     def add_item(self, item: Item):
         self.items.append(item)
 
-    def set_items(self, items: list) -> None:
-        self.items = items[:self.limit]
+    def set_items(self, item_list: list) -> None:
+        self.items = item_list[:self.limit]
 
-    def print_inventory(self) -> str:
+    def print(self) -> str:
         il = len(self.items)
         tr = [f"{utils.Emoji.BAG} Inventory: {il}/{self.limit}"]
         for i in range(il):
@@ -74,8 +73,4 @@ class Inventory:
                 tr.append(f"{index}: {item_str} {utils.Emoji.EQUIPPED} ({self.items[i].durability}%)")
             else:
                 tr.append(f"{index}: {item_str} ({self.items[i].durability}%)")
-        return '\n'.join(tr)
-
-    def print_stats(self) -> str:
-        tr = [f"{utils.Emoji.STATS} Player Stats:", self._stats_print]
         return '\n'.join(tr)

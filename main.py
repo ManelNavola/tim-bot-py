@@ -7,10 +7,15 @@ from discord_slash import SlashCommand, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
 import utils
-from commands import command, simple, box, bet, upgrade, shop
+from commands import command, simple, box, bet, upgrade, shop, battle
+from commands.command import Command
 from db import database
 
 # Load database
+from guild_data.battle import BattleAction
+from inventory_data.stat_being import StatBeing
+from inventory_data.stats import Stats
+
 registered_guild_ids = None
 if utils.is_test():
     # Local test
@@ -103,6 +108,12 @@ async def _upgrade(ctx):
     await command.call(ctx, upgrade.upgrade, 'garden')
 
 
+@slash.subcommand(base="upgrade", name="inventory", description="Upgrade inventory limit",
+                  guild_ids=registered_guild_ids)
+async def _upgrade(ctx):
+    await command.call(ctx, upgrade.upgrade, 'inventory')
+
+
 @slash.slash(name="post_inv", description="Post your inventory",
              guild_ids=registered_guild_ids)
 async def _inv(ctx):
@@ -134,7 +145,7 @@ async def _box_take(ctx):
     await command.call(ctx, box.take)
 
 
-@slash.slash(name="leaderboard", description="Check out who's got the most money",
+@slash.slash(name="leaderboard", description="Check out the top players",
              guild_ids=registered_guild_ids)
 async def _leaderboard(ctx):
     await command.call(ctx, simple.leaderboard)
@@ -158,6 +169,20 @@ async def _shop_check(ctx):
                   guild_ids=registered_guild_ids)
 async def _shop_buy(ctx, number: int):
     await command.call(ctx, shop.buy, number)
+
+
+@slash.subcommand(base="shop", name="sell", description="Sell an item from your inventory",
+                  options=[
+                      create_option(
+                          name="number",
+                          description="Number of the item to sell",
+                          option_type=4,
+                          required=True
+                      )
+                  ],
+                  guild_ids=registered_guild_ids)
+async def _shop_sell(ctx, number: int):
+    await command.call(ctx, shop.sell, number)
 
 
 @slash.slash(name="stats", description="Check your stats",
@@ -192,6 +217,29 @@ async def _stats(ctx, number: int):
              guild_ids=registered_guild_ids)
 async def _stats(ctx, number: int):
     await command.call(ctx, simple.unequip, number)
+
+
+@slash.slash(name="attack", description="Attack while in battle",
+             guild_ids=registered_guild_ids)
+async def _attack(ctx):
+    await command.call(ctx, battle.action, BattleAction.ATTACK)
+
+
+if utils.is_test():
+    @slash.slash(name="test", description="Quickly test anything!",
+                 guild_ids=registered_guild_ids)
+    async def _test(ctx):
+        async def to_test(cmd: Command):
+            d = {
+                'name': 'THE BEAST',
+                Stats.HP.abv: 100,
+                Stats.MP.abv: 200
+            }
+            being_b = StatBeing(utils.DictRef(d, 'name'), utils.DictRef(d, Stats.HP.abv),
+                                utils.DictRef(d, Stats.MP.abv))
+            await cmd.guild.start_battle(cmd.ctx, cmd.user.inventory.stat_being, being_b)
+            await cmd.send("BATEL START")
+        await command.call(ctx, to_test)
 
 
 # Hacky uwu

@@ -1,6 +1,6 @@
 import utils
 from commands.command import Command
-from data.upgrades import UpgradeLink
+from user_data.upgrades import UpgradeLink
 
 
 def format_row(info) -> str:
@@ -9,7 +9,7 @@ def format_row(info) -> str:
     return f"{info[0]:<22s}|{info[1]:^7}|{info[2]:^16}|{info[3]:^14}|{info[4]:^16}"
 
 
-def custom_print(upg: UpgradeLink, f) -> str:
+def custom_print(upg: UpgradeLink, f=lambda x: x) -> str:
     s = f(upg.get_value())
     if upg.is_max_level():
         return format_row([upg.get_name(), 'MAX', s])
@@ -29,7 +29,9 @@ async def menu(cmd: Command):
           format_row(['----------------------', '-------', '----------------', '--------------', '----------------']),
           custom_print(cmd.user.upgrades['money_limit'], utils.print_money),
           custom_print(cmd.user.upgrades['bank'], utils.print_money),
-          custom_print(cmd.user.upgrades['garden'], rate_hour), '```']
+          custom_print(cmd.user.upgrades['garden'], rate_hour),
+          custom_print(cmd.user.upgrades['inventory']),
+          '```']
     # tp.append(custom_print(cmd.user.upgrades['inventory'], lambda x: x))
     await cmd.send_hidden('\n'.join(tp))
 

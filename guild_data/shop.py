@@ -3,7 +3,7 @@ import random
 from typing import Optional
 
 import utils
-from data.user import User
+from user_data.user import User
 from db import database
 from inventory_data import items
 from inventory_data.items import Item
@@ -12,7 +12,8 @@ from utils import DictRef, TimeSlot, TimeMetric
 
 class Shop:
     SHOP_DURATION = TimeSlot(TimeMetric.HOUR, 1)
-    SHOP_ITEMS = 5
+    SHOP_ITEMS = 4
+    SELL_MULTIPLIER = 0.5
 
     def __init__(self, shop_time: DictRef, guild_id: int):
         self._guild_id: int = guild_id

@@ -121,6 +121,7 @@ class Emoji:
 
     # Stats
     HP = '\💉'
+    MP = '\⚗️'
     STR = '\💪'
     DEF = '\🛡️'
     SPD = '\🏃'

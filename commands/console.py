@@ -5,7 +5,7 @@ from functools import partial
 
 import utils
 from commands.command import MockCommand
-from data import storage
+from common import storage
 from db import database
 
 

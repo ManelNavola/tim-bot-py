@@ -1,8 +1,9 @@
 from collections import UserDict
+from typing import Optional
 
 import utils
-from data.guild import Guild
-from data.user import User
+from guild_data.guild import Guild
+from user_data.user import User
 from db import database
 
 
@@ -42,7 +43,7 @@ USER_CACHE = Cache()
 GUILD_CACHE = Cache()
 
 
-def get_user(user_id: int, create: bool = True):
+def get_user(user_id: int, create: bool = True) -> Optional[User]:
     user = USER_CACHE.get(user_id)
     if not user:
         if create or database.INSTANCE.get_row_data("users", {
@@ -55,7 +56,7 @@ def get_user(user_id: int, create: bool = True):
     return user
 
 
-def get_guild(guild_id: int, create=True):
+def get_guild(guild_id: int, create=True) -> Optional[Guild]:
     guild = GUILD_CACHE.get(guild_id)
     if not guild:
         if create or database.INSTANCE.get_row_data("users", {

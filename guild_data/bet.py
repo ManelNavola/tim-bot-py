@@ -5,8 +5,8 @@ import random
 from discord_slash import SlashContext
 
 import utils
-from data import storage
-from data.user import User
+from common import storage
+from user_data.user import User
 from utils import DictRef, TimeSlot, TimeMetric
 
 

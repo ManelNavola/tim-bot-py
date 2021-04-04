@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from data.incremental import Incremental
+from common.incremental import Incremental
 from utils import DictRef, TimeSlot, TimeMetric
 
 

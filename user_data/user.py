@@ -1,6 +1,8 @@
 import utils
-from data import upgrades
-from data.incremental import Incremental
+from inventory_data.stat_being import StatBeing
+from inventory_data.stats import Stats
+from user_data import upgrades
+from common.incremental import Incremental
 from inventory_data.inventory import Inventory
 from db import database
 from db.row import Row
@@ -35,7 +37,10 @@ class User(Row):
         if len(fetched_items) > slots:
             # Too many item_data... log
             print(f"{user_id} exceeded {slots} items: {len(fetched_items)}!")
-        self.inventory = Inventory(DictRef(self._data, 'equipped'), slots, [
+        self.stat_being = StatBeing(DictRef(self._data, 'last_name'),
+                                    DictRef(self._data['persistent_stats'], Stats.HP.abv),
+                                    DictRef(self._data['persistent_stats'], Stats.MP.abv))
+        self.inventory = Inventory(DictRef(self._data, 'equipped'), self.stat_being, slots, [
             Item(item_data=items.parse_item_data_from_dict(item['data']), item_id=item['id']) for item in fetched_items
         ])
 
@@ -52,7 +57,11 @@ class User(Row):
             'garden_lvl': 1,  # smallint
             'inventory_lvl': 1,  # smallint
 
-            'equipped': []  # smallint[]
+            'equipped': [],  # smallint[]
+            'persistent_stats': {
+                Stats.HP.abv: Stats.HP.base,
+                Stats.MP.abv: Stats.MP.base
+            }
         }
 
     def update_name(self, name: str):
@@ -158,10 +167,13 @@ class User(Row):
             to_print.append(f"{utils.Emoji.BANK} Bank: {utils.print_money(self.get_bank())} "
                             f"/ {utils.print_money(self.get_bank_limit())} "
                             f"({self.print_garden_rate()} {utils.Emoji.GARDEN})")
-            to_print.append(self.inventory.print_inventory())
+            if checking:
+                to_print.append(f"{utils.Emoji.STATS} Stats: {self.inventory.stat_being.stat_sum}")
+            to_print.append(self.inventory.print())
         else:
             to_print.append(f"{utils.Emoji.MONEY} Money: {utils.print_money(self.get_money())}")
             to_print.append(f"{utils.Emoji.SCROLL} Avg level: {self.get_average_level()}")
+            to_print.append(f"{utils.Emoji.STATS} Stats: {self.inventory.stat_being.stat_sum}")
         return '\n'.join(to_print)
 
     def _update_bank_increment(self) -> None:

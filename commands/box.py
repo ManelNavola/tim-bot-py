@@ -1,6 +1,6 @@
 import utils
 from commands.command import Command
-from data.guild import Guild
+from guild_data.guild import Guild
 
 
 async def check(cmd: Command):

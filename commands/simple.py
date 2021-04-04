@@ -2,7 +2,7 @@ import discord
 
 import utils
 from commands.command import Command
-from data import storage
+from common import storage
 
 
 async def inv(cmd: Command):
@@ -22,7 +22,7 @@ async def check(cmd: Command, member: discord.Member):
     if not user:
         await cmd.send(f"This user hasn't interacted with me yet")
         return
-    await cmd.send(user.print_inventory(private=False, checking=True))
+    await cmd.send(user.print(private=False, checking=True))
 
 
 async def transfer(cmd: Command):
@@ -42,7 +42,7 @@ async def leaderboard(cmd: Command):
 
 
 async def stats(cmd: Command):
-    await cmd.send(cmd.user.inventory.print_stats())
+    await cmd.send(cmd.user.stat_being.print())
 
 
 async def equip(cmd: Command, index: int):

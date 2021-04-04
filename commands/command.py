@@ -1,9 +1,9 @@
 from discord_slash import SlashContext
 
 import utils
-from data import storage
-from data.guild import Guild
-from data.user import User
+from common import storage
+from guild_data.guild import Guild
+from user_data.user import User
 from db import database
 
 
@@ -60,6 +60,9 @@ async def call(ctx: SlashContext, func, *args):
 
     # CALL COMMAND
     await func(cmd, *args)  # Execute command
+
+    # AFTER UPDATES
+    cmd.guild.check_battle(cmd.user)
 
     # SAVE
     cmd.user.save()  # Save user data (if any changed)

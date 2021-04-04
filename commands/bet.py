@@ -1,6 +1,6 @@
 import utils
 from commands.command import Command
-from data.bet import Bet
+from guild_data.bet import Bet
 
 
 BET_INFO = f"Bet money with other users against the bot to win the Jackpot! " \
