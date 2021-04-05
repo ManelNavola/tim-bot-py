@@ -51,7 +51,7 @@ class MockCommand(Command):
             print("[X]", msg)
 
 
-async def call(ctx: SlashContext, func, *args):
+async def call(ctx: SlashContext, func, *args, ignore_battle: bool = False):
     cmd = Command(ctx)  # Load command
 
     # PREVIOUS UPDATES
@@ -59,6 +59,9 @@ async def call(ctx: SlashContext, func, *args):
     cmd.user.update_name(ctx.author.display_name)
 
     # CALL COMMAND
+    if (cmd.guild.get_battle(cmd.user) is not None) and (not ignore_battle):
+        await cmd.error("You cannot issue commands while in battle!")
+        return
     await func(cmd, *args)  # Execute command
 
     # SAVE

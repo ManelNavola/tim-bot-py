@@ -8,17 +8,13 @@ from discord_slash import SlashCommand, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
 import utils
-from commands import command, simple, crate, bet, upgrade, shop
+from commands import command, simple, crate, bet, upgrade, shop, messages
 from commands.command import Command
 from common import storage
 from db import database
 
-from guild_data.battle import Battle, BattleAction
-from guild_data.guild import Guild
-
 # Load database
 from inventory_data.entity import BotEntity
-from inventory_data.items import ItemType
 from inventory_data.stats import Stats
 from user_data.user import User
 
@@ -47,19 +43,7 @@ async def on_ready():
 @bot.event
 async def on_reaction_add(reaction: discord.Reaction, discord_user: discord.User):
     user: User = storage.get_user(discord_user.id)
-    guild: Guild = storage.get_guild(reaction.message.guild.id)
-    battle: Battle = guild.get_battle(user)
-    if battle is not None:
-        if reaction.message.id == battle.get_message_id():
-            item_type: Optional[ItemType] = ItemType.get_from_type_icon(f"\\{reaction.emoji}")
-            if item_type is not None:
-                if battle.action(user, BattleAction.ABILITY, item_type):
-                    await reaction.message.edit(content=battle.pop_log())
-            elif battle.action(user, Battle.BATTLE_ACTIONS.get(reaction.emoji)):
-                await reaction.message.edit(content=battle.pop_log())
-            await reaction.remove(user)
-        if battle.battle_ended:
-            guild.end_battle(battle)
+    await messages.on_reaction_add(user, discord_user, reaction.message.id, reaction)
 
 
 # Register commands
@@ -85,7 +69,7 @@ async def _inv(ctx):
 
 @slash.slash(name="post_inv", description="Post your inventory",
              guild_ids=registered_guild_ids)
-async def _inv(ctx):
+async def _post_inv(ctx):
     await command.call(ctx, simple.post_inv)
 
 
@@ -223,6 +207,12 @@ async def _stats(ctx):
     await command.call(ctx, simple.stats)
 
 
+@slash.slash(name="abilities", description="Check your abilities",
+             guild_ids=registered_guild_ids)
+async def _abilities(ctx):
+    await command.call(ctx, simple.abilities, ignore_battle=True)
+
+
 @slash.slash(name="equip", description="Equip an item",
              options=[
                  create_option(
@@ -247,14 +237,24 @@ async def _equip(ctx, number: int):
                  )
              ],
              guild_ids=registered_guild_ids)
-async def _stats(ctx, number: int):
+async def _unequip(ctx, number: int):
     await command.call(ctx, simple.unequip, number)
 
 
 # Register test command
 saved: Optional[User] = None
-fite_bot: bool = True
+fite_bot: bool = False
 if utils.is_test():
+    @slash.slash(name="rich", description="MAKE IT RAIN BABYYY", guild_ids=registered_guild_ids)
+    async def _rich(ctx):
+        async def rich(cmd: Command):
+            upg = cmd.user.upgrades['money_limit']
+            while not upg.is_max_level():
+                upg.level_up()
+            cmd.user.add_money(999999999999)
+            await cmd.send_hidden("yay")
+        await command.call(ctx, rich)
+
     @slash.slash(name="test", description="Quickly test anything!",
                  guild_ids=registered_guild_ids)
     async def _test(ctx):
@@ -264,12 +264,12 @@ if utils.is_test():
                 being_b = BotEntity('THE BEAST', 100, 200, {
                                        Stats.STR: 2
                                    })
-                await cmd.guild.start_battle(cmd.ctx, cmd.user.entity, being_b)
+                await cmd.guild.start_battle(cmd.ctx, cmd.user.entity, being_b, [cmd.user.id])
             else:
                 if saved is None:
                     saved = cmd.user
                 else:
-                    await cmd.guild.start_battle(cmd.ctx, cmd.user.entity, saved.entity, saved.id)
+                    await cmd.guild.start_battle(cmd.ctx, cmd.user.entity, saved.entity, [cmd.user.id, saved.id])
         await command.call(ctx, to_test)
 
 

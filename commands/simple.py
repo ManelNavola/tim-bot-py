@@ -42,14 +42,14 @@ async def leaderboard(cmd: Command):
 
 
 async def stats(cmd: Command):
-    await cmd.send(cmd.user.entity.print_detailed())
+    await cmd.send_hidden(cmd.user.entity.print_detailed())
 
 
 async def equip(cmd: Command, index: int):
     result = cmd.user.inventory.equip(index - 1)
     if result is not None:
         cmd.user.entity.update_items(cmd.user.inventory.get_equipment())
-        await cmd.send(f"Equipped {result}")
+        await cmd.send_hidden(f"Equipped {result}")
     else:
         await cmd.error(f"Invalid item index!")
 
@@ -58,6 +58,15 @@ async def unequip(cmd: Command, index: int):
     result = cmd.user.inventory.unequip(index - 1)
     if result is not None:
         cmd.user.entity.update_items(cmd.user.inventory.get_equipment())
-        await cmd.send(f"Unequipped {result}")
+        await cmd.send_hidden(f"Unequipped {result}")
     else:
         await cmd.error(f"Invalid item index!")
+
+
+async def abilities(cmd: Command):
+    tp = []
+    for item in cmd.user.inventory.get_equipment():
+        if item.data.ability is not None:
+            tp.append(f"{item.data.get_description().type.get_type_icon()} {item.data.ability.get_name()}: "
+                      f"{item.data.ability.get_effect()}")
+    await cmd.send_hidden('\n'.join(tp))

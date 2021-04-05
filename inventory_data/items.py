@@ -26,11 +26,11 @@ ITEM_GENERATION_DATA: dict[str, dict[RarityInstance, Any]] = {
         Rarity.LEGENDARY: (14, 16)
     },
     'ability_chance': {
-        Rarity.COMMON: 0,
-        Rarity.UNCOMMON: 0.05,
-        Rarity.RARE: 0.1,
-        Rarity.EPIC: 0.2,
-        Rarity.LEGENDARY: 0.3
+        Rarity.COMMON: 0 + 1,
+        Rarity.UNCOMMON: 0.05 + 1,
+        Rarity.RARE: 0.1 + 1,
+        Rarity.EPIC: 0.2 + 1,
+        Rarity.LEGENDARY: 0.3 + 1
     }
 }
 
@@ -39,34 +39,37 @@ ABILITY_TIER_CHANCES = [100, 40, 8]
 
 @unique
 class ItemType(Enum):
+    _ignore_ = ['_type_icons']
     BOOT = 0
     CHEST = 1
     HELMET = 2
     WEAPON = 3
     SECONDARY = 4
-    _INDEX = [BOOT, CHEST, HELMET, WEAPON, SECONDARY]
+    _type_icons = {}
 
-    TYPE_ICONS = {
-        BOOT: utils.Emoji.BOOTS,
-        CHEST: utils.Emoji.CHEST_PLATE,
-        HELMET: utils.Emoji.HELMET,
-        WEAPON: utils.Emoji.WEAPON,
-        SECONDARY: utils.Emoji.SHIELD
-    }
+    @staticmethod
+    def get_type_icons_dict() -> dict['ItemType', str]:
+        return {
+            ItemType.BOOT: utils.Emoji.BOOTS,
+            ItemType.CHEST: utils.Emoji.CHEST_PLATE,
+            ItemType.HELMET: utils.Emoji.HELMET,
+            ItemType.WEAPON: utils.Emoji.WEAPON,
+            ItemType.SECONDARY: utils.Emoji.SHIELD
+        }
 
     @staticmethod
     def get_from_type_icon(icon: str) -> Optional['ItemType']:
-        for k, v in ItemType.TYPE_ICONS.value.items():
+        for k, v in ItemType.get_type_icons_dict().items():
             if v.startswith(icon):
-                return ItemType(k)
+                return k
         return None
-
-    def get_type_icon(self):
-        return self.TYPE_ICONS.value[self.value]
 
     @staticmethod
     def get_all() -> list['ItemType']:
-        return [ItemType(x) for x in ItemType._INDEX.value]
+        return list(ItemType.get_type_icons_dict().keys())
+
+    def get_type_icon(self) -> str:
+        return ItemType.get_type_icons_dict()[self]
 
 
 class ItemDescription(Slots):
@@ -80,14 +83,23 @@ class ItemDescription(Slots):
 
 
 _ITEMS: list[ItemDescription] = [
+    # Boots
     ItemDescription(0, ItemType.BOOT, "Leather Boots", {Stats.SPD: 2, Stats.EVA: 1}),
+    ItemDescription(5, ItemType.BOOT, "Sandals", {Stats.SPD: 1, Stats.EVA: 2}, Ability.FLEE),
+
+    # Chest
     ItemDescription(1, ItemType.CHEST, "Breastplate", {Stats.HP: 1, Stats.DEF: 2}),
+
+    # Helmet
     ItemDescription(2, ItemType.HELMET, "Metal Helmet", {Stats.HP: 1, Stats.DEF: 1, Stats.EVA: 1}),
+
+    # Weapon
     ItemDescription(3, ItemType.WEAPON, "Iron Sword", {Stats.STR: 1, Stats.CONT: 1}),
-    ItemDescription(4, ItemType.SECONDARY, "Wooden Shield", {Stats.DEF: 1, Stats.CONT: 1}, Ability.PROTECTION),
-    ItemDescription(5, ItemType.SECONDARY, "Sandals", {Stats.SPD: 1, Stats.EVA: 2}, Ability.FLEE),
     ItemDescription(6, ItemType.WEAPON, "Dagger", {Stats.STR: 1, Stats.SPD: 1, Stats.CRIT: 2}),
     ItemDescription(7, ItemType.WEAPON, "Metal Axe", {Stats.STR: 1, Stats.STUN: 1}, Ability.BLUNDER),
+
+    # Secondary
+    ItemDescription(4, ItemType.SECONDARY, "Wooden Shield", {Stats.DEF: 1, Stats.CONT: 1}, Ability.PROTECTION),
 ]
 
 INDEX_TO_ITEM: dict[int, ItemDescription] = {item.id: item for item in _ITEMS}
@@ -121,7 +133,7 @@ def parse_item_data_from_dict(dictionary: dict):
     if ability_d is not None:
         ability = AbilityInstance(decode=ability_d)
     return ItemData(Rarity.get_by_index(dictionary['rarity']), dictionary['desc_id'],
-                    {Stats.get_by_name(k): v for k, v in dictionary['stats'].items()},
+                    {Stats.get_by_abv(k): v for k, v in dictionary['stats'].items()},
                     price_modifier=price_modifier, durability=durability, ability=ability)
 
 
@@ -136,7 +148,7 @@ class Item(Slots):
     def get_row_data(self):
         row_data = {
             'desc_id': self.data.desc_id,
-            'stats': {k.name: v for k, v in self.data.stats.items()},
+            'stats': {k.abv: v for k, v in self.data.stats.items()},
             'rarity': self.data.rarity.id,
         }
         if self.data.durability is not None:

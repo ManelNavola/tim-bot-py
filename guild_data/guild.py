@@ -7,7 +7,7 @@ from guild_data.battle import Battle
 from guild_data.bet import Bet
 from common.incremental import Incremental
 from guild_data.shop import Shop
-from inventory_data.entity import Entity
+from inventory_data.entity import Entity, UserEntity
 from user_data.user import User
 from db import database
 from db.row import Row
@@ -101,18 +101,16 @@ class Guild(Row):
         else:
             return f"{self._box.print_rate()} for {utils.print_time(diff)}"
 
-    async def start_battle(self, ctx: SlashContext, a: Entity, b: Entity, user_b_id: Optional[int] = None) -> None:
-        battle: Battle = Battle(a, b, user_b_id)
+    async def start_battle(self, ctx: SlashContext, a: UserEntity, b: Entity, user_list: list[int]) -> None:
+        battle: Battle = Battle(a, b)
         self.stat_being_to_battle[a] = battle
         self.stat_being_to_battle[b] = battle
-        log = f"{utils.Emoji.BATTLE}️ Battle between {a.get_name()} and {b.get_name()}!\n" + battle.pop_log()
-        if len(log) > 0:
-            await ctx.send(log)
-            await battle.init(ctx.message)
+        await ctx.send("BATTLE START!")
+        await battle.init(self, ctx.message, user_list)
 
     def end_battle(self, battle: Battle) -> None:
-        a = battle.entity_a
-        b = battle.entity_b
+        a = battle.battle_entity_a.entity
+        b = battle.battle_entity_b.entity
         del self.stat_being_to_battle[a]
         del self.stat_being_to_battle[b]
 

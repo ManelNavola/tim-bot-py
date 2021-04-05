@@ -9,6 +9,14 @@ from inventory_data.items import Item
 from utils import DictRef, TimeSlot, TimeMetric
 
 
+class ItemPurchase:
+    def __init__(self):
+        self.reload_shop: bool = False
+        self.item: Optional[Item] = None
+        self.price: Optional[int] = None
+        self.must_equip: bool = False
+
+
 class Shop:
     SHOP_DURATION = TimeSlot(TimeMetric.HOUR, 1)
     SHOP_ITEMS = 4
@@ -59,31 +67,38 @@ class Shop:
                                   f" - {utils.print_money(item.get_price())} {utils.Emoji.DECREASE}")
         return '\n'.join(to_ret)
 
-    def purchase_item(self, user: User, item_index: int) -> (bool, Optional[int]):
+    def purchase_item(self, user: User, item_index: int) -> ItemPurchase:
+        ip: ItemPurchase = ItemPurchase()
         self._check_shop()
 
         if not self._last_valid_checks[item_index]:
-            return False, -1
+            ip.reload_shop = True
+            return ip
 
         item = self._shop_items[item_index]
         if user.inventory.get_empty_slots() > 0:
             if user.remove_money(item.get_price()):
+                not_had: bool = (user.inventory.get_first(item.data.get_description().type) is None)
                 items.transfer_shop(self._guild_id, user.id, item.id)
                 del self._shop_items[item_index]
                 item.durability = 100
                 user.inventory.add_item(item)
                 self._last_valid_checks[item_index] = None
                 self._restock_shop()
-                return True, item.print()
+                ip.item = item
+                ip.must_equip = not_had
+                return ip
             else:
-                return False, item.get_price()
+                ip.price = item.get_price()
+                return ip
         else:
-            return False, None
+            return ip
 
     def _fetch_shop(self):
         database.INSTANCE.execute(f"SELECT I.* FROM guilds G "
-                                  f"INNER JOIN guild_items GI ON G.id = GI.guild_id "
+                                  f"INNER JOIN guild_items GI ON GI.guild_id = G.id "
                                   f"INNER JOIN items I ON I.id = GI.item_id "
+                                  f"WHERE G.id = {self._guild_id} "
                                   f"LIMIT {Shop.SHOP_ITEMS}")
         found_items = database.INSTANCE.get_cursor().fetchall()
         self._shop_items = [

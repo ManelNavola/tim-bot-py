@@ -2,6 +2,7 @@ from typing import Optional
 
 from autoslot import Slots
 
+import utils
 from inventory_data.stats import StatInstance, Stats
 
 
@@ -40,7 +41,22 @@ class AbilityInstance(Slots):
             self.desc = Ability.get_by_index(decode[0])
             self.tier = decode[1]
 
-    def get(self):
+    def get_effect(self) -> str:
+        if self.get().multiplier != 1:
+            if self.get().other:
+                return f"x{self.get().multiplier:.2f} {self.get().stat.abv} on opponent for {self.get().duration} turns"
+            else:
+                return f"x{self.get().multiplier:.2f} {self.get().stat.abv} for {self.get().duration} turns"
+        elif self.get().adder != 0:
+            if self.get().other:
+                return f"+{self.get().adder} {self.get().stat.abv} on opponent for {self.get().duration} turns"
+            else:
+                return f"+{self.get().adder} {self.get().stat.abv} for {self.get().duration} turns"
+
+    def get_name(self) -> str:
+        return f"{self.desc.get_name()} {utils.NUMERAL_TO_ROMAN[self.tier + 1]}"
+
+    def get(self) -> AbilityTier:
         return self.desc.get_tier(self.tier)
 
     def encode(self) -> tuple[int, int]:
@@ -76,9 +92,14 @@ class Ability:
     PROTECTION: AbilityDesc = PROTECTION
     BLUNDER: AbilityDesc = BLUNDER
     FLEE: AbilityDesc = FLEE
-    _INDEX: list[AbilityDesc] = [PROTECTION, BLUNDER, FLEE, CURSE]
-    _ID_INDEX: dict[int, AbilityDesc] = {ai.id: ai for ai in _INDEX}
+    CURSE: AbilityDesc = CURSE
+
+    @staticmethod
+    def get_all() -> list[AbilityDesc]:
+        al: list[AbilityDesc] = [PROTECTION, BLUNDER, FLEE, CURSE]
+        return al
 
     @staticmethod
     def get_by_index(index: int) -> AbilityDesc:
-        return Ability._ID_INDEX[index]
+        d: dict[int, AbilityDesc] = {ai.id: ai for ai in Ability.get_all()}
+        return d[index]

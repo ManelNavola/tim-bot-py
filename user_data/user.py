@@ -31,19 +31,20 @@ class User(Row):
         # Fill inventory
         slots = self.upgrades['inventory'].get_value()
         database.INSTANCE.execute(f"SELECT I.* FROM users U "
-                                  f"INNER JOIN user_items UI ON U.id = UI.user_id "
-                                  f"INNER JOIN items I ON I.id = UI.item_id")
+                                  f"INNER JOIN user_items UI ON UI.user_id = U.id "
+                                  f"INNER JOIN items I ON I.id = UI.item_id "
+                                  f"WHERE U.id = {self.id} "
+                                  f"LIMIT {self.upgrades['inventory'].get_value()}")
         fetched_items = database.INSTANCE.get_cursor().fetchall()
         if len(fetched_items) > slots:
             # Too many item_data... log
             print(f"{user_id} exceeded {slots} items: {len(fetched_items)}!")
-        self.inventory = Inventory(DictRef(self._data, 'equipped'), slots, [
-            Item(item_data=items.parse_item_data_from_dict(item['data']), item_id=item['id']) for item in fetched_items
-        ])
         self.entity: UserEntity = UserEntity(DictRef(self._data, 'last_name'),
                                              DictRef(self._data['persistent_stats'], Stats.HP.abv),
                                              DictRef(self._data['persistent_stats'], Stats.MP.abv))
-        self.entity.update_items(self.inventory.get_equipment())
+        self.inventory = Inventory(DictRef(self._data, 'equipped'), slots, [
+            Item(item_data=items.parse_item_data_from_dict(item['data']), item_id=item['id']) for item in fetched_items
+        ], self.entity)
 
         # TODO: remove
         self._data['persistent_stats'][Stats.HP.abv] = 20

@@ -25,30 +25,28 @@ class StatInstance(Slots):
         else:
             tp.append(f"{self.icon} {self.abv}: ")
 
-        if persistent_value:
+        if persistent_value is not None:
             if self.base > 0:
-                value -= self.base
                 if value == 0:
                     tp.append(f"{persistent_value}/{self.get_value(value)}")
                 else:
                     if short:
                         tp.append(f"{persistent_value}/{self.get_value(value)}")
                     else:
-                        tp.append(f"{persistent_value}/{self.get_value(value)} (+{self.get_value(value) - self.base})")
+                        tp.append(f"{persistent_value}/{self.get_value(value)} (+{self.get_value(value - self.base)})")
             else:
                 tp.append(f"{persistent_value} +{self.get_value(value)}")
         else:
             if self.base > 0:
-                value -= self.base
                 if value == 0:
                     tp.append(f"{self.base}")
                 else:
                     if short:
-                        tp.append(f"{self.get_value(value)})")
+                        tp.append(f"{self.get_value(value)}")
                     else:
-                        tp.append(f"{self.base} (+{self.get_value(value) - self.base})")
+                        tp.append(f"{self.base} (+{self.get_value(value - self.base)})")
             else:
-                tp.append(f"+{self.get_value(value)}")
+                tp.append(f"{self.get_value(value)}")
         return ''.join(tp)
 
 
@@ -67,22 +65,16 @@ class StatInstanceChance(StatInstance):
         else:
             tp.append(f"{self.icon} {self.abv}: ")
 
-        if persistent_value:
-            if self.base > 0:
-                if value == 0:
-                    tp.append(f"{persistent_value:.0%}/{self.base:.0%}")
-                else:
-                    tp.append(f"{persistent_value:.0%}/{self.base:.0%} (+{(self.get_value(value) - self.base):.0%})")
+        if self.base > 0:
+            if value == 0:
+                tp.append(f"{self.base}")
             else:
-                tp.append(f"{persistent_value:.0%} +{self.get_value(value):.0%}")
+                if short:
+                    tp.append(f"{self.get_value(value):.0%}")
+                else:
+                    tp.append(f"{self.base:.0%} (+{self.get_value(value - self.base):.0%})")
         else:
-            if self.base > 0:
-                if value == 0:
-                    tp.append(f"{self.base:.0%}")
-                else:
-                    tp.append(f"{self.base:.0%} (+{(self.get_value(value) - self.base):.0%})")
-            else:
-                tp.append(f"+{self.get_value(value):.0%}")
+            tp.append(f"{self.get_value(value):.0%}")
         return ''.join(tp)
 
 
@@ -148,13 +140,15 @@ class Stats:
     CRIT: StatInstance = CRIT()
     STUN: StatInstance = STUN()
     VAMP: StatInstance = VAMP()
-    _LIST_INDEX: list[StatInstance] = [HP, MP, STR, DEF, SPD, EVA, CONT, CRIT, STUN, VAMP]
-    _INDEX: dict[str, StatInstance] = {x.name: x for x in _LIST_INDEX}
 
     @staticmethod
-    def get_by_name(name: str) -> StatInstance:
-        return Stats._INDEX[name]
+    def get_by_abv(name: str) -> StatInstance:
+        stat_dict: dict = {x.abv: x for x in Stats.get_all()}
+        return stat_dict[name]
 
     @staticmethod
     def get_all() -> list[StatInstance]:
-        return Stats._LIST_INDEX
+        stat_list: list[StatInstance] = [Stats.HP, Stats.MP, Stats.STR, Stats.DEF, Stats.SPD,
+                                         Stats.EVA, Stats.CONT, Stats.CRIT, Stats.STUN,
+                                         Stats.VAMP]
+        return stat_list

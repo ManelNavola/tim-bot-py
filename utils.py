@@ -14,6 +14,10 @@ class DictRef(Slots):
     def get(self):
         return self.dictionary[self.key]
 
+    def get_update(self):
+        self._update()
+        return self.dictionary[self.key]
+
     def __getitem__(self, key):
         return self.dictionary[self.key][key]
 
@@ -22,9 +26,9 @@ class DictRef(Slots):
 
     def __setitem__(self, key, value):
         self.dictionary[self.key][key] = value
-        self.update()
+        self._update()
 
-    def update(self):
+    def _update(self):
         self.set(self.get())
 
 
@@ -75,8 +79,6 @@ class TimeSlot(Slots):
         return self.metric.seconds(self.amount)
 
 
-# @unique
-# class Emoji(Enum):
 class Emoji:
     # User profile
     MONEY = '\💵'
