@@ -1,6 +1,3 @@
-from typing import Optional, Union
-
-from discord import Message
 from discord_slash import SlashContext
 
 import utils

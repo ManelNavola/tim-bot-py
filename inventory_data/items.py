@@ -1,15 +1,16 @@
 from enum import Enum, unique
 import random
-from typing import Optional
+from typing import Optional, Any
 
 from autoslot import Slots
 
 import utils
+from inventory_data.abilities import AbilityInstance, AbilityDesc, Ability
 from inventory_data.rarity import Rarity, RarityInstance
 from db import database
 from inventory_data.stats import Stats, StatInstance
 
-ITEM_GENERATION_DATA: dict[str, dict[RarityInstance, tuple[int, int]]] = {
+ITEM_GENERATION_DATA: dict[str, dict[RarityInstance, Any]] = {
     'stat_number': {
         Rarity.COMMON: (1, 1),
         Rarity.UNCOMMON: (2, 2),
@@ -23,8 +24,17 @@ ITEM_GENERATION_DATA: dict[str, dict[RarityInstance, tuple[int, int]]] = {
         Rarity.RARE: (8, 10),
         Rarity.EPIC: (11, 13),
         Rarity.LEGENDARY: (14, 16)
+    },
+    'ability_chance': {
+        Rarity.COMMON: 0,
+        Rarity.UNCOMMON: 0.05,
+        Rarity.RARE: 0.1,
+        Rarity.EPIC: 0.2,
+        Rarity.LEGENDARY: 0.3
     }
 }
+
+ABILITY_TIER_CHANCES = [100, 40, 8]
 
 
 @unique
@@ -34,6 +44,7 @@ class ItemType(Enum):
     HELMET = 2
     WEAPON = 3
     SECONDARY = 4
+    _INDEX = [BOOT, CHEST, HELMET, WEAPON, SECONDARY]
 
     TYPE_ICONS = {
         BOOT: utils.Emoji.BOOTS,
@@ -43,46 +54,60 @@ class ItemType(Enum):
         SECONDARY: utils.Emoji.SHIELD
     }
 
+    @staticmethod
+    def get_from_type_icon(icon: str) -> Optional['ItemType']:
+        for k, v in ItemType.TYPE_ICONS.value.items():
+            if v.startswith(icon):
+                return ItemType(k)
+        return None
+
     def get_type_icon(self):
         return self.TYPE_ICONS.value[self.value]
 
     @staticmethod
-    def get_length() -> int:
-        return 5
+    def get_all() -> list['ItemType']:
+        return [ItemType(x) for x in ItemType._INDEX.value]
 
 
 class ItemDescription(Slots):
-    def __init__(self, item_id: int, item_type: ItemType, name: str, stat_weights: dict[StatInstance, int]):
+    def __init__(self, item_id: int, item_type: ItemType, name: str, stat_weights: dict[StatInstance, int],
+                 ability: Optional[AbilityDesc] = None):
         self.id = item_id
         self.type: ItemType = item_type
         self.name: str = name
         self.stat_weights: dict[StatInstance, int] = stat_weights
+        self.ability: Optional[AbilityDesc] = ability
 
 
 _ITEMS: list[ItemDescription] = [
     ItemDescription(0, ItemType.BOOT, "Leather Boots", {Stats.SPD: 2, Stats.EVA: 1}),
     ItemDescription(1, ItemType.CHEST, "Breastplate", {Stats.HP: 1, Stats.DEF: 2}),
     ItemDescription(2, ItemType.HELMET, "Metal Helmet", {Stats.HP: 1, Stats.DEF: 1, Stats.EVA: 1}),
-    ItemDescription(3, ItemType.WEAPON, "Iron Sword", {Stats.STR: 1, Stats.VAMP: 1}),
-    ItemDescription(4, ItemType.SECONDARY, "Wooden Shield", {Stats.DEF: 1, Stats.CONT: 1})
+    ItemDescription(3, ItemType.WEAPON, "Iron Sword", {Stats.STR: 1, Stats.CONT: 1}),
+    ItemDescription(4, ItemType.SECONDARY, "Wooden Shield", {Stats.DEF: 1, Stats.CONT: 1}, Ability.PROTECTION),
+    ItemDescription(5, ItemType.SECONDARY, "Sandals", {Stats.SPD: 1, Stats.EVA: 2}, Ability.FLEE),
+    ItemDescription(6, ItemType.WEAPON, "Dagger", {Stats.STR: 1, Stats.SPD: 1, Stats.CRIT: 2}),
+    ItemDescription(7, ItemType.WEAPON, "Metal Axe", {Stats.STR: 1, Stats.STUN: 1}, Ability.BLUNDER),
 ]
 
 INDEX_TO_ITEM: dict[int, ItemDescription] = {item.id: item for item in _ITEMS}
 
-TYPE_TO_ITEMS: dict[ItemType, list[ItemDescription]] = {ItemType(i): [] for i in range(ItemType.get_length())}
+TYPE_TO_ITEMS: dict[ItemType, list[ItemDescription]] = {it: [] for it in ItemType.get_all()}
 
 for item in _ITEMS:
     TYPE_TO_ITEMS[item.type].append(item)
 
 
 class ItemData(Slots):
-    def __init__(self, rarity: RarityInstance, desc_id: int, stats: dict[StatInstance, int], price_modifier: float = 1,
-                 durability: int = 100):
+    def __init__(self, rarity: RarityInstance, desc_id: int, stats: dict[StatInstance, int],
+                 price_modifier: Optional[float] = None, durability: Optional[int] = None,
+                 ability: Optional[AbilityInstance] = None):
         self.rarity: RarityInstance = rarity
         self.stats: dict[StatInstance, int] = stats
         self.desc_id: int = desc_id
-        self.price_modifier: float = price_modifier
-        self.durability: int = durability
+        self.price_modifier: Optional[float] = price_modifier
+        self.durability: Optional[int] = durability
+        self.ability: Optional[AbilityInstance] = ability
 
     def get_description(self) -> ItemDescription:
         return INDEX_TO_ITEM[self.desc_id]
@@ -91,8 +116,13 @@ class ItemData(Slots):
 def parse_item_data_from_dict(dictionary: dict):
     price_modifier = dictionary.get('price')
     durability = dictionary.get('durability')
+    ability: Optional[AbilityInstance] = None
+    ability_d = dictionary.get('ability')
+    if ability_d is not None:
+        ability = AbilityInstance(decode=ability_d)
     return ItemData(Rarity.get_by_index(dictionary['rarity']), dictionary['desc_id'],
-                    {Stats.get_by_name(k): v for k, v in dictionary['stats'].items()}, price_modifier, durability)
+                    {Stats.get_by_name(k): v for k, v in dictionary['stats'].items()},
+                    price_modifier=price_modifier, durability=durability, ability=ability)
 
 
 class Item(Slots):
@@ -108,9 +138,13 @@ class Item(Slots):
             'desc_id': self.data.desc_id,
             'stats': {k.name: v for k, v in self.data.stats.items()},
             'rarity': self.data.rarity.id,
-            'price': self.data.price_modifier,
-            'durability': self.data.durability
         }
+        if self.data.durability is not None:
+            row_data['durability'] = self.data.durability
+        if self.data.price_modifier is not None:
+            row_data['price'] = self.data.price_modifier
+        if self.data.ability is not None:
+            row_data['ability'] = self.data.ability.encode()
         return row_data
 
     def get_price(self) -> int:
@@ -121,18 +155,31 @@ class Item(Slots):
     def _calculate_price(self) -> None:
         stat_sum = sum([v * (k.cost + 1) for k, v in self.data.stats.items()])
         rarity = self.data.rarity.id + 1
-        before_round = (pow(stat_sum, 0.9) * pow(rarity, 1.1) * 10) * self.data.price_modifier
+        price_mod = 1
+        if self.data.price_modifier is not None:
+            price_mod = self.data.price_modifier
+
+        ab_mod = 1
+        if self.data.ability is not None:
+            ab_mod = 1.5
+
+        before_round = (pow(stat_sum, 0.9) * pow(rarity, 1.1) * 10) * price_mod * ab_mod
         self._price = round(before_round / 10) * 10
 
     def print(self) -> str:
         stats = ', '.join([f"+{v} {k.abv}" for k, v in self.data.stats.items()])
         item_desc: ItemDescription = self.data.get_description()
-        return f"{item_desc.type.get_type_icon()}{item_desc.name} {self.data.rarity.name} [{stats}]"
+        if self.data.ability is None:
+            return f"{item_desc.type.get_type_icon()}{item_desc.name} {self.data.rarity.name} [{stats}]"
+        else:
+            return f"{item_desc.type.get_type_icon()}{item_desc.name} {self.data.rarity.name} [{stats}]" \
+                   f" | Ability: {self.data.ability.desc.get_name()} " \
+                   f"{utils.NUMERAL_TO_ROMAN[self.data.ability.tier + 1]}"
 
 
-def get_random_item(item_type: Optional[ItemType] = None, rarity: Optional[RarityInstance] = None):
+def get_random_shop_item_data(item_type: Optional[ItemType] = None, rarity: Optional[RarityInstance] = None):
     if item_type is None:
-        item_type = ItemType(random.randrange(0, ItemType.get_length()))
+        item_type = random.choice(ItemType.get_all())
 
     if rarity is None:
         rarity = Rarity.get_random()
@@ -163,7 +210,15 @@ def get_random_item(item_type: Optional[ItemType] = None, rarity: Optional[Rarit
         chosen_stats_amounts[stat] = chosen_stats_amounts.get(stat, 0) + 1
         stat_sum -= 1
 
-    return ItemData(rarity, chosen_desc.id, chosen_stats_amounts)
+    ability: Optional[AbilityInstance] = None
+    if (chosen_desc.ability is not None) and random.random() < ITEM_GENERATION_DATA['ability_chance'][rarity]:
+        pop: list[int] = [0, 1, 2][:chosen_desc.ability.get_tier_amount()]
+        wei: list[int] = ABILITY_TIER_CHANCES[:chosen_desc.ability.get_tier_amount()]
+        chosen_tier: int = random.choices(pop, weights=wei, k=1)[0]
+        ability = AbilityInstance(chosen_desc.ability, chosen_tier)
+        print("AB:", ability.encode())
+
+    return ItemData(rarity, chosen_desc.id, chosen_stats_amounts, ability=ability)
 
 
 def create_guild_item(guild_id: int, item_data: ItemData) -> Item:
@@ -184,6 +239,6 @@ def delete_user_item(user_id: int, item_id: int) -> None:
     database.INSTANCE.delete_row("items", dict(id=item_id))
 
 
-def transfer(guild_id: int, user_id: int, item_id: int) -> None:
+def transfer_shop(guild_id: int, user_id: int, item_id: int) -> None:
     database.INSTANCE.delete_row("guild_items", dict(guild_id=guild_id, item_id=item_id))
     database.INSTANCE.insert_data("user_items", dict(user_id=user_id, item_id=item_id))

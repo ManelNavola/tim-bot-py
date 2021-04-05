@@ -133,6 +133,11 @@ class Emoji:
     BATTLE = '\⚔️'
 
 
+NUMERAL_TO_ROMAN: dict[int, str] = {
+    1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V', 6: 'VI'
+}
+
+
 def now():
     return int(calendar.timegm(time.gmtime()))
 

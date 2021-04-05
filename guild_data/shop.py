@@ -1,4 +1,3 @@
-import math
 import random
 from typing import Optional
 
@@ -19,7 +18,7 @@ class Shop:
         self._guild_id: int = guild_id
         self._shop_time: DictRef = shop_time
         self._shop_items: list[Item] = []
-        self.last_valid_check: Optional[int] = None
+        self._last_valid_checks: list[Optional[bool]] = [False] * Shop.SHOP_ITEMS
 
     def _check_shop(self):
         diff = utils.now() - self._shop_time.get()
@@ -41,13 +40,14 @@ class Shop:
     def print(self) -> str:
         self._check_shop()
         diff = utils.now() - self._shop_time.get()
-        self.last_valid_check = utils.now()
+        for i in range(len(self._last_valid_checks)):
+            self._last_valid_checks[i] = True
         to_ret = [f"{utils.Emoji.SHOP} Shop item_data (Restocks in "
                   f"{utils.print_time(Shop.SHOP_DURATION.seconds() - diff)}"
                   f"{utils.Emoji.CLOCK})"]
         for i in range(len(self._shop_items)):
             item = self._shop_items[i]
-            if math.isclose(item.data.price_modifier, 1):
+            if item.data.price_modifier is None:
                 to_ret.append(f"{i + 1}: {item.print()}"
                               f" - {utils.print_money(item.get_price())}")
             else:
@@ -62,16 +62,17 @@ class Shop:
     def purchase_item(self, user: User, item_index: int) -> (bool, Optional[int]):
         self._check_shop()
 
-        if not self.last_valid_check:
+        if not self._last_valid_checks[item_index]:
             return False, -1
 
         item = self._shop_items[item_index]
         if user.inventory.get_empty_slots() > 0:
             if user.remove_money(item.get_price()):
-                items.transfer(self._guild_id, user.id, item.id)
+                items.transfer_shop(self._guild_id, user.id, item.id)
                 del self._shop_items[item_index]
+                item.durability = 100
                 user.inventory.add_item(item)
-                self.last_valid_check = None
+                self._last_valid_checks[item_index] = None
                 self._restock_shop()
                 return True, item.print()
             else:
@@ -99,12 +100,13 @@ class Shop:
     def _restock_shop(self) -> bool:
         restocked = 0
         for i in range(len(self._shop_items), Shop.SHOP_ITEMS):
-            item: Item = items.create_guild_item(self._guild_id, items.get_random_item())
+            item: Item = items.create_guild_item(self._guild_id, items.get_random_shop_item_data())
             if random.random() < 0.2:
                 if random.random() < 0.5:
                     item.data.price_modifier = 0.75
                 else:
                     item.data.price_modifier = 1.25
+            self._last_valid_checks[i] = None
             self._shop_items.append(item)
             restocked += 1
         if restocked > 0:

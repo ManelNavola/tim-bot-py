@@ -13,10 +13,13 @@ from commands.command import Command
 from common import storage
 from db import database
 
-from guild_data.battle import Battle
+from guild_data.battle import Battle, BattleAction
 from guild_data.guild import Guild
 
 # Load database
+from inventory_data.entity import BotEntity
+from inventory_data.items import ItemType
+from inventory_data.stats import Stats
 from user_data.user import User
 
 registered_guild_ids = None
@@ -48,7 +51,11 @@ async def on_reaction_add(reaction: discord.Reaction, discord_user: discord.User
     battle: Battle = guild.get_battle(user)
     if battle is not None:
         if reaction.message.id == battle.get_message_id():
-            if battle.action(user, Battle.BATTLE_ACTIONS.get(reaction.emoji)):
+            item_type: Optional[ItemType] = ItemType.get_from_type_icon(f"\\{reaction.emoji}")
+            if item_type is not None:
+                if battle.action(user, BattleAction.ABILITY, item_type):
+                    await reaction.message.edit(content=battle.pop_log())
+            elif battle.action(user, Battle.BATTLE_ACTIONS.get(reaction.emoji)):
                 await reaction.message.edit(content=battle.pop_log())
             await reaction.remove(user)
         if battle.battle_ended:
@@ -246,19 +253,23 @@ async def _stats(ctx, number: int):
 
 # Register test command
 saved: Optional[User] = None
+fite_bot: bool = True
 if utils.is_test():
     @slash.slash(name="test", description="Quickly test anything!",
                  guild_ids=registered_guild_ids)
     async def _test(ctx):
         async def to_test(cmd: Command):
-            global saved
-            # being_b = BotEntity('THE BEAST', 100, 200, {
-            #                        Stats.STR: 2
-            #                    })
-            if saved is None:
-                saved = cmd.user
+            global saved, fite_bot
+            if fite_bot:
+                being_b = BotEntity('THE BEAST', 100, 200, {
+                                       Stats.STR: 2
+                                   })
+                await cmd.guild.start_battle(cmd.ctx, cmd.user.entity, being_b)
             else:
-                await cmd.guild.start_battle(cmd.ctx, cmd.user.entity, saved.entity, saved.id)
+                if saved is None:
+                    saved = cmd.user
+                else:
+                    await cmd.guild.start_battle(cmd.ctx, cmd.user.entity, saved.entity, saved.id)
         await command.call(ctx, to_test)
 
 

@@ -105,7 +105,7 @@ class Guild(Row):
         battle: Battle = Battle(a, b, user_b_id)
         self.stat_being_to_battle[a] = battle
         self.stat_being_to_battle[b] = battle
-        log = f"⚔️ Battle between {a.get_name()} and {b.get_name()}!\n" + battle.pop_log()
+        log = f"{utils.Emoji.BATTLE}️ Battle between {a.get_name()} and {b.get_name()}!\n" + battle.pop_log()
         if len(log) > 0:
             await ctx.send(log)
             await battle.init(ctx.message)

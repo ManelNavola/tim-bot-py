@@ -45,6 +45,9 @@ class User(Row):
                                              DictRef(self._data['persistent_stats'], Stats.MP.abv))
         self.entity.update_items(self.inventory.get_equipment())
 
+        # TODO: remove
+        self._data['persistent_stats'][Stats.HP.abv] = 20
+
     def load_defaults(self):
         return {
             'money': 10,  # bigint
@@ -156,7 +159,7 @@ class User(Row):
         return self.get_money_space() + self.get_bank_space()
 
     def get_average_level(self) -> int:
-        return int(round(sum([x.get_level() + 1 for x in self.upgrades.values()]) / len(self.upgrades.values())))
+        return round(sum([x.get_level() + 1 for x in self.upgrades.values()]) / len(self.upgrades.values()))
 
     def print(self, private=True, checking=False) -> str:
         to_print = []
