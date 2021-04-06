@@ -13,7 +13,7 @@ class Inventory:
         self._equipped_ref: DictRef = equipped_ref
         self.limit: int = inv_limit
         self.user_entity: UserEntity = user_entity
-        self.user_entity.update_items(self.get_equipment())
+        self.user_entity.update_equipment(self.get_equipment())
 
     def get_first(self, item_type: ItemType) -> Optional[Item]:
         for i in range(len(self.items)):
@@ -25,12 +25,25 @@ class Inventory:
     def sell(self, index: int, user_id: int) -> tuple[bool, Any]:
         if index < 0 or index >= len(self.items):
             return False, True
-        if index in self._equipped_ref.get():
-            return False, False
         item = self.items[index]
+        if self._is_equipped(item):
+            return False, False
         items.delete_user_item(user_id, item.id)
         del self.items[index]
         return True, item
+
+    def _is_equipped(self, item: Item) -> bool:
+        return item.id in self._equipped_ref.get()
+
+    def _equip(self, item: Item, update: bool = True) -> None:
+        self._equipped_ref.get_update().append(item.id)
+        if update:
+            self.user_entity.update_equipment(self.get_equipment())
+
+    def _unequip(self, item: Item, update: bool = True) -> None:
+        self._equipped_ref.get_update().remove(item.id)
+        if update:
+            self.user_entity.update_equipment(self.get_equipment())
 
     def equip(self, index: int) -> Optional[str]:
         if 0 <= index < len(self.items):
@@ -40,24 +53,42 @@ class Inventory:
                 for other_index in range(len(self.items)):
                     if other_index != index and self.items[other_index].id in self._equipped_ref.get() \
                             and self.items[other_index].data.get_description().type == item_type:
-                        self.unequip(other_index, False)
+                        self._unequip(self.items[other_index], False)
                         break
-                # Equip
-                self._equipped_ref.get_update().append(item.id)
-                self.user_entity.update_items(self.get_equipment())
+                self._equip(item)
             return item.print()
         return None
 
-    def unequip(self, index: int, update: bool = True) -> Optional[str]:
+    def equip_best(self) -> None:
+        self.unequip_all()
+        best: dict[ItemType, tuple[Item, int]] = {}
+        for index in range(len(self.items)):
+            item = self.items[index]
+            item_type = item.data.get_description().type
+            other_item: Optional[tuple[Item, int]] = best.get(item_type)
+            if other_item is not None:
+                item_price: int = item.get_price(ignore_modifier=True)
+                if other_item[1] < item_price:
+                    best[item_type] = (item, item_price)
+            else:
+                best[item_type] = (item, item.get_price(ignore_modifier=True))
+
+        if best:
+            for item, _ in best.values():
+                self._equip(item, update=False)
+            self.user_entity.update_equipment(self.get_equipment())
+
+    def unequip(self, index: int) -> Optional[str]:
         if 0 <= index < len(self.items):
             item: Item = self.items[index]
             if item.id in self._equipped_ref.get():
-                # Unequip
-                self._equipped_ref.get_update().remove(item.id)
-                if update:
-                    self.user_entity.update_items(self.get_equipment())
+                self._unequip(item)
                 return item.print()
         return None
+
+    def unequip_all(self) -> None:
+        self._equipped_ref.set([])
+        self.user_entity.update_equipment([])
 
     def set_limit(self, inv_limit: int) -> None:
         self.limit = inv_limit

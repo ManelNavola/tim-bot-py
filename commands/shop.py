@@ -9,7 +9,7 @@ async def check(cmd: Command):
 
 
 async def buy(cmd: Command, number: int):
-    if number < 1 or number > Shop.SHOP_ITEMS:
+    if number < 1 or number > Shop.ITEM_AMOUNT:
         await cmd.error(f"Invalid item index!")
         return
     ip: ItemPurchase = cmd.guild.shop.purchase_item(cmd.user, number - 1)
@@ -41,3 +41,26 @@ async def sell(cmd: Command, number: int):
             await cmd.error(f"Invalid item index!")
         else:
             await cmd.error(f"You must unequip the item first!")
+
+
+async def sell_all(cmd: Command):
+    number: int = 0
+    total_items: int = 0
+    total_price: int = 0
+    while number < len(cmd.user.inventory.items):
+        success, result = cmd.user.inventory.sell(number, cmd.user.id)
+        if success:
+            item: Item = result
+            price = int(item.get_price() * Shop.SELL_MULTIPLIER)
+            total_price += price
+            total_items += 1
+        else:
+            if result:
+                number = 9999999
+            else:
+                number += 1
+    if total_items == 0:
+        await cmd.error("You don't have any items to sell!")
+    else:
+        cmd.user.add_money(total_price)
+        await cmd.send_hidden(f"{utils.Emoji.PURCHASE} Sold {total_items} items for {utils.print_money(total_price)}")

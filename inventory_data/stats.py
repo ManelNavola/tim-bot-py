@@ -38,13 +38,10 @@ class StatInstance(Slots):
                 tp.append(f"{persistent_value} +{self.get_value(value)}")
         else:
             if self.base > 0:
-                if value == 0:
-                    tp.append(f"{self.base}")
+                if short:
+                    tp.append(f"{self.get_value(value)}")
                 else:
-                    if short:
-                        tp.append(f"{self.get_value(value)}")
-                    else:
-                        tp.append(f"{self.base} (+{self.get_value(value - self.base)})")
+                    tp.append(f"{self.get_value(value)} (+{self.get_value(value - self.base)})")
             else:
                 tp.append(f"{self.get_value(value)}")
         return ''.join(tp)

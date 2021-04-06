@@ -1,3 +1,5 @@
+from typing import Optional
+
 import utils
 from commands.command import Command
 from user_data.upgrades import UpgradeLink
@@ -9,30 +11,44 @@ def format_row(info) -> str:
     return f"{info[0]:<22s}|{info[1]:^7}|{info[2]:^16}|{info[3]:^14}|{info[4]:^16}"
 
 
-def custom_print(upg: UpgradeLink, f=lambda x: x) -> str:
+def custom_print(upg: UpgradeLink, f=lambda x: x, mobile: bool = False) -> str:
     s = f(upg.get_value())
     if upg.is_max_level():
-        return format_row([upg.get_name(), 'MAX', s])
+        if mobile:
+            return f"{upg.get_icon()} {upg.get_name()} Lvl. {upg.get_level()} (MAX)"
+        else:
+            return format_row([upg.get_name(), 'MAX', s])
     else:
         s3 = upg.get_value(upg.get_level() + 1)
         s3 = f(s3)
-        return format_row([upg.get_name(), upg.get_level(), s, f"-{utils.print_money(upg.get_cost())}", s3])
+        if mobile:
+            return f"{upg.get_icon()} {upg.get_name()} Lvl. {upg.get_level()} [{s}] {utils.Emoji.ARROW_RIGHT} " \
+                   f"[{s3}], Cost: -{utils.print_money(upg.get_cost())}"
+        else:
+            return format_row([upg.get_name(), upg.get_level(), s, f"-{utils.print_money(upg.get_cost())}", s3])
 
 
 def rate_hour(value):
-    return f"(+{utils.print_money(value)}/hour)"
+    return f"+{utils.print_money(value)}/hour"
 
 
-async def menu(cmd: Command):
-    tp = ["```fix",
-          format_row(['Upgrade Name', 'Level', 'Current', 'Upgrade Cost', 'Next Value']),
-          format_row(['----------------------', '-------', '----------------', '--------------', '----------------']),
-          custom_print(cmd.user.upgrades['money_limit'], utils.print_money),
-          custom_print(cmd.user.upgrades['bank'], utils.print_money),
-          custom_print(cmd.user.upgrades['garden'], rate_hour),
-          custom_print(cmd.user.upgrades['inventory']),
-          '```']
-    # tp.append(custom_print(cmd.user.upgrades['inventory'], lambda x: x))
+async def menu(cmd: Command, mobile: bool = False):
+    if not mobile:
+        tp = ["```fix",
+              format_row(['Upgrade Name', 'Level', 'Current', 'Upgrade Cost', 'Next Value']),
+              format_row(['----------------------', '-------', '----------------', '--------------', '----------------']),
+              custom_print(cmd.user.upgrades['money_limit'], utils.print_money),
+              custom_print(cmd.user.upgrades['bank'], utils.print_money),
+              custom_print(cmd.user.upgrades['garden'], rate_hour),
+              custom_print(cmd.user.upgrades['inventory']),
+              '```']
+    else:
+        tp = ["Available upgrades:",
+              custom_print(cmd.user.upgrades['money_limit'], utils.print_money, mobile=True),
+              custom_print(cmd.user.upgrades['bank'], utils.print_money, mobile=True),
+              custom_print(cmd.user.upgrades['garden'], rate_hour, mobile=True),
+              custom_print(cmd.user.upgrades['inventory'], mobile=True),
+        ]
     await cmd.send_hidden('\n'.join(tp))
 
 

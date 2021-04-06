@@ -42,8 +42,9 @@ async def on_ready():
 
 @bot.event
 async def on_reaction_add(reaction: discord.Reaction, discord_user: discord.User):
-    user: User = storage.get_user(discord_user.id)
-    await messages.on_reaction_add(user, discord_user, reaction.message.id, reaction)
+    user: Optional[User] = storage.get_user(discord_user.id, create=False)
+    if user is not None:
+        await messages.on_reaction_add(user, discord_user, reaction.message.id, reaction)
 
 
 # Register commands
@@ -111,9 +112,16 @@ async def _bet_check(ctx):
 
 
 # Upgrades
-@slash.subcommand(base="upgrade", name="menu", description="View available upgrades", guild_ids=registered_guild_ids)
+@slash.subcommand(base="upgrade", name="menu", description="View available upgrades",
+                  guild_ids=registered_guild_ids)
 async def _upgrade(ctx):
     await command.call(ctx, upgrade.menu)
+
+
+@slash.subcommand(base="upgrade", name="short_menu", description="View available upgrades",
+                  guild_ids=registered_guild_ids)
+async def _upgrade(ctx):
+    await command.call(ctx, upgrade.menu, True)
 
 
 @slash.subcommand(base="upgrade", name="money_limit", description="Upgrade money capacity",
@@ -200,6 +208,12 @@ async def _shop_sell(ctx, number: int):
     await command.call(ctx, shop.sell, number)
 
 
+@slash.subcommand(base="shop", name="sellall", description="Sells all unequipped items from your inventory",
+                  guild_ids=registered_guild_ids)
+async def _shop_sell(ctx):
+    await command.call(ctx, shop.sell_all)
+
+
 # RPG management
 @slash.slash(name="stats", description="Check your stats",
              guild_ids=registered_guild_ids)
@@ -227,6 +241,12 @@ async def _equip(ctx, number: int):
     await command.call(ctx, simple.equip, number)
 
 
+@slash.slash(name="equipbest", description="Equips the best items you have according to their price",
+             guild_ids=registered_guild_ids)
+async def _equip_best(ctx):
+    await command.call(ctx, simple.equip_best)
+
+
 @slash.slash(name="unequip", description="Unequip an item",
              options=[
                  create_option(
@@ -241,19 +261,28 @@ async def _unequip(ctx, number: int):
     await command.call(ctx, simple.unequip, number)
 
 
+@slash.slash(name="unequipall", description="Unequip all items",
+             guild_ids=registered_guild_ids)
+async def _unequip_all(ctx):
+    await command.call(ctx, simple.unequip_all)
+
+
 # Register test command
 saved: Optional[User] = None
-fite_bot: bool = False
+fite_bot: bool = True
 if utils.is_test():
     @slash.slash(name="rich", description="MAKE IT RAIN BABYYY", guild_ids=registered_guild_ids)
     async def _rich(ctx):
         async def rich(cmd: Command):
-            upg = cmd.user.upgrades['money_limit']
-            while not upg.is_max_level():
-                upg.level_up()
+            for upg_name in cmd.user.upgrades:
+                upg = cmd.user.upgrades[upg_name]
+                while not upg.is_max_level():
+                    upg.level_up()
             cmd.user.add_money(999999999999)
             await cmd.send_hidden("yay")
+
         await command.call(ctx, rich)
+
 
     @slash.slash(name="test", description="Quickly test anything!",
                  guild_ids=registered_guild_ids)
@@ -262,16 +291,17 @@ if utils.is_test():
             global saved, fite_bot
             if fite_bot:
                 being_b = BotEntity('THE BEAST', 100, 200, {
-                                       Stats.STR: 2
-                                   })
-                await cmd.guild.start_battle(cmd.ctx, cmd.user.entity, being_b, [cmd.user.id])
+                    Stats.STR: 2,
+                    Stats.CRIT: 100
+                })
+                await cmd.guild.start_battle(cmd.ctx, cmd.user, opponent_bot=being_b)
             else:
                 if saved is None:
                     saved = cmd.user
                 else:
-                    await cmd.guild.start_battle(cmd.ctx, cmd.user.entity, saved.entity, [cmd.user.id, saved.id])
-        await command.call(ctx, to_test)
+                    await cmd.guild.start_battle(cmd.ctx, cmd.user, opponent_user=saved)
 
+        await command.call(ctx, to_test)
 
 # Run bot based on test
 if utils.is_test():

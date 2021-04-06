@@ -1,8 +1,11 @@
+from typing import Optional
+
 import discord
 
 import utils
 from commands.command import Command
 from common import storage
+from inventory_data.items import ItemType, Item
 
 
 async def inv(cmd: Command):
@@ -42,25 +45,46 @@ async def leaderboard(cmd: Command):
 
 
 async def stats(cmd: Command):
-    await cmd.send_hidden(cmd.user.entity.print_detailed())
+    await cmd.send_hidden(cmd.user.user_entity.print_detailed())
 
 
 async def equip(cmd: Command, index: int):
     result = cmd.user.inventory.equip(index - 1)
     if result is not None:
-        cmd.user.entity.update_items(cmd.user.inventory.get_equipment())
+        cmd.user.user_entity.update_equipment(cmd.user.inventory.get_equipment())
         await cmd.send_hidden(f"Equipped {result}")
     else:
         await cmd.error(f"Invalid item index!")
 
 
+async def equip_best(cmd: Command):
+    tr = []
+    cmd.user.inventory.equip_best()
+    for item_type in ItemType.get_all():
+        item: Optional[Item] = cmd.user.inventory.get_first(item_type)
+        if item is not None:
+            tr.append(f"Equipped {item.print()}")
+    if tr:
+        await cmd.send('\n'.join(tr))
+    else:
+        await cmd.error("You have no equipment")
+
+
 async def unequip(cmd: Command, index: int):
     result = cmd.user.inventory.unequip(index - 1)
     if result is not None:
-        cmd.user.entity.update_items(cmd.user.inventory.get_equipment())
+        cmd.user.user_entity.update_equipment(cmd.user.inventory.get_equipment())
         await cmd.send_hidden(f"Unequipped {result}")
     else:
         await cmd.error(f"Invalid item index!")
+
+
+async def unequip_all(cmd: Command):
+    if len(cmd.user.inventory.get_equipment()) == 0:
+        await cmd.error("You don't have anything equipped!")
+        return
+    cmd.user.inventory.unequip_all()
+    await cmd.send_hidden(f"Unequiped all items")
 
 
 async def abilities(cmd: Command):
@@ -68,5 +92,8 @@ async def abilities(cmd: Command):
     for item in cmd.user.inventory.get_equipment():
         if item.data.ability is not None:
             tp.append(f"{item.data.get_description().type.get_type_icon()} {item.data.ability.get_name()}: "
-                      f"{item.data.ability.get_effect()}")
-    await cmd.send_hidden('\n'.join(tp))
+                      f"{item.data.ability.get_effect()} (once per battle)")
+    if not tp:
+        await cmd.send_hidden("You currently have no abilities equipped")
+    else:
+        await cmd.send_hidden('\n'.join(tp))

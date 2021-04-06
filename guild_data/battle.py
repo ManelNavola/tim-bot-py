@@ -65,11 +65,11 @@ class BattleEntity:
         real_amount: int = max(1, round(br))
         other.entity.set_current_health(max(0, other.entity.get_current_hp() - real_amount))
         # Crit
-        if random.random() < other.get_stat(Stats.CRIT):
+        if random.random() < self.get_stat(Stats.CRIT):
             real_amount *= 2
             ar.crit = True
         # Vamp
-        if random.random() < other.get_stat(Stats.VAMP):
+        if random.random() < self.get_stat(Stats.VAMP):
             ar.vamp = True
         ar.damage = real_amount
         return ar
@@ -248,7 +248,7 @@ class Battle:
     def _get_issuer_victim(self, user: User) -> tuple[BattleEntity, BattleEntity]:
         issuer: BattleEntity = self.battle_entity_a
         victim: BattleEntity = self.battle_entity_b
-        if (user is None) or (user.entity == self.battle_entity_b.entity):
+        if (user is None) or (user.user_entity == self.battle_entity_b.entity):
             issuer, victim = victim, issuer
 
         return issuer, victim

@@ -159,16 +159,18 @@ class Item(Slots):
             row_data['ability'] = self.data.ability.encode()
         return row_data
 
-    def get_price(self) -> int:
+    def get_price(self, ignore_modifier: bool = False) -> int:
+        if ignore_modifier:
+            return self._calculate_price(ignore_modifier=True)
         if not self._price:
-            self._calculate_price()
+            self._price = self._calculate_price()
         return self._price
 
-    def _calculate_price(self) -> None:
+    def _calculate_price(self, ignore_modifier: bool = False):
         stat_sum = sum([v * (k.cost + 1) for k, v in self.data.stats.items()])
         rarity = self.data.rarity.id + 1
         price_mod = 1
-        if self.data.price_modifier is not None:
+        if (self.data.price_modifier is not None) and (not ignore_modifier):
             price_mod = self.data.price_modifier
 
         ab_mod = 1
@@ -176,7 +178,7 @@ class Item(Slots):
             ab_mod = 1.5
 
         before_round = (pow(stat_sum, 0.9) * pow(rarity, 1.1) * 10) * price_mod * ab_mod
-        self._price = round(before_round / 10) * 10
+        return round(before_round / 10) * 10
 
     def print(self) -> str:
         stats = ', '.join([f"+{v} {k.abv}" for k, v in self.data.stats.items()])
@@ -228,7 +230,6 @@ def get_random_shop_item_data(item_type: Optional[ItemType] = None, rarity: Opti
         wei: list[int] = ABILITY_TIER_CHANCES[:chosen_desc.ability.get_tier_amount()]
         chosen_tier: int = random.choices(pop, weights=wei, k=1)[0]
         ability = AbilityInstance(chosen_desc.ability, chosen_tier)
-        print("AB:", ability.encode())
 
     return ItemData(rarity, chosen_desc.id, chosen_stats_amounts, ability=ability)
 

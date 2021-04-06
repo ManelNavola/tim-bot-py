@@ -114,6 +114,7 @@ class Emoji:
     CHEST_PLATE = '\👕'
     LEGGINGS = '\👖'
     BOOTS = '\👢'
+    ARROW_RIGHT = '➜'
 
     # Leaderboard
     TROPHY = '\🏆'

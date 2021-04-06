@@ -84,10 +84,10 @@ class UserEntity(Entity):
         self._mp_ref: DictRef = mp_ref
         self._hp_ref: DictRef = hp_ref
         self._name_ref: DictRef = name_ref
-        self._stat_sum: int = 0
+        self._power: int = 0
 
-    def get_stat_sum(self) -> int:
-        return self._stat_sum
+    def get_power(self) -> int:
+        return self._power
 
     def get_name(self) -> str:
         return self._name_ref.get()
@@ -101,13 +101,14 @@ class UserEntity(Entity):
     def set_current_health(self, amount: int) -> None:
         self._hp_ref.set(amount)
 
-    def update_items(self, item_list: list[Item]):
-        self._stat_sum = 0
+    def update_equipment(self, item_list: list[Item]):
+        calc_power: float = 0
         self._stat_dict.clear()
         self._available_abilities.clear()
         for item in item_list:
             for stat, value in item.data.stats.items():
                 self._stat_dict[stat] = self._stat_dict.get(stat, 0) + value
-                self._stat_sum += value
             if item.data.ability is not None:
                 self._available_abilities.append((item.data.ability, items.INDEX_TO_ITEM[item.data.desc_id].type))
+            calc_power += item.get_price()
+        self._power = calc_power // 100
