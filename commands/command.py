@@ -24,7 +24,7 @@ class Command:
 
 
 class MockSlashContext(SlashContext):
-    def __init__(self): # noqa
+    def __init__(self):  # noqa
         pass
 
     async def send(self, msg: str, hidden: bool = False):  # noqa
@@ -35,7 +35,7 @@ class MockSlashContext(SlashContext):
 
 
 class MockCommand(Command):
-    def __init__(self): # noqa
+    def __init__(self):  # noqa
         self.ctx = MockSlashContext()
 
     def send(self, msg: str):
@@ -44,7 +44,7 @@ class MockCommand(Command):
     def send_hidden(self, msg: str):
         print("(hidden) >", msg)
 
-    def error(self, msg: str, hidden: bool=True):
+    def error(self, msg: str, hidden: bool = True):
         if hidden:
             print("[X] (hidden) >", msg)
         else:

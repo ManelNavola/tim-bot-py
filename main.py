@@ -2,8 +2,8 @@
 import os
 from typing import Optional
 
-import discord
-from discord.ext import commands
+import discord  # noqa
+from discord.ext import commands  # noqa
 from discord_slash import SlashCommand, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
@@ -120,30 +120,30 @@ async def _upgrade(ctx):
 
 @slash.subcommand(base="upgrade", name="short_menu", description="View available upgrades",
                   guild_ids=registered_guild_ids)
-async def _upgrade(ctx):
+async def _upgrade_short(ctx):
     await command.call(ctx, upgrade.menu, True)
 
 
 @slash.subcommand(base="upgrade", name="money_limit", description="Upgrade money capacity",
                   guild_ids=registered_guild_ids)
-async def _upgrade(ctx):
+async def _upgrade_money(ctx):
     await command.call(ctx, upgrade.upgrade, 'money_limit')
 
 
 @slash.subcommand(base="upgrade", name="bank", description="Upgrade bank capacity", guild_ids=registered_guild_ids)
-async def _upgrade(ctx):
+async def _upgrade_bank(ctx):
     await command.call(ctx, upgrade.upgrade, 'bank')
 
 
 @slash.subcommand(base="upgrade", name="garden", description="Upgrade garden production",
                   guild_ids=registered_guild_ids)
-async def _upgrade(ctx):
+async def _upgrade_garden(ctx):
     await command.call(ctx, upgrade.upgrade, 'garden')
 
 
 @slash.subcommand(base="upgrade", name="inventory", description="Upgrade inventory limit",
                   guild_ids=registered_guild_ids)
-async def _upgrade(ctx):
+async def _upgrade_inventory(ctx):
     await command.call(ctx, upgrade.upgrade, 'inventory')
 
 
@@ -210,7 +210,7 @@ async def _shop_sell(ctx, number: int):
 
 @slash.subcommand(base="shop", name="sellall", description="Sells all unequipped items from your inventory",
                   guild_ids=registered_guild_ids)
-async def _shop_sell(ctx):
+async def _shop_sell_all(ctx):
     await command.call(ctx, shop.sell_all)
 
 
@@ -283,7 +283,6 @@ if utils.is_test():
 
         await command.call(ctx, rich)
 
-
     @slash.slash(name="test", description="Quickly test anything!",
                  guild_ids=registered_guild_ids)
     async def _test(ctx):
@@ -291,8 +290,8 @@ if utils.is_test():
             global saved, fite_bot
             if fite_bot:
                 being_b = BotEntity('THE BEAST', 100, 200, {
-                    Stats.STR: 2,
-                    Stats.CRIT: 100
+                    Stats.STR: -1,
+                    Stats.CRIT: 100,
                 })
                 await cmd.guild.start_battle(cmd.ctx, cmd.user, opponent_bot=being_b)
             else:

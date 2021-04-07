@@ -35,7 +35,7 @@ class Cache(UserDict):
             return cached_item[0]
         return cached_item
 
-    def get(self, key: object, default_value = None):  # noqa
+    def get(self, key: object, default_value=None):  # noqa
         return self.data.get(key, (default_value,))[0]
 
 

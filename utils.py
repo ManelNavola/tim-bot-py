@@ -2,16 +2,19 @@ import calendar
 import os
 import time
 from enum import unique, Enum
+from typing import Generic, TypeVar
 
 from autoslot import Slots
 
+T = TypeVar("T")
 
-class DictRef(Slots):
-    def __init__(self, dictionary: dict, key: object):
+
+class DictRef(Generic[T], Slots):
+    def __init__(self, dictionary: dict, key: str):
         self.dictionary = dictionary
         self.key = key
 
-    def get(self):
+    def get(self) -> T:
         return self.dictionary[self.key]
 
     def get_update(self):
@@ -21,7 +24,7 @@ class DictRef(Slots):
     def __getitem__(self, key):
         return self.dictionary[self.key][key]
 
-    def set(self, value: object):
+    def set(self, value: T):
         self.dictionary[self.key] = value
 
     def __setitem__(self, key, value):
@@ -81,59 +84,59 @@ class TimeSlot(Slots):
 
 class Emoji:
     # User profile
-    MONEY = '\💵'
-    BANK = '\💰'
-    GARDEN = '\🌲'
-    SCROLL = '\📜'
+    MONEY = r'\💵'
+    BANK = r'\💰'
+    GARDEN = r'\🌲'
+    SCROLL = r'\📜'
 
     # Betting
-    ROBOT = '\🤖'
-    COWBOY = '\🤠'
-    SUNGLASSES = '\😎'
-    SPARKLE = '\✨'
-    MONEY_FLY = '\💸'
-    INCREASE = '\🔺'
-    DECREASE = '\🔻'
+    ROBOT = r'\🤖'
+    COWBOY = r'\🤠'
+    SUNGLASSES = r'\😎'
+    SPARKLE = r'\✨'
+    MONEY_FLY = r'\💸'
+    INCREASE = r'\🔺'
+    DECREASE = r'\🔻'
 
     # Commands
-    ERROR = '\⛔'
+    ERROR = r'\⛔'
 
     # Crate
-    BOX = '\📦'
-    CLOCK = '\🕓'
+    BOX = r'\📦'
+    CLOCK = r'\🕓'
 
     # Inventory
-    EQUIPPED = '\✔️'
-    SHOP = '\🛒'
-    PURCHASE = '\🛍️'
-    STATS = '\🧮'
-    BAG = '\🎒'
-    WEAPON = '\🗡️'
-    SHIELD = '\🛡️'
-    HELMET = '\⛑️'
-    CHEST_PLATE = '\👕'
-    LEGGINGS = '\👖'
-    BOOTS = '\👢'
-    ARROW_RIGHT = '➜'
+    EQUIPPED = r'\✔️'
+    SHOP = r'\🛒'
+    PURCHASE = r'\🛍️'
+    STATS = r'\🧮'
+    BAG = r'\🎒'
+    WEAPON = r'\🗡️'
+    SHIELD = r'\🛡️'
+    HELMET = r'\⛑️'
+    CHEST_PLATE = r'\👕'
+    LEGGINGS = r'\👖'
+    BOOTS = r'\👢'
+    ARROW_RIGHT = r'➜'
 
     # Leaderboard
-    TROPHY = '\🏆'
-    FIRST_PLACE = '\🥇'
-    SECOND_PLACE = '\🥈'
-    THIRD_PLACE = '\🥉'
+    TROPHY = r'\🏆'
+    FIRST_PLACE = r'\🥇'
+    SECOND_PLACE = r'\🥈'
+    THIRD_PLACE = r'\🥉'
 
     # Stats
-    HP = '\💉'
-    MP = '\⚗️'
-    STR = '\💪'
-    DEF = '\🛡️'
-    SPD = '\🏃'
-    EVA = '\💨'
-    CONT = '\👊'
-    CRIT = '\🌟'
-    STUN = '\🛑'
-    VAMP = '\🧛'
-    BATTLE = '\⚔️'
+    HP = r'\💉'
+    MP = r'\⚗️'
+    STR = r'\💪'
+    DEF = r'\🛡️'
+    SPD = r'\🏃'
+    EVA = r'\💨'
+    CONT = r'\👊'
+    CRIT = r'\🌟'
+    STUN = r'\🛑'
+    VAMP = r'\🧛'
+    BATTLE = r'\⚔️'
 
 
 NUMERAL_TO_ROMAN: dict[int, str] = {

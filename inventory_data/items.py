@@ -1,3 +1,4 @@
+import json
 from enum import Enum, unique
 import random
 from typing import Optional, Any
@@ -65,6 +66,27 @@ class ItemType(Enum):
         return None
 
     @staticmethod
+    def get_from_name(name: str) -> Optional['ItemType']:
+        d: dict[str, ItemType] = {
+            "Boot": ItemType.BOOT,
+            "Chest": ItemType.CHEST,
+            "Helmet": ItemType.HELMET,
+            "Weapon": ItemType.WEAPON,
+            "Secondary": ItemType.SECONDARY
+        }
+        return d[name]
+
+    def get_name(self) -> str:
+        d: dict[ItemType, str] = {
+            ItemType.BOOT: "Boot",
+            ItemType.CHEST: "Chest",
+            ItemType.HELMET: "Helmet",
+            ItemType.WEAPON: "Weapon",
+            ItemType.SECONDARY: "Secondary"
+        }
+        return d[self]
+
+    @staticmethod
     def get_all() -> list['ItemType']:
         return list(ItemType.get_type_icons_dict().keys())
 
@@ -82,25 +104,27 @@ class ItemDescription(Slots):
         self.ability: Optional[AbilityDesc] = ability
 
 
-_ITEMS: list[ItemDescription] = [
-    # Boots
-    ItemDescription(0, ItemType.BOOT, "Leather Boots", {Stats.SPD: 2, Stats.EVA: 1}),
-    ItemDescription(5, ItemType.BOOT, "Sandals", {Stats.SPD: 1, Stats.EVA: 2}, Ability.FLEE),
+_ITEMS: list[ItemDescription] = []
 
-    # Chest
-    ItemDescription(1, ItemType.CHEST, "Breastplate", {Stats.HP: 1, Stats.DEF: 2}),
+try:
+    with open('game_data/items.json', 'r') as f:
+        item_dict: dict[str, Any] = json.load(f)
+        for id_k, id_v in item_dict.items():
+            if id_v.get('Ability') is None:
+                _ITEMS.append(ItemDescription(
+                    int(id_k), ItemType.get_from_name(id_v['Type']), id_v['Name'], {
+                        Stats.get_by_abv(abv): n for abv, n in id_v['Stats'].items()
+                    },
+                ))
+            else:
+                _ITEMS.append(ItemDescription(
+                    int(id_k), ItemType.get_from_name(id_v['Type']), id_v['Name'], {
+                        Stats.get_by_abv(abv): n for abv, n in id_v['Stats'].items()
+                    }, Ability.get_by_name(id_v['Ability'])
+                ))
+except IOError:
+    print("Could not load items.json! (Running in editor?)")
 
-    # Helmet
-    ItemDescription(2, ItemType.HELMET, "Metal Helmet", {Stats.HP: 1, Stats.DEF: 1, Stats.EVA: 1}),
-
-    # Weapon
-    ItemDescription(3, ItemType.WEAPON, "Iron Sword", {Stats.STR: 1, Stats.CONT: 1}),
-    ItemDescription(6, ItemType.WEAPON, "Dagger", {Stats.STR: 1, Stats.SPD: 1, Stats.CRIT: 2}),
-    ItemDescription(7, ItemType.WEAPON, "Metal Axe", {Stats.STR: 1, Stats.STUN: 1}, Ability.BLUNDER),
-
-    # Secondary
-    ItemDescription(4, ItemType.SECONDARY, "Wooden Shield", {Stats.DEF: 1, Stats.CONT: 1}, Ability.PROTECTION),
-]
 
 INDEX_TO_ITEM: dict[int, ItemDescription] = {item.id: item for item in _ITEMS}
 

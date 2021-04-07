@@ -46,6 +46,8 @@ class User(Row):
             Item(item_data=items.parse_item_data_from_dict(item['data']), item_id=item['id']) for item in fetched_items
         ], self.user_entity)
 
+        self._data['persistent_stats'][Stats.HP.abv] = Stats.HP.base
+
     def load_defaults(self):
         return {
             'money': 10,  # bigint

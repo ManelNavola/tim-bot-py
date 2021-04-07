@@ -43,7 +43,7 @@ class Bet:
                 user.add_money(bet_data[1])
             self._bet_ref.set({})
 
-    def _start(self, ctx: SlashContext, limit: int=1000):
+    def _start(self, ctx: SlashContext, limit: int = 1000):
         self._info_changed = True
         finish_time = utils.now() + Bet.DURATION
         pool = []
@@ -93,7 +93,7 @@ class Bet:
         user_ids.append('BOT')
         weights.append(self._bot.get_bet())
         winner_id = random.choices(user_ids, weights=weights, k=1)[0]
-        result = [f"~ Bet finished! ~"]
+        result = ["~ Bet finished! ~"]
         total_bet = self.get_bet_sum() + self._bot.get_bet()
         money_str = utils.print_money(total_bet)
         if winner_id == 'BOT':

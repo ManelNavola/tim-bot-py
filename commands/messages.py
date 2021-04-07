@@ -1,7 +1,7 @@
 from typing import Callable, Optional
 
-import discord
-from discord import Message, Reaction
+import discord  # noqa
+from discord import Message, Reaction  # noqa
 
 
 class MessagePlus:

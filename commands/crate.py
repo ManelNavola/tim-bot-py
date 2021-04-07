@@ -37,4 +37,4 @@ async def take(cmd: Command):
         if took > 0:
             await cmd.send(f"{utils.Emoji.BOX} {cmd.user.get_name()} took {utils.print_money(took)} from the crate!")
         else:
-            await cmd.error(f"There is no money in the crate")
+            await cmd.error("There is no money in the crate")

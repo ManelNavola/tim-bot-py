@@ -3,8 +3,8 @@ from commands.command import Command
 from guild_data.bet import Bet
 
 
-BET_INFO = f"Bet money with other users against the bot to win the Jackpot! " \
-           f"Each bot has a different behaviour, can you overcome their betting strategy?"
+BET_INFO = "Bet money with other users against the bot to win the Jackpot! " \
+           "Each bot has a different behaviour, can you overcome their betting strategy?"
 
 
 async def info(cmd: Command):

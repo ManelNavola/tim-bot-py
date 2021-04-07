@@ -43,7 +43,7 @@ class Entity(metaclass=ABCMeta):
                          Stats.MP.print(self.get_stat(Stats.MP), persistent_value=self.get_current_mp())]
 
         for stat in Stats.get_all():
-            if stat in self._stat_dict:
+            if (stat in self._stat_dict) or (stat.base > 0):
                 if stat not in [Stats.HP, Stats.MP]:
                     dc.append(stat.print(self.get_stat(stat)))
 

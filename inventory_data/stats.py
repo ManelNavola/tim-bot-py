@@ -18,6 +18,10 @@ class StatInstance(Slots):
     def get_value(self, increment: int) -> Any:
         return self.base + increment
 
+    @staticmethod
+    def represent(value: Any) -> str:
+        return f"{value}"
+
     def print(self, value: int, short: bool = False, persistent_value: Optional[int] = None) -> str:
         tp: list[str] = []
         if short:
@@ -28,22 +32,24 @@ class StatInstance(Slots):
         if persistent_value is not None:
             if self.base > 0:
                 if value == 0:
-                    tp.append(f"{persistent_value}/{self.get_value(value)}")
+                    tp.append(f"{self.represent(persistent_value)}/{self.represent(self.get_value(value))}")
                 else:
                     if short:
-                        tp.append(f"{persistent_value}/{self.get_value(value)}")
+                        tp.append(f"{self.represent(persistent_value)}/{self.represent(self.get_value(value))}")
                     else:
-                        tp.append(f"{persistent_value}/{self.get_value(value)} (+{self.get_value(value - self.base)})")
+                        tp.append(f"{self.represent(persistent_value)}/{self.represent(self.get_value(value))} "
+                                  f"(+{self.represent(self.get_value(value) - self.base)})")
             else:
-                tp.append(f"{persistent_value} +{self.get_value(value)}")
+                tp.append(f"{self.represent(persistent_value)} +{self.represent(self.get_value(value))}")
         else:
             if self.base > 0:
-                if short:
-                    tp.append(f"{self.get_value(value)}")
+                if short or value == 0:
+                    tp.append(f"{self.represent(self.get_value(value))}")
                 else:
-                    tp.append(f"{self.get_value(value)} (+{self.get_value(value - self.base)})")
+                    tp.append(f"{self.represent(self.get_value(value))} "
+                              f"(+{self.represent(self.get_value(value) - self.base)})")
             else:
-                tp.append(f"{self.get_value(value)}")
+                tp.append(f"{self.represent(self.get_value(value))}")
         return ''.join(tp)
 
 
@@ -55,24 +61,9 @@ class StatInstanceChance(StatInstance):
         x = self.base + increment
         return x / (x + 40)
 
-    def print(self, value: int, short: bool = False, persistent_value: Optional[int] = None) -> str:
-        tp: list[str] = []
-        if short:
-            tp.append(f"{self.abv}: ")
-        else:
-            tp.append(f"{self.icon} {self.abv}: ")
-
-        if self.base > 0:
-            if value == 0:
-                tp.append(f"{self.base}")
-            else:
-                if short:
-                    tp.append(f"{self.get_value(value):.0%}")
-                else:
-                    tp.append(f"{self.base:.0%} (+{self.get_value(value - self.base):.0%})")
-        else:
-            tp.append(f"{self.get_value(value):.0%}")
-        return ''.join(tp)
+    @staticmethod
+    def represent(value: Any) -> str:
+        return f"{value:.0%}"
 
 
 class HP(StatInstance):
@@ -97,7 +88,15 @@ class DEF(StatInstance):
 
 class SPD(StatInstance):
     def __init__(self):
-        super().__init__('SPD', "Attack speed", utils.Emoji.SPD, 8, Rarity.COMMON)
+        super().__init__('SPD', "Attack speed", utils.Emoji.SPD, 8, Rarity.COMMON, 1)
+
+    def get_value(self, increment: int) -> Any:
+        x = increment
+        return x / (x + 20) + self.base
+
+    @staticmethod
+    def represent(value: Any) -> str:
+        return f"{value:.2f}"
 
 
 class EVA(StatInstanceChance):
@@ -123,7 +122,7 @@ class STUN(StatInstanceChance):
 
 class VAMP(StatInstanceChance):
     def __init__(self):
-        super().__init__('CRIT', "Chance of stealing health on attack", utils.Emoji.VAMP, 25, Rarity.RARE)
+        super().__init__('VAMP', "Chance of stealing health on attack", utils.Emoji.VAMP, 25, Rarity.RARE)
 
 
 class Stats:

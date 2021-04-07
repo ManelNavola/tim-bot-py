@@ -1,0 +1,72 @@
+{
+  "0": {
+    "Name": "Dagger",
+    "Type": "Weapon",
+    "Stats": {
+      "STR": 1,
+      "SPD": 1,
+      "CRIT": 1
+    }
+  },
+  "1": {
+    "Name": "Leather Boots",
+    "Type": "Boot",
+    "Stats": {
+      "SPD": 2,
+      "EVA": 1
+    }
+  },
+  "2": {
+    "Name": "Breastplate",
+    "Type": "Chest",
+    "Stats": {
+      "HP": 1,
+      "DEF": 2
+    }
+  },
+  "3": {
+    "Name": "Iron Sword",
+    "Type": "Weapon",
+    "Stats": {
+      "STR": 1,
+      "CONT": 1
+    },
+    "Ability": "Protection"
+  },
+  "4": {
+    "Name": "Sandals",
+    "Type": "Boot",
+    "Stats": {
+      "SPD": 1,
+      "EVA": 2
+    },
+    "Ability": "Flee"
+  },
+  "5": {
+    "Name": "Metal Helmet",
+    "Type": "Helmet",
+    "Stats": {
+      "HP": 1,
+      "DEF": 1,
+      "EVA": 1
+    }
+  },
+  "6": {
+    "Name": "Metal Axe",
+    "Type": "Weapon",
+    "Stats": {
+      "STR": 1,
+      "STUN": 1
+    },
+    "Ability": "Blunder"
+  },
+  "7": {
+    "Name": "Wooden Shield",
+    "Type": "Secondary",
+    "Stats": {
+      "DEF": 1,
+      "CONT": 1
+    },
+    "Ability": "Protection"
+  }
+}

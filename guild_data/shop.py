@@ -80,7 +80,11 @@ class Shop:
         item = self._shop_items[item_index]
         if user.inventory.get_empty_slots() > 0:
             if user.remove_money(item.get_price()):
-                not_had: bool = (user.inventory.get_first(item.data.get_description().type) is None)
+                not_had: bool = True
+                for other_item in user.inventory.get_equipment():
+                    if other_item.data.get_description().type == item.data.get_description().type:
+                        not_had = False
+                        break
                 items.transfer_shop(self._guild_id, user.id, item.id)
                 self._shop_items[item_index] = None
                 item.durability = 100
@@ -107,11 +111,12 @@ class Shop:
             item: dict = found_items[index]
             self._shop_items[index] = Item(item_data=items.parse_item_data_from_dict(item['data']), item_id=item['id'])
 
-    def _clear_shop(self):
-        shop_len: int = len([1 for x in self._shop_items if x is not None])
+    def _clear_shop(self) -> None:
+        shop_items: list[Optional[Item]] = self._shop_items  # PYCHARM WHAT
+        shop_len: int = len([1 for x in shop_items if x is not None])
         if shop_len > 0:
             database.INSTANCE.delete_row("guild_items", dict(guild_id=self._guild_id), shop_len)
-        for item in self._shop_items:
+        for item in shop_items:
             if item is not None:
                 database.INSTANCE.delete_row("items", dict(id=item.id))
         self._shop_items = [None] * Shop.ITEM_AMOUNT

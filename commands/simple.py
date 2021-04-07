@@ -1,6 +1,6 @@
 from typing import Optional
 
-import discord
+import discord  # noqa
 
 import utils
 from commands.command import Command
@@ -18,12 +18,12 @@ async def post_inv(cmd: Command):
 
 async def check(cmd: Command, member: discord.Member):
     if member.id in [824935594509336576, 824720383596560444]:
-        await cmd.send(f"._.")
+        await cmd.send("._.")
         return
 
     user = storage.get_user(member.id, False)
     if not user:
-        await cmd.send(f"This user hasn't interacted with me yet")
+        await cmd.send("This user hasn't interacted with me yet")
         return
     await cmd.send(user.print(private=False, checking=True))
 
@@ -54,7 +54,7 @@ async def equip(cmd: Command, index: int):
         cmd.user.user_entity.update_equipment(cmd.user.inventory.get_equipment())
         await cmd.send_hidden(f"Equipped {result}")
     else:
-        await cmd.error(f"Invalid item index!")
+        await cmd.error("Invalid item index!")
 
 
 async def equip_best(cmd: Command):
@@ -76,7 +76,7 @@ async def unequip(cmd: Command, index: int):
         cmd.user.user_entity.update_equipment(cmd.user.inventory.get_equipment())
         await cmd.send_hidden(f"Unequipped {result}")
     else:
-        await cmd.error(f"Invalid item index!")
+        await cmd.error("Invalid item index!")
 
 
 async def unequip_all(cmd: Command):
@@ -84,7 +84,7 @@ async def unequip_all(cmd: Command):
         await cmd.error("You don't have anything equipped!")
         return
     cmd.user.inventory.unequip_all()
-    await cmd.send_hidden(f"Unequiped all items")
+    await cmd.send_hidden("Unequiped all items")
 
 
 async def abilities(cmd: Command):

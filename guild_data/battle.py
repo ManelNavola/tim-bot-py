@@ -3,9 +3,9 @@ from enum import Enum, unique
 from typing import Optional, Any
 
 from autoslot import Slots
-from discord import Message
 
 import utils
+from discord import Message  # noqa
 from commands import messages
 from commands.messages import MessagePlus
 from inventory_data.abilities import AbilityInstance
@@ -63,7 +63,6 @@ class BattleEntity:
         dealt: int = self.get_stat(Stats.STR)
         br: float = (dealt / (dealt + other.get_stat(Stats.DEF))) * dealt
         real_amount: int = max(1, round(br))
-        other.entity.set_current_health(max(0, other.entity.get_current_hp() - real_amount))
         # Crit
         if random.random() < self.get_stat(Stats.CRIT):
             real_amount *= 2
@@ -71,6 +70,7 @@ class BattleEntity:
         # Vamp
         if random.random() < self.get_stat(Stats.VAMP):
             ar.vamp = True
+        other.entity.set_current_health(max(0, other.entity.get_current_hp() - real_amount))
         ar.damage = real_amount
         return ar
 
@@ -150,7 +150,8 @@ class Battle:
         self.battle_entity_a: BattleEntity = BattleEntity(entity_a)
         self.battle_entity_b: BattleEntity = BattleEntity(entity_b)
 
-        self.turn: int = 0
+        self._turn: int = 0
+        self._speedDiff: float = 0
         self._log: list[str] = []
         self._message: Optional[MessagePlus] = None
 
@@ -262,13 +263,25 @@ class Battle:
             return False
 
     async def _next_turn(self) -> None:
+        diff: float = self.battle_entity_a.get_stat(Stats.SPD) - self.battle_entity_b.get_stat(Stats.SPD)
         if self._turn_a:
+            # B action
             self.battle_entity_a.end_turn()
             self._turn_a = False
+            if self._speedDiff >= 1.0:
+                self._speedDiff -= 1.0 - diff
+                await self._next_turn()
+                return
         else:
+            # A action (New turn)
             self.battle_entity_b.end_turn()
             self._turn_a = True
-            self.turn += 1
+            self._turn += 1
+            self._speedDiff += diff
+            if self._speedDiff <= -1.0:
+                self._speedDiff += 1.0 - diff
+                await self._next_turn()
+                return
 
         if self.battle_entity_a.entity.get_current_hp() == 0:
             await self._finish(True)
@@ -292,10 +305,10 @@ class Battle:
         await self._message.message.edit(content=self.pop_log())
 
     def pop_log(self):
-        if self.turn < 10:
-            self._log.insert(0, f"``Turn:  {'-' * (self.turn - 1)}{self.turn}{'-' * (9 - self.turn)}``")
-        else:
-            self._log.insert(0, f"``Turn: {'-' * (self.turn % 10)}{self.turn}{'-' * (8 - self.turn % 10)}``")
+        how_many: int = round(self._speedDiff * 10)
+        self._log.insert(0, f"``{self.battle_entity_b.entity.get_name()} "
+                            f"{'-' * (how_many + 10)}|{'-' * (10 - how_many)} "
+                            f"{self.battle_entity_a.entity.get_name()}`` Speed Advantage")
         self._log.append(f"{self.battle_entity_a.entity.get_name()} - {self.battle_entity_a.print()}")
         self._log.append(f"{self.battle_entity_b.entity.get_name()} - {self.battle_entity_b.print()}")
         tp = '\n'.join(self._log)

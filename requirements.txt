@@ -1,5 +1,5 @@
+autoslot~=2018.8.1
+psycopg2~=2.8.6
 discord.py
 discord-py-slash-command==1.1.0
-psycopg2~=2.8.6
-pretty_errors
-autoslot~=2018.8.1
+PySimpleGUI~=4.38.0

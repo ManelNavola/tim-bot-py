@@ -14,6 +14,12 @@ class AbilityTier(Slots):
         self.adder: int = adder
         self.other: bool = other
 
+    def print(self) -> str:
+        if self.multiplier != 1:
+            return f"x{self.multiplier} {self.stat.abv}/{self.duration} turns"
+        else:
+            return f"+{self.adder} {self.stat.abv}/{self.duration} turns"
+
 
 class AbilityDesc(Slots):
     def __init__(self, ability_id: int, name: str, tiers: list[AbilityTier]):
@@ -81,7 +87,7 @@ FLEE = AbilityDesc(2, "Flee", [
     AbilityTier(Stats.EVA, 3, adder=60)
 ])
 
-CURSE = AbilityDesc(2, "Curse", [
+CURSE = AbilityDesc(3, "Curse", [
     AbilityTier(Stats.STR, 2, multiplier=0.8, other=True),
     AbilityTier(Stats.STR, 3, multiplier=0.8, other=True),
     AbilityTier(Stats.STR, 3, multiplier=0.6, other=True)
@@ -98,6 +104,11 @@ class Ability:
     def get_all() -> list[AbilityDesc]:
         al: list[AbilityDesc] = [PROTECTION, BLUNDER, FLEE, CURSE]
         return al
+
+    @staticmethod
+    def get_by_name(name: str) -> AbilityDesc:
+        d: dict[str, AbilityDesc] = {ai.get_name(): ai for ai in Ability.get_all()}
+        return d.get(name)
 
     @staticmethod
     def get_by_index(index: int) -> AbilityDesc:
