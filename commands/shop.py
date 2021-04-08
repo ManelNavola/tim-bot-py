@@ -1,7 +1,7 @@
 import utils
 from commands.command import Command
 from guild_data.shop import Shop, ItemPurchase
-from inventory_data.items import Item
+from item_data.items import Item
 
 
 async def check(cmd: Command):

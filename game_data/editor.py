@@ -4,9 +4,9 @@ from typing import Any, Optional
 
 import PySimpleGUI as Sg
 
-from inventory_data.abilities import Ability, AbilityDesc
-from inventory_data.items import ItemType
-from inventory_data.stats import Stats
+from item_data.abilities import Ability, AbilityDesc
+from item_data.item_classes import ItemType
+from item_data.stats import Stats
 
 
 def item_dict_to_row(key: str, data: dict) -> list[str]:

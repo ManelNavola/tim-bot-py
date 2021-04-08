@@ -4,14 +4,14 @@ from discord_slash import SlashContext
 
 import utils
 from inventory_data.entity import UserEntity
-from inventory_data.stats import Stats
+from item_data.stats import Stats
 from user_data import upgrades
 from common.incremental import Incremental
 from inventory_data.inventory import Inventory
 from db import database
 from db.row import Row
-from inventory_data import items
-from inventory_data.items import Item
+from item_data import items
+from item_data.items import Item
 from utils import DictRef, TimeMetric, TimeSlot
 if TYPE_CHECKING:
     from adventure.adventure import Adventure

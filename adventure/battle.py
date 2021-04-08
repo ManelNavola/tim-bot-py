@@ -7,10 +7,10 @@ from autoslot import Slots
 
 import utils
 from adventure.adventure import Chapter
-from inventory_data.abilities import AbilityInstance
+from item_data.abilities import AbilityInstance
 from inventory_data.entity import Entity, UserEntity
-from inventory_data.items import ItemType
-from inventory_data.stats import Stats, StatInstance
+from item_data.items import ItemType
+from item_data.stats import Stats, StatInstance
 from user_data.user import User
 
 

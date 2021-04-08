@@ -68,5 +68,14 @@
       "CONT": 1
     },
     "Ability": "Protection"
+  },
+  "8": {
+    "Name": "Sharp Spear",
+    "Type": "Weapon",
+    "Stats": {
+      "STR": 1,
+      "SPD": 1,
+      "CRIT": 1
+    }
   }
 }

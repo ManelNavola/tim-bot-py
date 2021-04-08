@@ -4,8 +4,8 @@ from typing import Optional
 import utils
 from user_data.user import User
 from db import database
-from inventory_data import items
-from inventory_data.items import Item
+from item_data import items
+from item_data.items import Item
 from utils import DictRef, TimeSlot, TimeMetric
 
 

@@ -1,10 +1,10 @@
 from typing import Optional
 
-from inventory_data import items
-from inventory_data.abilities import AbilityInstance
+from item_data import items
+from item_data.abilities import AbilityInstance
 from utils import DictRef
-from inventory_data.items import Item, ItemType
-from inventory_data.stats import StatInstance, Stats
+from item_data.items import Item, ItemType
+from item_data.stats import StatInstance, Stats
 from abc import ABCMeta, abstractmethod
 
 

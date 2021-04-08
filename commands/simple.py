@@ -5,7 +5,7 @@ import discord
 import utils
 from commands.command import Command
 from common import storage
-from inventory_data.items import ItemType, Item
+from item_data.items import ItemType, Item
 
 
 async def inv(cmd: Command):

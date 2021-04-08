@@ -3,7 +3,7 @@ from typing import Optional, Any
 from autoslot import Slots
 
 import utils
-from inventory_data.rarity import Rarity, RarityInstance
+from item_data.rarity import Rarity, RarityInstance
 
 
 class StatInstance(Slots):

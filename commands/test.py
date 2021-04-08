@@ -4,7 +4,7 @@ from adventure.battle import BattleChapter
 from adventure.reward import RewardChapter
 from commands.command import Command
 from inventory_data.entity import BotEntityBuilder
-from inventory_data.stats import Stats
+from item_data.stats import Stats
 
 FITE_BOT: bool = True
 

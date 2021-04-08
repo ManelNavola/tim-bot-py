@@ -3,7 +3,7 @@ from typing import Optional
 from autoslot import Slots
 
 import utils
-from inventory_data.stats import StatInstance, Stats
+from item_data.stats import StatInstance, Stats
 
 
 class AbilityTier(Slots):
