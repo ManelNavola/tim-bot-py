@@ -2,9 +2,9 @@ from collections import UserDict
 from typing import Optional
 
 import utils
+from db import database
 from guild_data.guild import Guild
 from user_data.user import User
-from db import database
 
 
 class Cache(UserDict):

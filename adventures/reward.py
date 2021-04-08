@@ -1,5 +1,5 @@
 import utils
-from adventure.adventure import Chapter
+from adventures.adventure import Chapter
 from user_data.user import User
 
 

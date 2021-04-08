@@ -2,9 +2,9 @@ from discord_slash import SlashContext
 
 import utils
 from common import storage
+from db import database
 from guild_data.guild import Guild
 from user_data.user import User
-from db import database
 
 
 class Command:

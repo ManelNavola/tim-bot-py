@@ -2,10 +2,10 @@ import random
 from typing import Optional
 
 import utils
-from user_data.user import User
 from db import database
 from item_data import items
 from item_data.items import Item
+from user_data.user import User
 from utils import DictRef, TimeSlot, TimeMetric
 
 

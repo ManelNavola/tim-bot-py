@@ -1,17 +1,28 @@
 import utils
-from adventure.adventure import Adventure
-from adventure.battle import BattleChapter
-from adventure.reward import RewardChapter
+from adventures.adventure import Adventure
+from adventures.battle import BattleChapter
+from adventures.reward import RewardChapter
 from commands.command import Command
-from inventory_data.entity import BotEntityBuilder
+from entities.bot_entity import BotEntityBuilder
 from item_data.stats import Stats
 
-FITE_BOT: bool = True
+FIGHT_BOT: bool = True
+
+
+async def rich(cmd: Command):
+    for upg_name in cmd.user.upgrades:
+        upg = cmd.user.upgrades[upg_name]
+        while not upg.is_max_level():
+            upg.level_up()
+    cmd.user.add_money(999999999999)
+    await cmd.send_hidden("yay")
 
 
 async def test(cmd: Command):
-    if FITE_BOT:
-        potato = BotEntityBuilder('Potato', 4, 0, {
+    if FIGHT_BOT:
+        potato = BotEntityBuilder('Potato', {
+            Stats.HP: -16,
+            Stats.MP: 0,
             Stats.STR: -1,
         })
         adventure: Adventure = Adventure("Test Adventure", f"{utils.Emoji.BANK}")

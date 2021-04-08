@@ -5,10 +5,10 @@ from typing import Optional, Any
 from autoslot import Slots
 
 import utils
+from db import database
 from item_data.abilities import AbilityInstance, Ability
 from item_data.item_classes import ItemDescription, ItemType
 from item_data.rarity import Rarity, RarityInstance
-from db import database
 from item_data.stats import Stats, StatInstance
 
 ITEM_GENERATION_DATA: dict[str, dict[RarityInstance, Any]] = {

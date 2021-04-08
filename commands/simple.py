@@ -84,7 +84,7 @@ async def unequip_all(cmd: Command):
         await cmd.error("You don't have anything equipped!")
         return
     cmd.user.inventory.unequip_all()
-    await cmd.send_hidden("Unequiped all items")
+    await cmd.send_hidden("Unequipped all items")
 
 
 async def abilities(cmd: Command):

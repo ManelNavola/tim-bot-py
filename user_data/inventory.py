@@ -1,10 +1,10 @@
 from typing import Optional, Any
 
 import utils
+from entities.user_entity import UserEntity
 from item_data import items
-from inventory_data.entity import UserEntity
-from utils import DictRef
 from item_data.items import Item, ItemType
+from utils import DictRef
 
 
 class Inventory:

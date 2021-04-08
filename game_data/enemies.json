@@ -1,0 +1,55 @@
+{
+  "1": {
+    "Name": "Toxic Sludge",
+    "Stats": {
+      "HP": -10,
+      "MP": -2,
+      "EVA": 10,
+      "CONT": 1
+    }
+  },
+  "2": {
+    "Name": "Green Slime",
+    "Stats": {
+      "HP": -12,
+      "MP": -2,
+      "SPD": 2,
+      "EVA": 2
+    }
+  },
+  "3": {
+    "Name": "Weak Bandit",
+    "Stats": {
+      "HP": -8,
+      "MP": -2,
+      "STR": -1,
+      "SPD": 10
+    }
+  },
+  "4": {
+    "Name": "Small Wolf",
+    "Stats": {
+      "HP": -5,
+      "MP": -2
+    }
+  },
+  "5": {
+    "Name": "Angry Tree",
+    "Stats": {
+      "DEF": 2
+    }
+  },
+  "6": {
+    "Name": "Vampire",
+    "Stats": {
+      "VAMP": 20
+    }
+  },
+  "7": {
+    "Name": "Warrior",
+    "Stats": {
+      "DEF": 5,
+      "CONT": 10
+    }
+  }
+}

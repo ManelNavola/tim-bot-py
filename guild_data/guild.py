@@ -1,10 +1,10 @@
 import utils
-from guild_data.bet import Bet
 from common.incremental import Incremental
-from guild_data.shop import Shop
-from user_data.user import User
 from db import database
 from db.row import Row
+from guild_data.bet import Bet
+from guild_data.shop import Shop
+from user_data.user import User
 from utils import DictRef, TimeSlot, TimeMetric
 
 

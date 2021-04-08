@@ -14,8 +14,8 @@ class Incremental(Slots):
     def get(self, override_now: int = None) -> int:
         if override_now is None:
             override_now = utils.now()
-        q, mod = divmod(override_now - self._time_ref.get(), self._time_slot.metric_seconds())
-        whole = q * self._time_slot.amount + int((float(mod) / self._time_slot.metric_seconds())
+        q, mod = divmod(override_now - self._time_ref.get(), self._time_slot.metric.seconds())
+        whole = q * self._time_slot.amount + int((float(mod) / self._time_slot.metric.seconds())
                                                  * self._time_slot.amount)
         return whole + self._base_ref.get()
 

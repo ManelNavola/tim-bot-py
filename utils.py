@@ -72,9 +72,6 @@ class TimeSlot(Slots):
         self.metric = metric
         self.amount = amount
 
-    def metric_seconds(self):
-        return self.metric.seconds()
-
     def metric_abbreviation(self):
         return self.metric.abbreviation()
 
@@ -136,6 +133,9 @@ class Emoji:
     CRIT = r'\🌟'
     STUN = r'\🛑'
     VAMP = r'\🧛'
+
+    # Adventure
+    COLISEUM = r'\🔱'
     BATTLE = r'\⚔️'
 
 

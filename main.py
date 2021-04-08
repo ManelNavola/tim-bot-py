@@ -8,8 +8,7 @@ from discord_slash import SlashCommand, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
 import utils
-from commands import command, simple, crate, bet, upgrade, shop, messages, test
-from commands.command import Command
+from commands import command, simple, crate, bet, upgrade, shop, messages, test, adventure
 from common import storage
 from db import database
 
@@ -206,7 +205,7 @@ async def _shop_sell(ctx, number: int):
     await command.call(ctx, shop.sell, number)
 
 
-@slash.subcommand(base="shop", name="sellall", description="Sells all unequipped items from your inventory",
+@slash.subcommand(base="shop", name="dispose", description="Sells all unequipped items from your inventory",
                   guild_ids=registered_guild_ids)
 async def _shop_sell_all(ctx):
     await command.call(ctx, shop.sell_all)
@@ -239,7 +238,7 @@ async def _equip(ctx, number: int):
     await command.call(ctx, simple.equip, number)
 
 
-@slash.slash(name="equipbest", description="Equips the best items you have according to their price",
+@slash.slash(name="equip_best", description="Equips the best items you have according to their price",
              guild_ids=registered_guild_ids)
 async def _equip_best(ctx):
     await command.call(ctx, simple.equip_best)
@@ -259,27 +258,24 @@ async def _unequip(ctx, number: int):
     await command.call(ctx, simple.unequip, number)
 
 
-@slash.slash(name="unequipall", description="Unequip all items",
+@slash.slash(name="unequip_all", description="Unequip all items",
              guild_ids=registered_guild_ids)
 async def _unequip_all(ctx):
     await command.call(ctx, simple.unequip_all)
 
 
+# Adventures
+@slash.slash(name="coliseum", description="MAKE IT RAIN", guild_ids=registered_guild_ids)
+async def _rich(ctx):
+    await command.call(ctx, adventure.coliseum_start)
+
 # Register test command
 saved: Optional[User] = None
-fite_bot: bool = True
+fight_bot: bool = True
 if utils.is_test():
-    @slash.slash(name="rich", description="MAKE IT RAIN BABYYY", guild_ids=registered_guild_ids)
+    @slash.slash(name="rich", description="MAKE IT RAIN", guild_ids=registered_guild_ids)
     async def _rich(ctx):
-        async def rich(cmd: Command):
-            for upg_name in cmd.user.upgrades:
-                upg = cmd.user.upgrades[upg_name]
-                while not upg.is_max_level():
-                    upg.level_up()
-            cmd.user.add_money(999999999999)
-            await cmd.send_hidden("yay")
-
-        await command.call(ctx, rich)
+        await command.call(ctx, test.rich)
 
     @slash.slash(name="test", description="Quickly test anything!",
                  guild_ids=registered_guild_ids)

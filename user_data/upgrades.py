@@ -2,6 +2,7 @@
 from typing import Callable
 
 from autoslot import Slots
+
 import utils
 
 

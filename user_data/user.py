@@ -3,18 +3,19 @@ from typing import Optional, TYPE_CHECKING
 from discord_slash import SlashContext
 
 import utils
-from inventory_data.entity import UserEntity
-from item_data.stats import Stats
-from user_data import upgrades
 from common.incremental import Incremental
-from inventory_data.inventory import Inventory
 from db import database
 from db.row import Row
+from entities.user_entity import UserEntity
+from user_data.inventory import Inventory
 from item_data import items
 from item_data.items import Item
+from item_data.stats import Stats
+from user_data import upgrades
 from utils import DictRef, TimeMetric, TimeSlot
+
 if TYPE_CHECKING:
-    from adventure.adventure import Adventure
+    from adventures.adventure import Adventure
 
 
 class User(Row):

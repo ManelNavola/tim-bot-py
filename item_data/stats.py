@@ -38,18 +38,24 @@ class StatInstance(Slots):
                         tp.append(f"{self.represent(persistent_value)}/{self.represent(self.get_value(value))}")
                     else:
                         tp.append(f"{self.represent(persistent_value)}/{self.represent(self.get_value(value))} "
-                                  f"(+{self.represent(self.get_value(value) - self.base)})")
+                                  f"(+{value})")
             else:
-                tp.append(f"{self.represent(persistent_value)} +{self.represent(self.get_value(value))}")
+                if short:
+                    tp.append(f"{self.represent(persistent_value)}")
+                else:
+                    tp.append(f"{self.represent(persistent_value)} (+{value})")
         else:
             if self.base > 0:
                 if short or value == 0:
                     tp.append(f"{self.represent(self.get_value(value))}")
                 else:
                     tp.append(f"{self.represent(self.get_value(value))} "
-                              f"(+{self.represent(self.get_value(value) - self.base)})")
+                              f"(+{value})")
             else:
-                tp.append(f"{self.represent(self.get_value(value))}")
+                if short:
+                    tp.append(f"{self.represent(self.get_value(value))}")
+                else:
+                    tp.append(f"{self.represent(self.get_value(value))} (+{value})")
         return ''.join(tp)
 
 
@@ -92,7 +98,9 @@ class SPD(StatInstance):
 
     def get_value(self, increment: int) -> Any:
         x = increment
-        return x / (x + 20) + self.base
+        if increment < 0:
+            return 0
+        return x / (x + 30) + self.base
 
     @staticmethod
     def represent(value: Any) -> str:

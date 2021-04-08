@@ -41,8 +41,8 @@ class Chapter(ABC):
     async def init(self, user: User):
         pass
 
-    async def end(self):
-        await self._adventure.end_chapter()
+    async def end(self, lost: bool = False):
+        await self._adventure.end_chapter(lost)
 
 
 class Adventure:
@@ -80,17 +80,22 @@ class Adventure:
             path.append(chapter.icon)
         return f"{self._icon} Progress: {' ⎯ '.join(path)}"
 
-    async def end_chapter(self):
+    async def end_chapter(self, lost: bool = False):
         now = utils.current_ms()
         await self.message.clear_reactions()
         diff = (utils.current_ms() - now) / 1000
         if diff < Adventure.DELAY_TIME:
             await asyncio.sleep(Adventure.DELAY_TIME - diff)
-        if self._chapters:
-            chapter: Chapter = self._chapters.pop(0)
-            chapter.setup(self, self.print_progress(chapter))
-            await chapter.init(self._user)
-        else:
-            await self.message.edit(f"{self._user.get_name()} finished {self._name}.")
+        if lost:
+            await self.message.edit(f"{self._user.get_name()} died on {self._name}...")
             self._user.end_adventure()
             messages.unregister(self.message)
+        else:
+            if self._chapters:
+                chapter: Chapter = self._chapters.pop(0)
+                chapter.setup(self, self.print_progress(chapter))
+                await chapter.init(self._user)
+            else:
+                await self.message.edit(f"{self._user.get_name()} finished {self._name}.")
+                self._user.end_adventure()
+                messages.unregister(self.message)
