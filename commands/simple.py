@@ -1,6 +1,6 @@
 from typing import Optional
 
-import discord  # noqa
+import discord
 
 import utils
 from commands.command import Command

@@ -1,13 +1,7 @@
-from typing import Optional
-
-from discord_slash import SlashContext
-
 import utils
-from guild_data.battle import Battle
 from guild_data.bet import Bet
 from common.incremental import Incremental
 from guild_data.shop import Shop
-from inventory_data.entity import Entity, UserEntity, BotEntity
 from user_data.user import User
 from db import database
 from db.row import Row
@@ -30,7 +24,6 @@ class Guild(Row):
         self.bet: Bet = Bet(DictRef(self._data, 'ongoing_bet'))
         self.registered_user_ids: set[int] = set(self._data['user_ids'])
         self.shop: Shop = Shop(DictRef(self._data, 'shop_time'), self.id)
-        self.stat_being_to_battle = {}
 
     def load_defaults(self):
         return {
@@ -100,28 +93,28 @@ class Guild(Row):
         else:
             return f"{self._box.print_rate()} for {utils.print_time(diff)}"
 
-    async def start_battle(self, ctx: SlashContext, user: User,
-                           opponent_bot: Optional[BotEntity] = None, opponent_user: Optional[User] = None) -> None:
-        assert (opponent_user is not None) or (opponent_bot is not None), "A battle must have an opponent!"
-        ul: list[int] = [user.id]
-        a: UserEntity = user.user_entity
-        b: Entity
-        if opponent_bot is not None:
-            b = opponent_bot
-        else:
-            b = opponent_user.user_entity
-            ul.append(opponent_user.id)
-        battle: Battle = Battle(a, b)
-        self.stat_being_to_battle[a] = battle
-        self.stat_being_to_battle[b] = battle
-        await ctx.send("BATTLE START!")
-        await battle.init(self, ctx.message, ul)
-
-    def end_battle(self, battle: Battle) -> None:
-        a = battle.battle_entity_a.entity
-        b = battle.battle_entity_b.entity
-        del self.stat_being_to_battle[a]
-        del self.stat_being_to_battle[b]
-
-    def get_battle(self, user: User) -> Optional[Battle]:
-        return self.stat_being_to_battle.get(user.user_entity)
+    # async def start_battle(self, ctx: SlashContext, user: User,
+    #                        opponent_bot: Optional[BotEntity] = None, opponent_user: Optional[User] = None) -> None:
+    #     assert (opponent_user is not None) or (opponent_bot is not None), "A battle must have an opponent!"
+    #     ul: list[int] = [user.id]
+    #     a: UserEntity = user.user_entity
+    #     b: Entity
+    #     if opponent_bot is not None:
+    #         b = opponent_bot
+    #     else:
+    #         b = opponent_user.user_entity
+    #         ul.append(opponent_user.id)
+    #     battle: BattleInstance = BattleInstance(a, b)
+    #     self.stat_being_to_battle[a] = battle
+    #     self.stat_being_to_battle[b] = battle
+    #     await ctx.send("BATTLE START!")
+    #     await battle.init(self, ctx.message, ul)
+    #
+    # def end_battle(self, battle: BattleInstance) -> None:
+    #     a = battle.battle_entity_a.entity
+    #     b = battle.battle_entity_b.entity
+    #     del self.stat_being_to_battle[a]
+    #     del self.stat_being_to_battle[b]
+    #
+    # def get_battle(self, user: User) -> Optional[BattleInstance]:
+    #     return self.stat_being_to_battle.get(user.user_entity)

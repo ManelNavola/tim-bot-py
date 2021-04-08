@@ -59,8 +59,8 @@ async def call(ctx: SlashContext, func, *args, ignore_battle: bool = False):
     cmd.user.update_name(ctx.author.display_name)
 
     # CALL COMMAND
-    if (cmd.guild.get_battle(cmd.user) is not None) and (not ignore_battle):
-        await cmd.error("You cannot issue commands while in battle!")
+    if (cmd.user.get_adventure() is not None) and (not ignore_battle):
+        await cmd.error("You cannot issue commands while in an adventure!")
         return
     await func(cmd, *args)  # Execute command
 

@@ -1,21 +1,25 @@
+import inspect
 from typing import Callable, Optional
 
-import discord  # noqa
-from discord import Message, Reaction  # noqa
+import discord
+from discord import Message, Reaction
 
 
 class MessagePlus:
-    def __init__(self, guild, message: Message, react_to: Optional[list[int]]):
+    def __init__(self, message: Message, react_to: Optional[list[int]]):
         self.message: Message = message
-        self.guild = guild
         self.react_to: Optional[list[int]] = react_to
         self._reaction_hooks: dict[str, Callable] = {}
+
+    async def edit(self, msg: str):
+        await self.message.edit(content=msg)
 
     async def on_reaction(self, user, member: discord.User, input_reaction: Reaction) -> None:
         if user.id in self.react_to:
             for reaction, hook in self._reaction_hooks.items():
                 if reaction.startswith(input_reaction.emoji):
-                    await hook(self.guild, user, input_reaction.emoji)
+                    li = [user, input_reaction.emoji]
+                    await hook(*[li[i] for i in range(len(inspect.getfullargspec(hook).args) - 1)])
                     await input_reaction.remove(member)
                     return
 
@@ -27,12 +31,17 @@ class MessagePlus:
         del self._reaction_hooks[reaction]
         await self.message.clear_reaction(reaction)
 
+    async def clear_reactions(self):
+        for reaction, hook in self._reaction_hooks.items():
+            await self.message.clear_reaction(reaction)
+        self._reaction_hooks.clear()
+
 
 _MESSAGE_ID_TO_MESSAGE_PLUS: dict[int, MessagePlus] = {}
 
 
-def register_message_reactions(guild, message: Message, react_to: Optional[list[int]]) -> MessagePlus:
-    mp: MessagePlus = MessagePlus(guild, message, react_to)
+def register_message_reactions(message: Message, react_to: Optional[list[int]]) -> MessagePlus:
+    mp: MessagePlus = MessagePlus(message, react_to)
     _MESSAGE_ID_TO_MESSAGE_PLUS[mp.message.id] = mp
     return mp
 

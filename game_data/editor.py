@@ -38,7 +38,7 @@ def modify_item_row(item_data) -> Optional[list]:
     all_stats = Stats.get_all()
     name_column = Sg.Column([
         [Sg.Text("Name")],
-        [Sg.InputText(item_data[i], size=(20, 1), justification='center', enable_events=True, key=f'ChangedName')]
+        [Sg.InputText(item_data[i], size=(20, 1), justification='center', enable_events=True, key='ChangedName')]
     ], expand_y=True, pad=(0, 0))
     i += 1
     type_column = Sg.Column([
@@ -98,7 +98,7 @@ def modify_item_row(item_data) -> Optional[list]:
                         all_empty = False
                         try:
                             int(new_item_data[i])
-                        except Exception as e:  # noqa
+                        except ValueError:
                             Sg.popup_error(f"Stat {all_stats[i - diff].abv} must be empty or an int above 0")
                             failed = True
                             break

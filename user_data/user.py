@@ -1,3 +1,7 @@
+from typing import Optional, TYPE_CHECKING
+
+from discord_slash import SlashContext
+
 import utils
 from inventory_data.entity import UserEntity
 from inventory_data.stats import Stats
@@ -9,6 +13,8 @@ from db.row import Row
 from inventory_data import items
 from inventory_data.items import Item
 from utils import DictRef, TimeMetric, TimeSlot
+if TYPE_CHECKING:
+    from adventure.adventure import Adventure
 
 
 class User(Row):
@@ -27,6 +33,7 @@ class User(Row):
         }
         self._bank = Incremental(DictRef(self._data, 'bank'), DictRef(self._data, 'bank_time'),
                                  TimeSlot(TimeMetric.HOUR, self.upgrades['garden'].get_value()))
+        self._adventure: Optional[Adventure] = None
 
         # Fill inventory
         slots = self.upgrades['inventory'].get_value()
@@ -148,6 +155,18 @@ class User(Row):
         self._bank.set(bank - need)
         self.add_money(need)
         return need
+
+    def get_adventure(self) -> Optional['Adventure']:
+        return self._adventure
+
+    async def start_adventure(self, ctx: SlashContext, adventure: 'Adventure'):
+        assert self.get_adventure() is None, "User is already in an adventure!"
+        self._adventure = adventure
+        await self._adventure.init(ctx, self)
+
+    def end_adventure(self):
+        assert self.get_adventure() is not None, "User is not in an adventure!"
+        self._adventure = None
 
     def get_inventory_limit(self) -> int:
         return self.upgrades['inventory'].get_value()

@@ -1,13 +1,12 @@
+import asyncio
 import random
-from enum import Enum, unique
+from enum import unique, Enum
 from typing import Optional, Any
 
 from autoslot import Slots
 
 import utils
-from discord import Message  # noqa
-from commands import messages
-from commands.messages import MessagePlus
+from adventure.adventure import Chapter
 from inventory_data.abilities import AbilityInstance
 from inventory_data.entity import Entity, UserEntity
 from inventory_data.items import ItemType
@@ -112,7 +111,7 @@ class BattleEntity:
                 val = val * effect.instance.get().multiplier
                 val += effect.instance.get().adder
         val -= stat.base
-        return max(round(val), -stat.base)
+        return round(val)
 
     def _print_battle_stat(self, stat: StatInstance) -> str:
         stuff: list[str] = []
@@ -127,7 +126,7 @@ class BattleEntity:
             Stats.MP: self.entity.get_current_mp()
         }
         if stuff:
-            return stat.print(self._get_stat_value(stat), short=True, persistent_value=persistent.get(stat)) +\
+            return stat.print(self._get_stat_value(stat), short=True, persistent_value=persistent.get(stat)) + \
                    ' (' + ', '.join(stuff) + ')'
         else:
             return stat.print(self._get_stat_value(stat), short=True, persistent_value=persistent.get(stat))
@@ -143,39 +142,40 @@ class BattleEntity:
         return ', '.join(sc)
 
 
-class Battle:
-    def __init__(self, entity_a: UserEntity, entity_b: Entity):
-        self.guild = None
-
-        self.battle_entity_a: BattleEntity = BattleEntity(entity_a)
+class BattleChapter(Chapter):
+    def __init__(self, entity_b: Entity):
+        super().__init__(f"{utils.Emoji.BATTLE}")
+        self.battle_entity_a: Optional[BattleEntity] = None
         self.battle_entity_b: BattleEntity = BattleEntity(entity_b)
 
-        self._turn: int = 0
         self._speedDiff: float = 0
-        self._log: list[str] = []
-        self._message: Optional[MessagePlus] = None
+        self._battle_log: list[str] = []
+        self._finished: bool = False
 
         self._equipment_emoji: dict[ItemType, int] = {}
+        self._first_message: str = ""
+        self._turn_a: bool = False
+
+    async def init(self, user: User):
+        battle_num: int = self._adventure.saved_data.get('battle_num', 0) + 1
+        battle_started: str = f"{utils.Emoji.BATTLE} BATTLE #{battle_num} STARTED {utils.Emoji.BATTLE}"
+        self._adventure.saved_data['battle_num'] = battle_num
+        self._first_message = battle_started
+        self.add_log(battle_started)
+        setup_wait: int = utils.current_ms()
+        await self.pop_log()
+        self.battle_entity_a = BattleEntity(user.user_entity)
 
         # Get who is first
         speed_a = self.battle_entity_a.get_stat(Stats.SPD)
         speed_b = self.battle_entity_b.get_stat(Stats.SPD)
-        self._turn_a: bool = False
         if speed_b > speed_a:
             self._turn_a = True
         elif speed_b == speed_a and random.random() < 0.5:
             self._turn_a = True
 
-    async def init(self, guild, message: Message, user_id_list: list[int]):
-        # Set guild
-        self.guild = guild
-
-        # Create MessagePlus
-        mp = messages.register_message_reactions(guild, message, user_id_list)
-        self._message = mp
-
         # Add basic actions
-        await mp.add_reaction(BattleAction.ATTACK.get_emoji(), self.attack)
+        await self.message.add_reaction(BattleAction.ATTACK.get_emoji(), self.attack)
 
         # Add equipment actions
         for _, itemType in self.battle_entity_a.get_abilities():
@@ -185,12 +185,15 @@ class Battle:
                 self._equipment_emoji[itemType] = self._equipment_emoji.get(itemType, 0) + 1
 
         for emoji in self._equipment_emoji.keys():
-            await mp.add_reaction(emoji.get_type_icon()[1:], self.ability)
+            await self.message.add_reaction(emoji.get_type_icon()[1:], self.ability)
 
         # Start
+        diff = (utils.current_ms() - setup_wait) / 1000
+        if diff < 1.5:
+            await asyncio.sleep(diff)
         await self._next_turn()
 
-    async def ability(self, _, user: User, input_reaction: str) -> None:
+    async def ability(self, user: User, input_reaction: str) -> None:
         # Check
         issuer, victim = self._get_issuer_victim(user)
         if not self._is_turn(issuer):
@@ -206,20 +209,21 @@ class Battle:
         self._equipment_emoji[item_type] -= 1
         if self._equipment_emoji[item_type] <= 0:
             del self._equipment_emoji[item_type]
-            await self._message.remove_reactions(item_type.get_type_icon()[1:])
+            await self.message.remove_reactions(item_type.get_type_icon()[1:])
 
         # Who to add effect to
         if ability.get().other:
             victim.add_effect(ability)
-            self._log.append(f"> {issuer.entity.get_name()} used {ability.get_name()} on {victim.entity.get_name()}!")
+            self._battle_log.append(f"> {issuer.entity.get_name()} used {ability.get_name()} "
+                                    f"on {victim.entity.get_name()}!")
         else:
             issuer.add_effect(ability, True)
-            self._log.append(f"> {issuer.entity.get_name()} used {ability.get_name()}!")
+            self._battle_log.append(f"> {issuer.entity.get_name()} used {ability.get_name()}!")
 
         # Next turn
         await self._next_turn()
 
-    async def attack(self, _=None, user: Optional[User] = None, _2=None) -> None:
+    async def attack(self, user: Optional[User] = None, _2=None) -> None:
         # Check
         issuer, victim = self._get_issuer_victim(user)
         if not self._is_turn(issuer):
@@ -227,22 +231,22 @@ class Battle:
 
         dealt: AttackResult = issuer.attack(victim)
         if dealt.eva:
-            self._log.append(f"> {victim.entity.get_name()} evaded {issuer.entity.get_name()}'s attack!")
+            self._battle_log.append(f"> {victim.entity.get_name()} evaded {issuer.entity.get_name()}'s attack!")
         else:
             if dealt.vamp:
                 if dealt.crit:
-                    self._log.append(f"> {victim.entity.get_name()} **critically** stole {dealt.damage} "
-                                     f"health from {issuer.entity.get_name()}!")
+                    self._battle_log.append(f"> {victim.entity.get_name()} **critically** stole {dealt.damage} "
+                                            f"health from {issuer.entity.get_name()}!")
                 else:
-                    self._log.append(f"> {victim.entity.get_name()} stole {dealt.damage} "
-                                     f"health from {issuer.entity.get_name()}!")
+                    self._battle_log.append(f"> {victim.entity.get_name()} stole {dealt.damage} "
+                                            f"health from {issuer.entity.get_name()}!")
             else:
                 if dealt.crit:
-                    self._log.append(f"> {issuer.entity.get_name()} dealt a **critical** attack to "
-                                     f"{victim.entity.get_name()} for {dealt.damage} damage!")
+                    self._battle_log.append(f"> {issuer.entity.get_name()} dealt a **critical** attack to "
+                                            f"{victim.entity.get_name()} for {dealt.damage} damage!")
                 else:
-                    self._log.append(f"> {issuer.entity.get_name()} attacked {victim.entity.get_name()} "
-                                     f"for {dealt.damage} damage!")
+                    self._battle_log.append(f"> {issuer.entity.get_name()} attacked {victim.entity.get_name()} "
+                                            f"for {dealt.damage} damage!")
 
         await self._next_turn()
 
@@ -263,6 +267,9 @@ class Battle:
             return False
 
     async def _next_turn(self) -> None:
+        if self._finished:
+            return
+
         diff: float = self.battle_entity_a.get_stat(Stats.SPD) - self.battle_entity_b.get_stat(Stats.SPD)
         if self._turn_a:
             # B action
@@ -276,7 +283,6 @@ class Battle:
             # A action (New turn)
             self.battle_entity_b.end_turn()
             self._turn_a = True
-            self._turn += 1
             self._speedDiff += diff
             if self._speedDiff <= -1.0:
                 self._speedDiff += 1.0 - diff
@@ -293,33 +299,39 @@ class Battle:
         # Check if 2 player
         if self.battle_entity_b.is_user():
             if self._turn_a:
-                self._log.append(f"[{self.battle_entity_a.entity.get_name()}'s turn]")
+                self._battle_log.append(f"[{self.battle_entity_a.entity.get_name()}'s turn]")
             else:
-                self._log.append(f"[{self.battle_entity_b.entity.get_name()}'s turn]")
+                self._battle_log.append(f"[{self.battle_entity_b.entity.get_name()}'s turn]")
 
         # Bot time
         if (not self.battle_entity_b.is_user()) and (not self._turn_a):
             await self.attack()
             return
 
-        await self._message.message.edit(content=self.pop_log())
+        await self.pop_battle_log()
 
-    def pop_log(self):
+    async def pop_battle_log(self):
         how_many: int = round(self._speedDiff * 10)
-        self._log.insert(0, f"``{self.battle_entity_b.entity.get_name()} "
-                            f"{'-' * (how_many + 10)}|{'-' * (10 - how_many)} "
-                            f"{self.battle_entity_a.entity.get_name()}`` Speed Advantage")
-        self._log.append(f"{self.battle_entity_a.entity.get_name()} - {self.battle_entity_a.print()}")
-        self._log.append(f"{self.battle_entity_b.entity.get_name()} - {self.battle_entity_b.print()}")
-        tp = '\n'.join(self._log)
-        self._log.clear()
-        return tp
+        self._battle_log.insert(0, f"``{self.battle_entity_b.entity.get_name()} "
+                                   f"{'-' * (how_many + 10)}|{'-' * (10 - how_many)} "
+                                   f"{self.battle_entity_a.entity.get_name()}`` Speed Advantage")
+        if self._first_message:
+            self._battle_log.insert(0, self._first_message)
+            self._first_message = ""
+        self._battle_log.append(f"{self.battle_entity_a.entity.get_name()} - {self.battle_entity_a.print()}")
+        self._battle_log.append(f"{self.battle_entity_b.entity.get_name()} - {self.battle_entity_b.print()}")
+        tp = '\n'.join(self._battle_log)
+        self.add_log(tp)
+        self._battle_log.clear()
+        await self.pop_log()
 
     async def _finish(self, b_won: bool = False):
+        self._finished = True
         if b_won:
-            self._log.append(f"{utils.Emoji.FIRST_PLACE} {self.battle_entity_b.entity.get_name()} won the battle!")
+            self._battle_log.append(f"{utils.Emoji.FIRST_PLACE} "
+                                    f"{self.battle_entity_b.entity.get_name()} won the battle!")
         else:
-            self._log.append(f"{utils.Emoji.FIRST_PLACE} {self.battle_entity_a.entity.get_name()} won the battle!")
-        self.guild.end_battle(self)
-        await self._message.message.edit(content=self.pop_log())
-        messages.unregister(self._message)
+            self._battle_log.append(f"{utils.Emoji.FIRST_PLACE} "
+                                    f"{self.battle_entity_a.entity.get_name()} won the battle!")
+        await self.pop_battle_log()
+        await self.end()

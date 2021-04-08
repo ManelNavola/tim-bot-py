@@ -50,12 +50,27 @@ class Entity(metaclass=ABCMeta):
         return '\n'.join(dc)
 
 
+class BotEntityBuilder:
+    def __init__(self, name: str, max_hp: int, max_mp: int, stat_dict: dict[StatInstance, int],
+                 abilities: Optional[list[AbilityInstance]] = None):
+        if not abilities:
+            abilities = []
+        self.abilities: list[AbilityInstance] = abilities
+        self.stat_dict: dict[StatInstance, int] = stat_dict
+        self.max_mp: int = max_mp
+        self.max_hp: int = max_hp
+        self.name = name
+
+    def instance(self):
+        return BotEntity(self.name, self.max_hp, self.max_mp, self.stat_dict.copy(), [ab for ab in self.abilities])
+
+
 class BotEntity(Entity):
     def __init__(self, name: str, max_hp: int, max_mp: int, stat_dict: dict[StatInstance, int],
                  abilities: Optional[list[AbilityInstance]] = None):
         stat_dict.update({
             Stats.HP: max_hp - Stats.HP.base,
-            Stats.MP: max_mp - Stats.MP.base
+            Stats.MP: max_mp - Stats.MP.base,
         })
         super().__init__(stat_dict)
         self._name: str = name

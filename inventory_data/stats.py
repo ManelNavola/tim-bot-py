@@ -7,7 +7,7 @@ from inventory_data.rarity import Rarity, RarityInstance
 
 
 class StatInstance(Slots):
-    def __init__(self, abv: str, name: str, icon: str, cost: int, rarity: RarityInstance, base: Optional[int] = 0):
+    def __init__(self, abv: str, name: str, icon: str, cost: int, rarity: RarityInstance, base: int = 0):
         self.name: str = name
         self.abv: str = abv
         self.base: int = base

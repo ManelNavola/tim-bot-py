@@ -144,8 +144,12 @@ NUMERAL_TO_ROMAN: dict[int, str] = {
 }
 
 
-def now():
+def now() -> int:
     return int(calendar.timegm(time.gmtime()))
+
+
+def current_ms() -> int:
+    return round(time.time() * 1000)
 
 
 def print_money(money: int, decimals: int = 0):

@@ -2,20 +2,18 @@
 import os
 from typing import Optional
 
-import discord  # noqa
-from discord.ext import commands  # noqa
+import discord
+from discord.ext import commands
 from discord_slash import SlashCommand, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
 import utils
-from commands import command, simple, crate, bet, upgrade, shop, messages
+from commands import command, simple, crate, bet, upgrade, shop, messages, test
 from commands.command import Command
 from common import storage
 from db import database
 
 # Load database
-from inventory_data.entity import BotEntity
-from inventory_data.stats import Stats
 from user_data.user import User
 
 registered_guild_ids = None
@@ -286,21 +284,7 @@ if utils.is_test():
     @slash.slash(name="test", description="Quickly test anything!",
                  guild_ids=registered_guild_ids)
     async def _test(ctx):
-        async def to_test(cmd: Command):
-            global saved, fite_bot
-            if fite_bot:
-                being_b = BotEntity('THE BEAST', 100, 200, {
-                    Stats.STR: -1,
-                    Stats.CRIT: 100,
-                })
-                await cmd.guild.start_battle(cmd.ctx, cmd.user, opponent_bot=being_b)
-            else:
-                if saved is None:
-                    saved = cmd.user
-                else:
-                    await cmd.guild.start_battle(cmd.ctx, cmd.user, opponent_user=saved)
-
-        await command.call(ctx, to_test)
+        await command.call(ctx, test.test)
 
 # Run bot based on test
 if utils.is_test():
