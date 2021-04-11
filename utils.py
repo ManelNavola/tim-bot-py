@@ -79,66 +79,6 @@ class TimeSlot(Slots):
         return self.metric.seconds(self.amount)
 
 
-class Emoji:
-    # User profile
-    MONEY = r'\💵'
-    BANK = r'\💰'
-    GARDEN = r'\🌲'
-    SCROLL = r'\📜'
-
-    # Betting
-    ROBOT = r'\🤖'
-    COWBOY = r'\🤠'
-    SUNGLASSES = r'\😎'
-    SPARKLE = r'\✨'
-    MONEY_FLY = r'\💸'
-    INCREASE = r'\🔺'
-    DECREASE = r'\🔻'
-
-    # Commands
-    ERROR = r'\⛔'
-
-    # Crate
-    BOX = r'\📦'
-    CLOCK = r'\🕓'
-
-    # Inventory
-    EQUIPPED = r'\✔️'
-    SHOP = r'\🛒'
-    PURCHASE = r'\🛍️'
-    STATS = r'\🧮'
-    BAG = r'\🎒'
-    WEAPON = r'\🗡️'
-    SHIELD = r'\🛡️'
-    HELMET = r'\⛑️'
-    CHEST_PLATE = r'\👕'
-    LEGGINGS = r'\👖'
-    BOOTS = r'\👢'
-    ARROW_RIGHT = r'➜'
-
-    # Leaderboard
-    TROPHY = r'\🏆'
-    FIRST_PLACE = r'\🥇'
-    SECOND_PLACE = r'\🥈'
-    THIRD_PLACE = r'\🥉'
-
-    # Stats
-    HP = r'\💉'
-    MP = r'\⚗️'
-    STR = r'\💪'
-    DEF = r'\🛡️'
-    SPD = r'\🏃'
-    EVA = r'\💨'
-    CONT = r'\👊'
-    CRIT = r'\🌟'
-    STUN = r'\🛑'
-    VAMP = r'\🧛'
-
-    # Adventure
-    COLISEUM = r'\🔱'
-    BATTLE = r'\⚔️'
-
-
 NUMERAL_TO_ROMAN: dict[int, str] = {
     1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V', 6: 'VI'
 }

@@ -7,27 +7,22 @@ import utils
 from adventures.adventure import Chapter
 from adventures.battle_data.battle_entity import BattleEntity, AttackResult
 from entities.entity import Entity
+from enums.emoji import Emoji
 from item_data.abilities import AbilityInstance
-from item_data.items import ItemType
+from enums.item_type import ItemType
 from item_data.stats import Stats
 from user_data.user import User
 
 
 @unique
 class BattleAction(Enum):
-    ATTACK = 0
+    ATTACK = Emoji.BATTLE
     ABILITY = 1
-
-    def get_emoji(self) -> str:
-        emoji_dict: dict[BattleAction, str] = {
-            BattleAction.ATTACK: utils.Emoji.BATTLE[1:]
-        }
-        return emoji_dict[self]
 
 
 class BattleChapter(Chapter):
     def __init__(self, entity_b: Entity):
-        super().__init__(f"{utils.Emoji.BATTLE}")
+        super().__init__(Emoji.BATTLE)
         self.battle_entity_a: Optional[BattleEntity] = None
         self.battle_entity_b: BattleEntity = BattleEntity(entity_b)
 
@@ -41,7 +36,7 @@ class BattleChapter(Chapter):
 
     async def init(self, user: User):
         battle_num: int = self._adventure.saved_data.get('battle_num', 0) + 1
-        battle_started: str = f"{utils.Emoji.BATTLE} BATTLE #{battle_num} STARTED {utils.Emoji.BATTLE}"
+        battle_started: str = f"{Emoji.BATTLE} BATTLE #{battle_num} STARTED {Emoji.BATTLE}"
         self._adventure.saved_data['battle_num'] = battle_num
         self._first_message = battle_started
         self.add_log(battle_started)
@@ -58,7 +53,7 @@ class BattleChapter(Chapter):
             self._turn_a = True
 
         # Add basic actions
-        await self.message.add_reaction(BattleAction.ATTACK.get_emoji(), self.attack)
+        await self.message.add_reaction(BattleAction.ATTACK.value, self.attack)
 
         # Add equipment actions
         for _, itemType in self.battle_entity_a.get_abilities():
@@ -217,12 +212,12 @@ class BattleChapter(Chapter):
     async def _finish(self, b_won: bool = False):
         self._finished = True
         if b_won:
-            self._battle_log.append(f"{utils.Emoji.FIRST_PLACE} "
+            self._battle_log.append(f"{Emoji.FIRST_PLACE} "
                                     f"{self.battle_entity_b.entity.get_name()} won the battle!")
             await self.pop_battle_log()
             await self.end(True)
         else:
-            self._battle_log.append(f"{utils.Emoji.FIRST_PLACE} "
+            self._battle_log.append(f"{Emoji.FIRST_PLACE} "
                                     f"{self.battle_entity_a.entity.get_name()} won the battle!")
             await self.pop_battle_log()
             await self.end()

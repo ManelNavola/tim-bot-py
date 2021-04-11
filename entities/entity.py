@@ -2,13 +2,15 @@ from abc import ABCMeta, abstractmethod
 from typing import Optional
 
 from item_data.abilities import AbilityInstance
-from item_data.item_classes import ItemType
+from enums.item_type import ItemType
 from item_data.stats import Stats, StatInstance
 
 
 class Entity(metaclass=ABCMeta):
-    def __init__(self, stat_dict: dict[StatInstance, int]):
-        self._stat_dict: dict[StatInstance, int] = stat_dict
+    def __init__(self, stat_dict: dict[StatInstance, int], base_dict: dict[StatInstance, int]):
+        self._stat_dict: dict[StatInstance, int] = {}
+        for k in set(stat_dict.keys()) | set(base_dict.keys()):
+            self._stat_dict[k] = stat_dict.get(k, 0) + base_dict.get(k, 0)
         self._available_abilities: list[tuple[AbilityInstance, Optional[ItemType]]] = []
 
     def get_abilities(self) -> list[tuple[AbilityInstance, Optional[ItemType]]]:
@@ -41,7 +43,7 @@ class Entity(metaclass=ABCMeta):
                          Stats.MP.print(self.get_stat(Stats.MP), persistent_value=self.get_current_mp())]
 
         for stat in Stats.get_all():
-            if (stat in self._stat_dict) or (stat.base > 0):
+            if stat in self._stat_dict:
                 if stat not in [Stats.HP, Stats.MP]:
                     dc.append(stat.print(self.get_stat(stat)))
 

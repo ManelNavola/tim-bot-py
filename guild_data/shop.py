@@ -3,6 +3,7 @@ from typing import Optional
 
 import utils
 from db import database
+from enums.emoji import Emoji
 from item_data import items
 from item_data.items import Item
 from user_data.user import User
@@ -52,9 +53,9 @@ class Shop:
         diff = utils.now() - self._shop_time.get()
         for i in range(Shop.ITEM_AMOUNT):
             self._last_valid_checks[i] = True
-        to_ret = [f"{utils.Emoji.SHOP} Shop item_data (Restocks in "
+        to_ret = [f"{Emoji.SHOP} Shop item_data (Restocks in "
                   f"{utils.print_time(Shop.SHOP_DURATION.seconds() - diff)}"
-                  f"{utils.Emoji.CLOCK})"]
+                  f"{Emoji.CLOCK})"]
         for i in range(len(self._shop_items)):
             item = self._shop_items[i]
             if item.data.price_modifier is None:
@@ -63,10 +64,10 @@ class Shop:
             else:
                 if item.data.price_modifier > 1:
                     to_ret.append(f"{i + 1}: {item.print()}"
-                                  f" - {utils.print_money(item.get_price())} {utils.Emoji.INCREASE}")
+                                  f" - {utils.print_money(item.get_price())} {Emoji.INCREASE}")
                 else:
                     to_ret.append(f"{i + 1}: {item.print()}"
-                                  f" - {utils.print_money(item.get_price())} {utils.Emoji.DECREASE}")
+                                  f" - {utils.print_money(item.get_price())} {Emoji.DECREASE}")
         return '\n'.join(to_ret)
 
     def purchase_item(self, user: User, item_index: int) -> ItemPurchase:

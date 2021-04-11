@@ -2,6 +2,7 @@ import utils
 from common.incremental import Incremental
 from db import database
 from db.row import Row
+from enums.emoji import Emoji
 from guild_data.bet import Bet
 from guild_data.shop import Shop
 from user_data.user import User
@@ -46,16 +47,16 @@ class Guild(Row):
                                   f"ORDER BY money DESC "
                                   f"LIMIT {Guild.LEADERBOARD_TOP}")
         users = database.INSTANCE.get_cursor().fetchall()
-        ld = [f"{utils.Emoji.TROPHY} Top {Guild.LEADERBOARD_TOP} players:"]
+        ld = [f"{Emoji.TROPHY} Top {Guild.LEADERBOARD_TOP} players:"]
         for i in range(len(users)):
             if i == 0:
-                ld.append(f"{utils.Emoji.FIRST_PLACE} #{i + 1}: "
+                ld.append(f"{Emoji.FIRST_PLACE} #{i + 1}: "
                           f"{users[i]['last_name']} - {utils.print_money(users[i]['money'])}")
             elif i == 1:
-                ld.append(f"{utils.Emoji.SECOND_PLACE} #{i + 1}: "
+                ld.append(f"{Emoji.SECOND_PLACE} #{i + 1}: "
                           f"{users[i]['last_name']} - {utils.print_money(users[i]['money'])}")
             elif i == 2:
-                ld.append(f"{utils.Emoji.THIRD_PLACE} #{i + 1}: "
+                ld.append(f"{Emoji.THIRD_PLACE} #{i + 1}: "
                           f"{users[i]['last_name']} - {utils.print_money(users[i]['money'])}")
             else:
                 ld.append(f"#{i + 1}: {users[i]['last_name']} - {utils.print_money(users[i]['money'])}")

@@ -63,8 +63,15 @@ class PostgreSQL:
     def execute(self, query: str) -> None:
         self._cursor.execute(query)
 
+    def rollback(self) -> None:
+        if self._pending_commit:
+            self._connection.rollback()
+            self._pending_commit = False
+
     def commit(self) -> None:
-        self._connection.commit()
+        if self._pending_commit:
+            self._connection.commit()
+            self._pending_commit = False
 
 
 INSTANCE: PostgreSQL

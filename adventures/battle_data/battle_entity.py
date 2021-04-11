@@ -5,8 +5,8 @@ from autoslot import Slots
 
 from entities.bot_entity import BotEntity
 from entities.entity import Entity
+from enums.item_type import ItemType
 from item_data.abilities import AbilityInstance
-from item_data.item_classes import ItemType
 from item_data.stats import Stats, StatInstance
 
 
@@ -90,12 +90,11 @@ class BattleEntity:
         return stat.get_value(self._get_stat_value(stat))
 
     def _get_stat_value(self, stat: StatInstance) -> int:
-        val = self.entity.get_stat_dict().get(stat, 0) + stat.base
+        val = self.entity.get_stat_dict().get(stat, 0)
         for effect in self._effects:
             if effect.instance.get().stat == stat:
                 val = val * effect.instance.get().multiplier
                 val += effect.instance.get().adder
-        val -= stat.base
         return round(val)
 
     def _print_battle_stat(self, stat: StatInstance) -> str:

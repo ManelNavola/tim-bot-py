@@ -5,7 +5,8 @@ import discord
 import utils
 from commands.command import Command
 from common import storage
-from item_data.items import ItemType, Item
+from item_data.items import Item
+from enums.item_type import ItemType
 
 
 async def inv(cmd: Command):

@@ -1,5 +1,6 @@
 import utils
 from commands.command import Command
+from enums.emoji import Emoji
 from guild_data.shop import Shop, ItemPurchase
 from item_data.items import Item
 
@@ -14,7 +15,7 @@ async def buy(cmd: Command, number: int):
         return
     ip: ItemPurchase = cmd.guild.shop.purchase_item(cmd.user, number - 1)
     if ip.item is not None:
-        ts: list[str] = [f"{utils.Emoji.PURCHASE} {cmd.user.get_name()} purchased {ip.item.print()}!"]
+        ts: list[str] = [f"{Emoji.PURCHASE} {cmd.user.get_name()} purchased {ip.item.print()}!"]
         if ip.must_equip:
             ts.append("> Equipped automatically")
             cmd.user.inventory.equip(len(cmd.user.inventory.items) - 1)
@@ -35,7 +36,7 @@ async def sell(cmd: Command, number: int):
         item: Item = result
         price = int(item.get_price() * Shop.SELL_MULTIPLIER)
         cmd.user.add_money(price)
-        await cmd.send(f"{utils.Emoji.PURCHASE} Sold {item.print()} for {utils.print_money(price)}")
+        await cmd.send(f"{Emoji.PURCHASE} Sold {item.print()} for {utils.print_money(price)}")
     else:
         if result:
             await cmd.error("Invalid item index!")
@@ -63,4 +64,4 @@ async def sell_all(cmd: Command):
         await cmd.error("You don't have any items to sell!")
     else:
         cmd.user.add_money(total_price)
-        await cmd.send_hidden(f"{utils.Emoji.PURCHASE} Sold {total_items} items for {utils.print_money(total_price)}")
+        await cmd.send_hidden(f"{Emoji.PURCHASE} Sold {total_items} items for {utils.print_money(total_price)}")

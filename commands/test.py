@@ -1,9 +1,9 @@
-import utils
 from adventures.adventure import Adventure
 from adventures.battle import BattleChapter
 from adventures.reward import RewardChapter
 from commands.command import Command
 from entities.bot_entity import BotEntityBuilder
+from enums.emoji import Emoji
 from item_data.stats import Stats
 
 FIGHT_BOT: bool = True
@@ -25,7 +25,7 @@ async def test(cmd: Command):
             Stats.MP: 0,
             Stats.STR: -1,
         })
-        adventure: Adventure = Adventure("Test Adventure", f"{utils.Emoji.BANK}")
+        adventure: Adventure = Adventure("Test Adventure", f"{Emoji.BANK}")
         adventure.add_chapter(BattleChapter(potato.instance()))
         adventure.add_chapter(RewardChapter())
         await cmd.user.start_adventure(cmd.ctx, adventure)

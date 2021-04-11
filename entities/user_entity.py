@@ -6,9 +6,9 @@ from utils import DictRef
 
 
 class UserEntity(Entity):
-    def __init__(self, name_ref: DictRef, hp_ref: DictRef, mp_ref: DictRef):
-        super().__init__({})
-        self._stat_dict: dict[StatInstance, int] = {}
+    def __init__(self, name_ref: DictRef, hp_ref: DictRef, mp_ref: DictRef, base_stats: dict[StatInstance, int]):
+        super().__init__({}, base_stats)
+        self._stat_dict: dict[StatInstance, int] = base_stats
         self._mp_ref: DictRef = mp_ref
         self._hp_ref: DictRef = hp_ref
         self._name_ref: DictRef = name_ref

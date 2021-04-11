@@ -21,7 +21,7 @@ class BotEntityBuilder:
 class BotEntity(Entity):
     def __init__(self, name: str, stat_dict: dict[StatInstance, int],
                  abilities: Optional[list[AbilityInstance]] = None):
-        super().__init__(stat_dict)
+        super().__init__(stat_dict, {})
         self._name: str = name
         self._current_hp: int = Stats.HP.get_value(stat_dict.get(Stats.HP, 0))
         self._current_mp: int = Stats.MP.get_value(stat_dict.get(Stats.MP, 0))

@@ -7,7 +7,8 @@ from autoslot import Slots
 import utils
 from db import database
 from item_data.abilities import AbilityInstance, Ability
-from item_data.item_classes import ItemDescription, ItemType
+from enums.item_type import ItemType
+from item_data.item_classes import ItemDescription
 from item_data.rarity import Rarity, RarityInstance
 from item_data.stats import Stats, StatInstance
 
@@ -27,11 +28,11 @@ ITEM_GENERATION_DATA: dict[str, dict[RarityInstance, Any]] = {
         Rarity.LEGENDARY: (14, 16)
     },
     'ability_chance': {
-        Rarity.COMMON: 0 + 1,
-        Rarity.UNCOMMON: 0.05 + 1,
-        Rarity.RARE: 0.1 + 1,
-        Rarity.EPIC: 0.2 + 1,
-        Rarity.LEGENDARY: 0.3 + 1
+        Rarity.COMMON: 0,
+        Rarity.UNCOMMON: 0.05,
+        Rarity.RARE: 0.1,
+        Rarity.EPIC: 0.2,
+        Rarity.LEGENDARY: 0.3
     }
 }
 
@@ -139,9 +140,9 @@ class Item(Slots):
         stats = ', '.join([f"+{v} {k.abv}" for k, v in self.data.stats.items()])
         item_desc: ItemDescription = self.data.get_description()
         if self.data.ability is None:
-            return f"{item_desc.type.get_type_icon()}{item_desc.name} {self.data.rarity.name} [{stats}]"
+            return f"{item_desc.type}{item_desc.name} {self.data.rarity.name} [{stats}]"
         else:
-            return f"{item_desc.type.get_type_icon()}{item_desc.name} {self.data.rarity.name} [{stats}]" \
+            return f"{item_desc.type}{item_desc.name} {self.data.rarity.name} [{stats}]" \
                    f" | Ability: {self.data.ability.desc.get_name()} " \
                    f"{utils.NUMERAL_TO_ROMAN[self.data.ability.tier + 1]}"
 

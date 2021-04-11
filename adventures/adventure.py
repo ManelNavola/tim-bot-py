@@ -8,16 +8,17 @@ from discord_slash import SlashContext
 import utils
 from commands import messages
 from commands.messages import MessagePlus
+from enums.emoji import Emoji
 from user_data.user import User
 
 
 class Chapter(ABC):
-    def __init__(self, icon: str):
+    def __init__(self, icon: Emoji):
         self._adventure: Optional['Adventure'] = None
         self.message: Optional[MessagePlus] = None
         self._prefix: str = ""
         self._log: list[str] = []
-        self.icon = icon
+        self.icon: Emoji = icon
 
     def setup(self, adventure: 'Adventure', prefix: Optional[str]):
         self._prefix = prefix
@@ -73,11 +74,11 @@ class Adventure:
     def print_progress(self, current_chapter: Optional[Chapter]) -> str:
         path: list[str] = []
         if current_chapter is None:
-            path.append(utils.Emoji.COWBOY)
+            path.append(Emoji.COWBOY.value)
         else:
-            path.append(f"{utils.Emoji.COWBOY}{current_chapter.icon}")
+            path.append(f"{Emoji.COWBOY}{current_chapter.icon}")
         for chapter in self._chapters:
-            path.append(chapter.icon)
+            path.append(chapter.icon.value)
         return f"{self._icon} Progress: {' ⎯ '.join(path)}"
 
     async def end_chapter(self, lost: bool = False):

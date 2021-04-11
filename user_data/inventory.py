@@ -1,9 +1,10 @@
 from typing import Optional, Any
 
-import utils
 from entities.user_entity import UserEntity
+from enums.emoji import Emoji
 from item_data import items
-from item_data.items import Item, ItemType
+from item_data.items import Item
+from enums.item_type import ItemType
 from utils import DictRef
 
 
@@ -107,12 +108,12 @@ class Inventory:
 
     def print(self) -> str:
         il = len(self.items)
-        tr = [f"{utils.Emoji.BAG} Inventory: {il}/{self.limit}"]
+        tr = [f"{Emoji.BAG} Inventory: {il}/{self.limit}"]
         for i in range(il):
             index = i + 1
             item_str = self.items[i].print()
             if self.items[i].id in self._equipped_ref.get():
-                tr.append(f"{index}: {item_str} {utils.Emoji.EQUIPPED} ({self.items[i].durability}%)")
+                tr.append(f"{index}: {item_str} {Emoji.EQUIPPED} ({self.items[i].durability}%)")
             else:
                 tr.append(f"{index}: {item_str} ({self.items[i].durability}%)")
         return '\n'.join(tr)

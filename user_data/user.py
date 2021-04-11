@@ -7,11 +7,12 @@ from common.incremental import Incremental
 from db import database
 from db.row import Row
 from entities.user_entity import UserEntity
-from user_data.inventory import Inventory
+from enums.emoji import Emoji
 from item_data import items
 from item_data.items import Item
 from item_data.stats import Stats
 from user_data import upgrades
+from user_data.inventory import Inventory
 from utils import DictRef, TimeMetric, TimeSlot
 
 if TYPE_CHECKING:
@@ -49,12 +50,16 @@ class User(Row):
             print(f"{user_id} exceeded {slots} items: {len(fetched_items)}!")
         self.user_entity: UserEntity = UserEntity(DictRef(self._data, 'last_name'),
                                                   DictRef(self._data['persistent_stats'], Stats.HP.abv),
-                                                  DictRef(self._data['persistent_stats'], Stats.MP.abv))
+                                                  DictRef(self._data['persistent_stats'], Stats.MP.abv), {
+                Stats.HP: 20, Stats.DEF: 4
+                                                  })
         self.inventory: Inventory = Inventory(DictRef(self._data, 'equipped'), slots, [
             Item(item_data=items.parse_item_data_from_dict(item['data']), item_id=item['id']) for item in fetched_items
         ], self.user_entity)
 
-        self._data['persistent_stats'][Stats.HP.abv] = Stats.HP.base
+        # TODO Stat regen
+        # TODO Check base stats work good
+        self._data['persistent_stats'][Stats.HP.abv] = 20
 
     def load_defaults(self):
         return {
@@ -158,6 +163,12 @@ class User(Row):
         return need
 
     def get_adventure(self) -> Optional['Adventure']:
+        if self._adventure is not None:
+            if self._adventure.message.has_finished():
+                self._adventure = None
+                return None
+            else:
+                return self._adventure
         return self._adventure
 
     async def start_adventure(self, ctx: SlashContext, adventure: 'Adventure'):
@@ -186,18 +197,18 @@ class User(Row):
         if checking:
             to_print.append(f"{self.get_name()} User Profile:")
         if private:
-            to_print.append(f"{utils.Emoji.MONEY} Money: {utils.print_money(self.get_money())} "
+            to_print.append(f"{Emoji.MONEY} Money: {utils.print_money(self.get_money())} "
                             f"/ {utils.print_money(self.get_money_limit())}")
-            to_print.append(f"{utils.Emoji.BANK} Bank: {utils.print_money(self.get_bank())} "
+            to_print.append(f"{Emoji.BANK} Bank: {utils.print_money(self.get_bank())} "
                             f"/ {utils.print_money(self.get_bank_limit())} "
-                            f"({self.print_garden_rate()} {utils.Emoji.GARDEN})")
+                            f"({self.print_garden_rate()} {Emoji.GARDEN})")
             if checking:
-                to_print.append(f"{utils.Emoji.STATS} Equipment Power: {self.user_entity.get_power()}")
+                to_print.append(f"{Emoji.STATS} Equipment Power: {self.user_entity.get_power()}")
             to_print.append(self.inventory.print())
         else:
-            to_print.append(f"{utils.Emoji.MONEY} Money: {utils.print_money(self.get_money())}")
-            to_print.append(f"{utils.Emoji.SCROLL} Average Level: {self.get_average_level()}")
-            to_print.append(f"{utils.Emoji.STATS} Equipment Power: {self.user_entity.get_power()}")
+            to_print.append(f"{Emoji.MONEY} Money: {utils.print_money(self.get_money())}")
+            to_print.append(f"{Emoji.SCROLL} Average Level: {self.get_average_level()}")
+            to_print.append(f"{Emoji.STATS} Equipment Power: {self.user_entity.get_power()}")
         return '\n'.join(to_print)
 
     def _update_bank_increment(self) -> None:

@@ -11,7 +11,6 @@ import utils
 from commands import command, simple, crate, bet, upgrade, shop, messages, test, adventure
 from common import storage
 from db import database
-
 # Load database
 from user_data.user import User
 

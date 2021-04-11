@@ -2,4 +2,5 @@ autoslot~=2018.8.1
 psycopg2~=2.8.6
 discord.py
 discord-py-slash-command==1.1.0
-PySimpleGUI~=4.38.0
+future~=0.18.2
+ttkthemes~=3.2.2

@@ -1,5 +1,6 @@
 import utils
 from commands.command import Command
+from enums.emoji import Emoji
 from guild_data.bet import Bet
 
 
@@ -28,16 +29,16 @@ async def add(cmd: Command, amount: int):
         to_send = []
         if was_not_active:
             to_send.append(f"{cmd.user.get_name()} started a bet with {utils.print_money(amount)}! "
-                           f"{utils.Emoji.MONEY_FLY}")
+                           f"{Emoji.MONEY_FLY}")
         else:
             if previous_bet == 0:
-                to_send.append(f"{cmd.user.get_name()} has bet {utils.print_money(amount)} {utils.Emoji.MONEY_FLY}")
+                to_send.append(f"{cmd.user.get_name()} has bet {utils.print_money(amount)} {Emoji.MONEY_FLY}")
             else:
                 to_send.append(f"{cmd.user.get_name()} has increased their bet "
-                               f"to {utils.print_money(amount + previous_bet)} {utils.Emoji.INCREASE}")
+                               f"to {utils.print_money(amount + previous_bet)} {Emoji.INCREASE}")
         if response:
             to_send.append(f"{response[1]} has increased their bet to {utils.print_money(response[0])} "
-                           f"{utils.Emoji.INCREASE}")
+                           f"{Emoji.INCREASE}")
         await cmd.send('\n'.join(to_send))
     else:
         if response:

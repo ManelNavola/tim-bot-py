@@ -1,23 +1,24 @@
 # Dictionary
-from typing import Callable
+from typing import Callable, Any
 
 from autoslot import Slots
 
 import utils
+from enums.emoji import Emoji
 
 
 class Upgrade(Slots):
-    def __init__(self, name: str, icon: str, upgrades: dict, locked: bool = False):
-        self._name = name
-        self._icon = str(icon)
-        self._upgrades = upgrades
+    def __init__(self, name: str, icon: Emoji, upgrades: dict[int, tuple[Any, int]], locked: bool = False):
+        self._name: str = name
+        self._icon: Emoji = icon
+        self._upgrades: dict[int, tuple[Any, int]] = upgrades
         self._locked = locked
 
     def get_name(self) -> str:
         return self._name
 
     def get_icon(self) -> str:
-        return self._icon
+        return self._icon.value
 
     def get_value(self, level: int) -> object:
         return self._upgrades[level][0]
@@ -70,7 +71,7 @@ class UpgradeLink(Slots):
         return self._upgrade.is_max_level(self.get_level())
 
 
-MONEY_LIMIT = Upgrade('Money Limit', utils.Emoji.MONEY, {
+MONEY_LIMIT = Upgrade('Money Limit', Emoji.MONEY, {
     1: (2500, 0),
     2: (10000, 2000),
     3: (50000, 8000),
@@ -79,7 +80,7 @@ MONEY_LIMIT = Upgrade('Money Limit', utils.Emoji.MONEY, {
     6: (1000000, 400000)
 })
 
-BANK_LIMIT = Upgrade('Bank Limit', utils.Emoji.BANK, {
+BANK_LIMIT = Upgrade('Bank Limit', Emoji.BANK, {
     1: (200, 0),
     2: (400, 500),
     3: (800, 1200),
@@ -94,7 +95,7 @@ BANK_LIMIT = Upgrade('Bank Limit', utils.Emoji.BANK, {
     12: (409600, 819200)
 })
 
-GARDEN_PROD = Upgrade('Garden Production', utils.Emoji.GARDEN, {
+GARDEN_PROD = Upgrade('Garden Production', Emoji.GARDEN, {
     1: (25, 0),
     2: (35, 1500),
     3: (50, 3300),
@@ -107,7 +108,7 @@ GARDEN_PROD = Upgrade('Garden Production', utils.Emoji.GARDEN, {
     10: (225, 823138)
 })
 
-INVENTORY_LIMIT = Upgrade('Inventory Limit', utils.Emoji.BAG, {
+INVENTORY_LIMIT = Upgrade('Inventory Limit', Emoji.BAG, {
     1: (4, 0),
     2: (5, 1000),
     3: (6, 2000),

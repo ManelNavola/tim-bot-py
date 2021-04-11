@@ -1,8 +1,10 @@
+import traceback
+
 from discord_slash import SlashContext
 
-import utils
 from common import storage
 from db import database
+from enums.emoji import Emoji
 from guild_data.guild import Guild
 from user_data.user import User
 
@@ -20,7 +22,7 @@ class Command:
         await self.ctx.send(msg, hidden=True)
 
     async def error(self, msg: str, hidden: bool = True):
-        await self.ctx.send(f"{utils.Emoji.ERROR} {msg}", hidden=hidden)
+        await self.ctx.send(f"{Emoji.ERROR} {msg}", hidden=hidden)
 
 
 class MockSlashContext(SlashContext):
@@ -62,7 +64,12 @@ async def call(ctx: SlashContext, func, *args, ignore_battle: bool = False):
     if (cmd.user.get_adventure() is not None) and (not ignore_battle):
         await cmd.error("You cannot issue commands while in an adventure!")
         return
-    await func(cmd, *args)  # Execute command
+
+    try:
+        await func(cmd, *args)  # Execute command
+    except Exception as e:  # noqa
+        database.INSTANCE.rollback()
+        traceback.print_exc()
 
     # SAVE
     cmd.user.save()  # Save user data (if any changed)

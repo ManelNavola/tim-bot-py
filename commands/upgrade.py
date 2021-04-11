@@ -1,5 +1,6 @@
 import utils
 from commands.command import Command
+from enums.emoji import Emoji
 from user_data.upgrades import UpgradeLink
 
 
@@ -20,7 +21,7 @@ def custom_print(upg: UpgradeLink, f=lambda x: x, mobile: bool = False) -> str:
         s3 = upg.get_value(upg.get_level() + 1)
         s3 = f(s3)
         if mobile:
-            return f"{upg.get_icon()} {upg.get_name()} Lvl. {upg.get_level()} [{s}] {utils.Emoji.ARROW_RIGHT} " \
+            return f"{upg.get_icon()} {upg.get_name()} Lvl. {upg.get_level()} [{s}] {Emoji.ARROW_RIGHT} " \
                    f"[{s3}], Cost: -{utils.print_money(upg.get_cost())}"
         else:
             return format_row([upg.get_name(), upg.get_level(), s, f"-{utils.print_money(upg.get_cost())}", s3])
@@ -59,8 +60,8 @@ async def upgrade(cmd: Command, key: str):
         cost = upgrade_link.get_cost()
         if cmd.user.remove_money(cost):
             upgrade_link.level_up()
-            await cmd.send_hidden(f"{upgrade_link.get_icon()} Upgraded {upgrade_link.get_name()} "
+            await cmd.send_hidden(f"{upgrade_link.get_icon_str()} Upgraded {upgrade_link.get_name()} "
                                   f"to Level {upgrade_link.get_level()}!"
-                                  f" {upgrade_link.get_icon()}")
+                                  f" {upgrade_link.get_icon_str()}")
         else:
             await cmd.error(f"You need {utils.print_money(cost)} for the upgrade!")

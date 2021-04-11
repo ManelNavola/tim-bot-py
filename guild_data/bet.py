@@ -6,6 +6,7 @@ from discord_slash import SlashContext
 
 import utils
 from common import storage
+from enums.emoji import Emoji
 from user_data.user import User
 from utils import DictRef, TimeSlot, TimeMetric
 
@@ -120,7 +121,7 @@ class Bet:
             bets.sort(key=lambda x: x[1], reverse=True)
             total_bet_str = utils.print_money(total_bet)
             # Jackpot
-            self._stored_info.append(f"{utils.Emoji.SPARKLE} **Jackpot** {total_bet_str} {utils.Emoji.SPARKLE} "
+            self._stored_info.append(f"{Emoji.SPARKLE} **Jackpot** {total_bet_str} {Emoji.SPARKLE} "
                                      f"(Max. bet {utils.print_money(self._limit)})")
             # Player+bot bets
             for single_bet in bets:
@@ -199,7 +200,7 @@ class BetBot:
 
 class Cowboy(BetBot):
     def __init__(self, limit: int):
-        super().__init__(utils.Emoji.COWBOY, limit)
+        super().__init__(Emoji.COWBOY.value, limit)
         self.brave = 0
         self.limit = limit
 
@@ -217,7 +218,7 @@ class Cowboy(BetBot):
 
 class Sunglasses(BetBot):
     def __init__(self, limit: int):
-        super().__init__(utils.Emoji.SUNGLASSES, limit)
+        super().__init__(Emoji.SUNGLASSES.value, limit)
         self.scared = 0
         self.limit = limit
 
@@ -238,7 +239,7 @@ class Sunglasses(BetBot):
 
 class Robot(BetBot):
     def __init__(self, limit: int):
-        super().__init__(utils.Emoji.ROBOT, limit)
+        super().__init__(Emoji.ROBOT.value, limit)
         self.scared = 0
         self.limit = limit
         self.limit_pct = 1
