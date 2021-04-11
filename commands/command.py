@@ -2,7 +2,7 @@ import traceback
 
 from discord_slash import SlashContext
 
-from common import storage
+from helpers import storage
 from db import database
 from enums.emoji import Emoji
 from guild_data.guild import Guild

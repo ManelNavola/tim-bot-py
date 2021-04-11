@@ -2,7 +2,7 @@ import utils
 from commands.command import Command
 from enums.emoji import Emoji
 from guild_data.shop import Shop, ItemPurchase
-from item_data.items import Item
+from item_data.item_classes import Item
 
 
 async def check(cmd: Command):

@@ -1,17 +1,18 @@
 from entities.entity import Entity
+from helpers.dictref import DictRef
 from item_data import items
-from item_data.items import Item
+from item_data.item_classes import Item
 from item_data.stats import StatInstance
-from utils import DictRef
 
 
 class UserEntity(Entity):
-    def __init__(self, name_ref: DictRef, hp_ref: DictRef, mp_ref: DictRef, base_stats: dict[StatInstance, int]):
+    def __init__(self, name_ref: DictRef[str], hp_ref: DictRef[int], mp_ref: DictRef[int],
+                 base_stats: dict[StatInstance, int]):
         super().__init__({}, base_stats)
         self._stat_dict: dict[StatInstance, int] = base_stats
-        self._mp_ref: DictRef = mp_ref
-        self._hp_ref: DictRef = hp_ref
-        self._name_ref: DictRef = name_ref
+        self._mp_ref: DictRef[int] = mp_ref
+        self._hp_ref: DictRef[int] = hp_ref
+        self._name_ref: DictRef[str] = name_ref
         self._power: int = 0
 
     def get_power(self) -> int:

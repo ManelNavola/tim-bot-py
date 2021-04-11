@@ -1,10 +1,10 @@
 # Dictionary
-from typing import Callable, Any
+from typing import Callable, Any, Optional
 
 from autoslot import Slots
 
-import utils
 from enums.emoji import Emoji
+from helpers.dictref import DictRef
 
 
 class Upgrade(Slots):
@@ -34,11 +34,11 @@ class Upgrade(Slots):
 
 
 class UpgradeLink(Slots):
-    def __init__(self, upgrade: Upgrade, lvl_ref: utils.DictRef, before: Callable = None, after: Callable = None):
-        self._upgrade = upgrade
-        self._lvl_ref = lvl_ref
-        self._before = before
-        self._after = after
+    def __init__(self, upgrade: Upgrade, lvl_ref: DictRef[int], before: Callable = None, after: Callable = None):
+        self._upgrade: Upgrade = upgrade
+        self._lvl_ref: DictRef[int] = lvl_ref
+        self._before: Optional[Callable] = before
+        self._after: Optional[Callable] = after
 
     def get_name(self):
         return self._upgrade.get_name()

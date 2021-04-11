@@ -4,10 +4,11 @@ from typing import Optional
 import utils
 from db import database
 from enums.emoji import Emoji
-from item_data import items
-from item_data.items import Item
+from helpers.dictref import DictRef
+from item_data.item_classes import Item
+from item_data.item_utils import transfer_shop, parse_item_data_from_dict, create_guild_item, get_random_shop_item_data
 from user_data.user import User
-from utils import DictRef, TimeSlot, TimeMetric
+from utils import TimeSlot, TimeMetric
 
 
 class ItemPurchase:
@@ -23,9 +24,9 @@ class Shop:
     ITEM_AMOUNT = 4
     SELL_MULTIPLIER = 0.5
 
-    def __init__(self, shop_time: DictRef, guild_id: int):
+    def __init__(self, shop_time: DictRef[int], guild_id: int):
         self._guild_id: int = guild_id
-        self._shop_time: DictRef = shop_time
+        self._shop_time: DictRef[int] = shop_time
         self._shop_items: list[Optional[Item]] = [None] * Shop.ITEM_AMOUNT
         self._last_valid_checks: list[Optional[bool]] = [False] * Shop.ITEM_AMOUNT
 
@@ -86,7 +87,7 @@ class Shop:
                     if other_item.data.get_description().type == item.data.get_description().type:
                         not_had = False
                         break
-                items.transfer_shop(self._guild_id, user.id, item.id)
+                transfer_shop(self._guild_id, user.id, item.id)
                 self._shop_items[item_index] = None
                 item.durability = 100
                 user.inventory.add_item(item)
@@ -110,7 +111,7 @@ class Shop:
         found_items = database.INSTANCE.get_cursor().fetchall()
         for index in range(len(found_items)):
             item: dict = found_items[index]
-            self._shop_items[index] = Item(item_data=items.parse_item_data_from_dict(item['data']), item_id=item['id'])
+            self._shop_items[index] = Item(item_data=parse_item_data_from_dict(item['data']), item_id=item['id'])
 
     def _clear_shop(self) -> None:
         shop_items: list[Optional[Item]] = self._shop_items  # PYCHARM WHAT
@@ -126,7 +127,7 @@ class Shop:
         restocked = False
         for i in range(0, Shop.ITEM_AMOUNT):
             if self._shop_items[i] is None:
-                item: Item = items.create_guild_item(self._guild_id, items.get_random_shop_item_data())
+                item: Item = create_guild_item(self._guild_id, get_random_shop_item_data())
                 if random.random() < 0.2:
                     if random.random() < 0.5:
                         item.data.price_modifier = 0.75

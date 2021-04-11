@@ -1,7 +1,8 @@
 from unittest import TestCase
 
-from common.incremental import Incremental
-from utils import DictRef, TimeSlot, TimeMetric
+from helpers.dictref import DictRef
+from helpers.incremental import Incremental
+from utils import TimeSlot, TimeMetric
 
 
 class TestIncremental(TestCase):

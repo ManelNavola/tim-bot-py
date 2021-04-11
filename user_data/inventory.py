@@ -2,16 +2,17 @@ from typing import Optional, Any
 
 from entities.user_entity import UserEntity
 from enums.emoji import Emoji
-from item_data import items
-from item_data.items import Item
+from helpers.dictref import DictRef
 from enums.item_type import ItemType
-from utils import DictRef
+from item_data.item_classes import Item
+from item_data.item_utils import delete_user_item
 
 
 class Inventory:
-    def __init__(self, equipped_ref: DictRef, inv_limit: int, item_list: list[Item], user_entity: UserEntity):
+    def __init__(self, equipped_ref: DictRef[list[int]], inv_limit: int, item_list: list[Item],
+                 user_entity: UserEntity):
         self.items: list[Item] = item_list
-        self._equipped_ref: DictRef = equipped_ref
+        self._equipped_ref: DictRef[list[int]] = equipped_ref
         self.limit: int = inv_limit
         self.user_entity: UserEntity = user_entity
         self.user_entity.update_equipment(self.get_equipment())
@@ -29,7 +30,7 @@ class Inventory:
         item = self.items[index]
         if self._is_equipped(item):
             return False, False
-        items.delete_user_item(user_id, item.id)
+        delete_user_item(user_id, item.id)
         del self.items[index]
         return True, item
 

@@ -11,5 +11,5 @@ def center(window, root=None):
 
     win_y = SAVED_ROOT.winfo_screenheight() // 2 - window.winfo_height() // 2
 
-    # set toplevel in new position
+    # set top level in new position
     window.geometry(f'+{win_x}+{win_y}')

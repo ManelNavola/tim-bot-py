@@ -1,4 +1,4 @@
-from adventures import coliseum
+from adventure_classes import coliseum
 from commands.command import Command
 
 

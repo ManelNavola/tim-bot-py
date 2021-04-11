@@ -8,7 +8,7 @@ from tkinter import *
 
 from jsonpath_ng import parse
 
-from adventures.battle_data.battle_entity import BattleEntity
+from adventure_classes.battle_data.battle_entity import BattleEntity
 from entities.bot_entity import BotEntity
 from tk_utils import center
 from item_data.stats import Stats
@@ -36,20 +36,20 @@ class Easy(ABC):
     def update(self, easy_data):
         self.easy_data = easy_data
 
-    def grid(self, row, column, sticky='nsew', columnspan=1, rowspan=1):
-        self.frame.grid(row=row, column=column, columnspan=columnspan, rowspan=rowspan, sticky=sticky)
+    def grid(self, row, column, sticky='nsew', column_span=1, row_span=1):
+        self.frame.grid(row=row, column=column, columnspan=column_span, rowspan=row_span, sticky=sticky)
 
 
 class EasyItem:
     def __init__(self, name: str, easy: Easy, row: int, column: int, sticky: str = 'nsew',
-                 columnspan: int = 1, rowspan: int = 1):
+                 column_span: int = 1, row_span: int = 1):
         self.name = name
         self.easy = easy
         self.row = row
         self.column = column
         self.sticky = sticky
-        self.rowspan = rowspan
-        self.columnspan = columnspan
+        self.row_span = row_span
+        self.column_span = column_span
 
 
 class EasyJSON(Easy, ABC):
@@ -240,15 +240,15 @@ class EasyGrid(Easy):
         for ei in self.structure:
             ei.easy.update(data)
 
-    def grid(self, row, column, sticky='nsew', columnspan=1, rowspan=1):
-        Easy.grid(self, row, column, sticky, columnspan, rowspan)
+    def grid(self, row, column, sticky='nsew', column_span=1, row_span=1):
+        Easy.grid(self, row, column, sticky, column_span, row_span)
         for i in range(len(self.weights)):
             self.frame.grid_columnconfigure(i, weight=self.weights[i])
         for ei in self.structure:
             if isinstance(ei.easy, EasyJSON):
                 ej = cast(EasyJSON, ei.easy)
                 if ej.is_editable:
-                    ej.grid(ei.row, ei.column, ei.sticky, ei.columnspan, ei.rowspan)
+                    ej.grid(ei.row, ei.column, ei.sticky, ei.column_span, ei.row_span)
 
 
 class EasyJSONStats(EasyGrid, EasyJSON):
@@ -276,8 +276,8 @@ class EasyJSONStats(EasyGrid, EasyJSON):
     def update(self, data):
         EasyGrid.update(self, data)
 
-    def grid(self, row, column, sticky='nsew', columnspan=1, rowspan=1):
-        EasyGrid.grid(self, row, column, sticky, columnspan, rowspan)
+    def grid(self, row, column, sticky='nsew', column_span=1, row_span=1):
+        EasyGrid.grid(self, row, column, sticky, column_span, row_span)
 
     def show(self, data: dict[str, Any], key) -> str:
         tr = []
@@ -320,7 +320,7 @@ class EasyGridTree(EasyGrid):
         self.eg = None
         self.eg_save_button = None
         self.eg_reset_button = None
-        self.treeview = None
+        self.tree_view = None
         self.widths = widths
         self.sample_create = None
         self.creating = False
@@ -373,11 +373,11 @@ class EasyGridTree(EasyGrid):
         self.window.deiconify()
 
     def on_remove(self):
-        if not self.treeview.selection():
+        if not self.tree_view.selection():
             return
 
-        index = self.treeview.selection()[0]
-        self.current_id = str(self.treeview.item(index)['values'][0]).split('*')[0]
+        index = self.tree_view.selection()[0]
+        self.current_id = str(self.tree_view.item(index)['values'][0]).split('*')[0]
         if not self.current_id.startswith('X'):
             messagebox.showinfo('Delete', 'You cannot delete a consolidated element!')
             return
@@ -395,14 +395,14 @@ class EasyGridTree(EasyGrid):
             self.update_row(self.current_id, new_row)
 
     def on_double_click(self, _):
-        if not self.treeview.selection():
+        if not self.tree_view.selection():
             return
 
         self.creating = False
         self.eg_save_button['text'] = 'Save'
 
-        index = self.treeview.selection()[0]
-        self.current_id = str(self.treeview.item(index)['values'][0]).split('*')[0]
+        index = self.tree_view.selection()[0]
+        self.current_id = str(self.tree_view.item(index)['values'][0]).split('*')[0]
         self.original_row = self.modified_data.get(self.current_id, None)
         if self.original_row is None:
             self.original_row = self.data[self.current_id]
@@ -421,19 +421,19 @@ class EasyGridTree(EasyGrid):
     def build(self, parent):
         self.frame = Frame(parent)
 
-        self.treeview = Treeview(self.frame, selectmode='browse', column=tuple([ei.name for ei in self.structure]),
-                                 show='headings')
+        self.tree_view = Treeview(self.frame, selectmode='browse', column=tuple([ei.name for ei in self.structure]),
+                                  show='headings')
         for i in range(len(self.structure)):
             ei = self.structure[i]
-            self.treeview.heading(f'#{i + 1}', text=ei.name, anchor=CENTER)
-            self.treeview.column(f'#{i + 1}', anchor=W)
-        self.treeview.bind("<Double-1>", self.on_double_click)
-        self.treeview.pack(fill=BOTH, expand=True)
+            self.tree_view.heading(f'#{i + 1}', text=ei.name, anchor=CENTER)
+            self.tree_view.column(f'#{i + 1}', anchor=W)
+        self.tree_view.bind("<Double-1>", self.on_double_click)
+        self.tree_view.pack(fill=BOTH, expand=True)
 
         for i in range(len(self.widths)):
             val = self.widths[i]
             if val:
-                self.treeview.column(f'#{i + 1}', minwidth=val, width=val, stretch=NO)
+                self.tree_view.column(f'#{i + 1}', minwidth=val, width=val, stretch=NO)
 
         self.frame.grid_rowconfigure(0, weight=1)
         self.frame.grid_rowconfigure(1, weight=0)
@@ -444,7 +444,7 @@ class EasyGridTree(EasyGrid):
 
         # Window
 
-        self.window = Toplevel(self.treeview)
+        self.window = Toplevel(self.tree_view)
         self.window.title("JSON Editor")
         self.window.resizable(False, False)
         self.window.withdraw()
@@ -496,15 +496,13 @@ class EasyGridTree(EasyGrid):
                         total = self.original_row.copy()
                         total.update(self.modified_row)
                         current_data = self.data.get(self.current_id)
-                        if current_data is None:
-                            current_data = self.modified_data[self.current_id]
-                        elif current_data == self.modified_row:
+                        if (current_data is not None) and current_data == self.modified_row:
                             del self.modified_data[self.current_id]
                         self.modified_row = None
                         self.update_row(self.current_id, total)
                         messagebox.showinfo("Saved", "Saved successfully!")
 
-            self.treeview.after(0, after_focus)
+            self.tree_view.after(0, after_focus)
 
         self.eg_save_button.bind("<1>", focus_set)
         self.eg_save_button['state'] = "disabled"
@@ -532,7 +530,7 @@ class EasyGridTree(EasyGrid):
                     self.eg.update(EasyData(self.modified_row, self.modified))
                     self.modified()
 
-            self.treeview.after(0, after_reset_focus)
+            self.tree_view.after(0, after_reset_focus)
 
         self.eg_reset_button.bind("<1>", reset_focus_set)
         self.eg_reset_button['state'] = "disabled"
@@ -553,30 +551,27 @@ class EasyGridTree(EasyGrid):
     def update_row(self, row_id, row_data):
         to_show = []
         if row_data.get('INTERNAL_DELETED') is not None:
-            if self.treeview.exists(row_id):
-                self.treeview.delete(row_id)
+            if self.tree_view.exists(row_id):
+                self.tree_view.delete(row_id)
             return
         for ei in self.structure:
             if isinstance(ei.easy, EasyJSON):
                 ej = cast(EasyJSON, ei.easy)
                 to_show.append(ej.show(row_data, row_id))
-        if self.treeview.exists(row_id):
+        if self.tree_view.exists(row_id):
             got_data = self.data.get(row_id)
             if got_data is None:
                 got_data = self.modified_data[row_id]
             if got_data == row_data:
-                self.treeview.item(row_id, values=tuple(to_show))
+                self.tree_view.item(row_id, values=tuple(to_show))
             else:
                 to_show[0] += '*'
-                self.treeview.item(row_id, values=tuple(to_show))
+                self.tree_view.item(row_id, values=tuple(to_show))
         else:
-            self.treeview.insert('', END, row_id, values=tuple(to_show))
+            self.tree_view.insert('', END, row_id, values=tuple(to_show))
 
     def update(self, data):
         self.data = data
-        self.treeview.delete(*self.treeview.get_children())
+        self.tree_view.delete(*self.tree_view.get_children())
         for k in sorted(data.keys()):
             self.update_row(k, data[k])
-
-    def grid(self, row, column, sticky='nsew', columnspan=1, rowspan=1):
-        Easy.grid(self, row, column, sticky, columnspan, rowspan)

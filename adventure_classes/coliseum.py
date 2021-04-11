@@ -1,7 +1,7 @@
 from discord_slash import SlashContext
 
-from adventures.adventure import Adventure, Chapter
-from adventures.battle import BattleChapter
+from adventure_classes.adventure import Adventure, Chapter
+from adventure_classes.battle import BattleChapter
 from enemy_data import enemies
 from enums.emoji import Emoji
 from user_data.user import User

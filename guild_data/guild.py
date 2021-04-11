@@ -1,12 +1,13 @@
 import utils
-from common.incremental import Incremental
+from helpers.dictref import DictRef
+from helpers.incremental import Incremental
 from db import database
 from db.row import Row
 from enums.emoji import Emoji
 from guild_data.bet import Bet
 from guild_data.shop import Shop
 from user_data.user import User
-from utils import DictRef, TimeSlot, TimeMetric
+from utils import TimeSlot, TimeMetric
 
 
 class Guild(Row):

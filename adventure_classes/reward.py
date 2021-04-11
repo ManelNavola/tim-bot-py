@@ -1,4 +1,4 @@
-from adventures.adventure import Chapter
+from adventure_classes.adventure import Chapter
 from enums.emoji import Emoji
 from user_data.user import User
 

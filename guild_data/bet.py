@@ -5,10 +5,11 @@ import random
 from discord_slash import SlashContext
 
 import utils
-from common import storage
+from helpers import storage
 from enums.emoji import Emoji
+from helpers.dictref import DictRef
 from user_data.user import User
-from utils import DictRef, TimeSlot, TimeMetric
+from utils import TimeSlot, TimeMetric
 
 
 def create_bot(bot_name: str, limit: int):
@@ -31,8 +32,8 @@ class Bet:
         (999999999999, ['robot', 'sunglasses', 'cowboy'])
     ]
 
-    def __init__(self, bet_ref: DictRef):
-        self._bet_ref: DictRef = bet_ref
+    def __init__(self, bet_ref: DictRef[dict]):
+        self._bet_ref: DictRef[dict] = bet_ref
         self._info_changed: bool = False
         self._stored_info = None
         self._bot: BetBot

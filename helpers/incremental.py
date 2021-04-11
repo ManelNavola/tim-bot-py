@@ -2,13 +2,14 @@
 from autoslot import Slots
 
 import utils
-from utils import DictRef, TimeSlot
+from helpers.dictref import DictRef
+from utils import TimeSlot
 
 
 class Incremental(Slots):
-    def __init__(self, base_ref: DictRef, time_ref: DictRef, time_slot: TimeSlot):
-        self._base_ref: DictRef = base_ref
-        self._time_ref: DictRef = time_ref
+    def __init__(self, base_ref: DictRef[int], time_ref: DictRef[int], time_slot: TimeSlot):
+        self._base_ref: DictRef[int] = base_ref
+        self._time_ref: DictRef[int] = time_ref
         self._time_slot: TimeSlot = time_slot
 
     def get(self, override_now: int = None) -> int:

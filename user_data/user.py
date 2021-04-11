@@ -3,20 +3,21 @@ from typing import Optional, TYPE_CHECKING
 from discord_slash import SlashContext
 
 import utils
-from common.incremental import Incremental
+from helpers.dictref import DictRef
+from helpers.incremental import Incremental
 from db import database
 from db.row import Row
 from entities.user_entity import UserEntity
 from enums.emoji import Emoji
-from item_data import items
-from item_data.items import Item
+from item_data.item_classes import Item
+from item_data.item_utils import parse_item_data_from_dict
 from item_data.stats import Stats
 from user_data import upgrades
 from user_data.inventory import Inventory
-from utils import DictRef, TimeMetric, TimeSlot
+from utils import TimeMetric, TimeSlot
 
 if TYPE_CHECKING:
-    from adventures.adventure import Adventure
+    from adventure_classes.adventure import Adventure
 
 
 class User(Row):
@@ -54,7 +55,7 @@ class User(Row):
                 Stats.HP: 20, Stats.DEF: 4
                                                   })
         self.inventory: Inventory = Inventory(DictRef(self._data, 'equipped'), slots, [
-            Item(item_data=items.parse_item_data_from_dict(item['data']), item_id=item['id']) for item in fetched_items
+            Item(item_data=parse_item_data_from_dict(item['data']), item_id=item['id']) for item in fetched_items
         ], self.user_entity)
 
         # TODO Stat regen

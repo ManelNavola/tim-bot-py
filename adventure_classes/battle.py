@@ -4,8 +4,8 @@ from enum import unique, Enum
 from typing import Optional
 
 import utils
-from adventures.adventure import Chapter
-from adventures.battle_data.battle_entity import BattleEntity, AttackResult
+from adventure_classes.adventure import Chapter
+from adventure_classes.battle_data.battle_entity import BattleEntity, AttackResult
 from entities.entity import Entity
 from enums.emoji import Emoji
 from item_data.abilities import AbilityInstance
