@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from helpers.storage import Cache
+from helpers.cache import Cache
 
 
 class TestCache(TestCase):

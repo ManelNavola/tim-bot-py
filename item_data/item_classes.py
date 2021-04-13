@@ -1,16 +1,20 @@
-from typing import Optional
+import json
+from typing import Optional, Any
 
 from autoslot import Slots
 
 import utils
 from enums.item_type import ItemType
-from item_data.abilities import AbilityDesc, AbilityInstance
-from item_data.items import INDEX_TO_ITEM
+from item_data.abilities import AbilityDesc, AbilityInstance, Ability
 from item_data.rarity import RarityInstance
-from item_data.stats import StatInstance
+from item_data.stats import StatInstance, Stats
 
 
 class ItemDescription(Slots):
+    ITEMS: list['ItemDescription'] = []
+    INDEX_TO_ITEM: dict[int, 'ItemDescription'] = {}
+    TYPE_TO_ITEMS: dict[ItemType, list['ItemDescription']] = {}
+
     def __init__(self, item_id: int, item_type: ItemType, name: str, stat_weights: dict[StatInstance, int],
                  ability: Optional[AbilityDesc] = None):
         self.id = item_id
@@ -18,6 +22,29 @@ class ItemDescription(Slots):
         self.name: str = name
         self.stat_weights: dict[StatInstance, int] = stat_weights
         self.ability: Optional[AbilityDesc] = ability
+
+    @staticmethod
+    def load():
+        with open('game_data/items.json', 'r') as f:
+            item_dict: dict[str, Any] = json.load(f)
+            for id_k, id_v in item_dict.items():
+                if id_v.get('Ability') is None:
+                    ItemDescription.ITEMS.append(ItemDescription(
+                        int(id_k), ItemType.get_from_name(id_v['Type']), id_v['Name'], {
+                            Stats.get_by_abv(abv): n for abv, n in id_v['Stats'].items()
+                        },
+                    ))
+                else:
+                    ItemDescription.ITEMS.append(ItemDescription(
+                        int(id_k), ItemType.get_from_name(id_v['Type']), id_v['Name'], {
+                            Stats.get_by_abv(abv): n for abv, n in id_v['Stats'].items()
+                        }, Ability.get_by_name(id_v['Ability'])
+                    ))
+            ItemDescription.INDEX_TO_ITEM = {item.id: item for item in ItemDescription.ITEMS}
+            ItemDescription.TYPE_TO_ITEMS = {it: [] for it in ItemType.get_all()}
+
+            for item in ItemDescription.ITEMS:
+                ItemDescription.TYPE_TO_ITEMS[item.type].append(item)
 
 
 class ItemData(Slots):
@@ -32,7 +59,7 @@ class ItemData(Slots):
         self.ability: Optional[AbilityInstance] = ability
 
     def get_description(self) -> ItemDescription:
-        return INDEX_TO_ITEM[self.desc_id]
+        return ItemDescription.INDEX_TO_ITEM[self.desc_id]
 
 
 class Item(Slots):

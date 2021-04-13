@@ -7,6 +7,7 @@ class Emoji(EnumPlus):
     BANK = r'\💰'
     GARDEN = r'\🌲'
     SCROLL = r'\📜'
+    HOSPITAL = r'\💉'
 
     # Betting
     ROBOT = r'\🤖'

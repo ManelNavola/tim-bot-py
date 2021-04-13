@@ -1,5 +1,5 @@
 import utils
-from commands.command import Command
+from helpers.command import Command
 from enums.emoji import Emoji
 from user_data.upgrades import UpgradeLink
 
@@ -28,7 +28,11 @@ def custom_print(upg: UpgradeLink, f=lambda x: x, mobile: bool = False) -> str:
 
 
 def rate_hour(value):
-    return f"+{utils.print_money(value)}/hour"
+    return f"+{utils.print_money(value)}/{utils.TimeMetric.HOUR.abbreviation()}"
+
+
+def hp_regen(value):
+    return f"+{value}/{utils.TimeMetric.MINUTE.abbreviation()}"
 
 
 async def menu(cmd: Command, mobile: bool = False):
@@ -41,6 +45,7 @@ async def menu(cmd: Command, mobile: bool = False):
               custom_print(cmd.user.upgrades['bank'], utils.print_money),
               custom_print(cmd.user.upgrades['garden'], rate_hour),
               custom_print(cmd.user.upgrades['inventory']),
+              custom_print(cmd.user.upgrades['hospital'], hp_regen),
               '```']
     else:
         tp = ["Available upgrades:",
@@ -48,6 +53,7 @@ async def menu(cmd: Command, mobile: bool = False):
               custom_print(cmd.user.upgrades['bank'], utils.print_money, mobile=True),
               custom_print(cmd.user.upgrades['garden'], rate_hour, mobile=True),
               custom_print(cmd.user.upgrades['inventory'], mobile=True),
+              custom_print(cmd.user.upgrades['hospital'], hp_regen, mobile=True),
               ]
     await cmd.send_hidden('\n'.join(tp))
 

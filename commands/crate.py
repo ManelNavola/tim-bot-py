@@ -1,5 +1,5 @@
 import utils
-from commands.command import Command
+from helpers.command import Command
 from enums.emoji import Emoji
 from guild_data.guild import Guild
 

@@ -69,16 +69,13 @@ class AbilityInstance(Slots):
         return self.desc.id, self.tier
 
 
+ABILITY_TIER_CHANCES = [100, 40, 8]
+
+
 PROTECTION = AbilityDesc(0, "Protection", [
     AbilityTier(Stats.DEF, 3, multiplier=2),
     AbilityTier(Stats.DEF, 4, multiplier=2),
     AbilityTier(Stats.DEF, 5, multiplier=2)
-])
-
-BLUNDER = AbilityDesc(1, "Blunder", [
-    AbilityTier(Stats.STUN, 3, adder=20),
-    AbilityTier(Stats.STUN, 3, adder=40),
-    AbilityTier(Stats.STUN, 3, adder=60)
 ])
 
 FLEE = AbilityDesc(2, "Flee", [
@@ -96,13 +93,12 @@ CURSE = AbilityDesc(3, "Curse", [
 
 class Ability:
     PROTECTION: AbilityDesc = PROTECTION
-    BLUNDER: AbilityDesc = BLUNDER
     FLEE: AbilityDesc = FLEE
     CURSE: AbilityDesc = CURSE
 
     @staticmethod
     def get_all() -> list[AbilityDesc]:
-        al: list[AbilityDesc] = [PROTECTION, BLUNDER, FLEE, CURSE]
+        al: list[AbilityDesc] = [PROTECTION, FLEE, CURSE]
         return al
 
     @staticmethod

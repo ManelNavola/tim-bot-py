@@ -305,7 +305,7 @@ class EasyJSONStatsWeights(EasyJSONStats):
 class EasyJSONBattleStats(EasyJSONStats):
     def show(self, data: dict[str, Any], key) -> str:
         stat_data = {Stats.get_by_abv(x): v for x, v in data['Stats'].items()}
-        return BattleEntity(BotEntity('', stat_data)).print()
+        return BattleEntity(BotEntity('', stat_data)).print() + f' [{sum(stat_data.values())}]'
 
 
 class EasyGridTree(EasyGrid):
@@ -484,7 +484,6 @@ class EasyGridTree(EasyGrid):
                     total.update(self.modified_row)
                     self.modified_row = None
                     self.update_row(self.current_id, total)
-                    print(self.modified_data)
                     messagebox.showinfo("Created", "Created successfully!")
                 else:
                     if last_modification and (not self.is_modified()):

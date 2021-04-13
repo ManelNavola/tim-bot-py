@@ -2,10 +2,10 @@
   "0": {
     "Name": "Toxic Sludge",
     "Stats": {
-      "EVA": 10,
       "CONT": 1,
-      "HP": 20,
-      "STR": 4
+      "STR": 4,
+      "HP": 4,
+      "EVA": 5
     }
   },
   "1": {
@@ -13,22 +13,22 @@
     "Stats": {
       "SPD": 2,
       "EVA": 2,
-      "HP": 18,
-      "STR": 4
+      "STR": 4,
+      "HP": 3
     }
   },
   "2": {
     "Name": "Weak Bandit",
     "Stats": {
-      "SPD": 10,
-      "HP": 22
+      "HP": 6,
+      "SPD": 8
     }
   },
   "3": {
     "Name": "Small Wolf",
     "Stats": {
-      "HP": 25,
-      "STR": 10
+      "STR": 10,
+      "HP": 5
     }
   },
   "4": {
@@ -37,7 +37,7 @@
       "STR": 3,
       "DEF": 2,
       "CONT": 2,
-      "HP": 35
+      "HP": 10
     }
   },
   "5": {
@@ -47,7 +47,7 @@
       "DEF": 2,
       "SPD": 1,
       "VAMP": 9,
-      "HP": 32
+      "HP": 8
     }
   },
   "6": {
@@ -56,7 +56,7 @@
       "STR": 3,
       "DEF": 5,
       "CONT": 5,
-      "HP": 32
+      "HP": 15
     }
   }
 }

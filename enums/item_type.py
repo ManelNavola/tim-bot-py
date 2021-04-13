@@ -25,7 +25,6 @@ class ItemType(EnumPlus):
 
     @classmethod
     def get_all(cls) -> list['ItemType']:
-        print(list(cls))
         return list(cls)
 
     def __str__(self) -> str:

@@ -4,6 +4,21 @@ from concurrent.futures.thread import ThreadPoolExecutor
 from functools import partial
 
 from db import database
+from helpers import storage
+
+
+def clear():
+    for k in ['guild_items', 'user_items', 'items', 'guilds', 'users']:
+        database.INSTANCE.get_cursor().execute(f"DELETE FROM {k}")
+    database.INSTANCE.commit(True)
+    storage.clear_cache()
+    print("Data cleared")
+
+
+def reload():
+    print("Reloading bot...")
+    os.system("python main.py")
+    exit()
 
 
 async def execute():
@@ -14,22 +29,12 @@ async def execute():
         args: list[str] = c.split(' ')
         try:
             if args[0].startswith('rel'):
-                print("Reloading bot...")
-                os.system("python main.py")
-                exit()
+                reload()
             elif args[0].startswith('res'):
-                for k in ['guild_items', 'user_items', 'items', 'guilds', 'users']:
-                    database.INSTANCE.get_cursor().execute(f"DELETE FROM {k}")
-                database.INSTANCE.commit()
-                print("Data cleared")
-                print("Restarting bot...")
-                os.system("python main.py")
-                exit()
+                clear()
+                reload()
             elif args[0].startswith('cl'):
-                for k in ['guild_items', 'user_items', 'items', 'guilds', 'users']:
-                    database.INSTANCE.get_cursor().execute(f"DELETE FROM {k}")
-                database.INSTANCE.commit()
-                print("Data cleared")
+                clear()
             elif len(args[0]) > 0:
                 print("Unknown command")
         except Exception as e:

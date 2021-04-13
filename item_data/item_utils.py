@@ -1,13 +1,37 @@
 import random
-from typing import Optional
+from typing import Optional, Any
 
 from db import database
 from enums.item_type import ItemType
-from item_data.abilities import AbilityInstance
+from item_data.abilities import AbilityInstance, ABILITY_TIER_CHANCES
 from item_data.item_classes import ItemData, ItemDescription, Item
-from item_data.items import TYPE_TO_ITEMS, ITEM_GENERATION_DATA, ABILITY_TIER_CHANCES
 from item_data.rarity import Rarity, RarityInstance
-from item_data.stats import Stats
+from item_data.stats import Stats, StatInstance
+
+
+ITEM_GENERATION_DATA: dict[str, dict[RarityInstance, Any]] = {
+    'stat_number': {
+        Rarity.COMMON: (1, 1),
+        Rarity.UNCOMMON: (2, 2),
+        Rarity.RARE: (2, 3),
+        Rarity.EPIC: (3, 4),
+        Rarity.LEGENDARY: (3, 5)
+    },
+    'stat_sum': {
+        Rarity.COMMON: (2, 4),
+        Rarity.UNCOMMON: (5, 7),
+        Rarity.RARE: (8, 10),
+        Rarity.EPIC: (11, 13),
+        Rarity.LEGENDARY: (14, 16)
+    },
+    'ability_chance': {
+        Rarity.COMMON: 0,
+        Rarity.UNCOMMON: 0.05,
+        Rarity.RARE: 0.1,
+        Rarity.EPIC: 0.2,
+        Rarity.LEGENDARY: 0.3
+    }
+}
 
 
 def parse_item_data_from_dict(dictionary: dict):
@@ -29,30 +53,45 @@ def get_random_shop_item_data(item_type: Optional[ItemType] = None, rarity: Opti
     if rarity is None:
         rarity = Rarity.get_random()
 
-    chosen_desc: ItemDescription = random.choice(TYPE_TO_ITEMS[item_type])
+    chosen_desc: ItemDescription = random.choice(ItemDescription.TYPE_TO_ITEMS[item_type])
 
     stat_number: int = random.randint(*ITEM_GENERATION_DATA['stat_number'][rarity])
-    stat_sum: int = random.randint(*ITEM_GENERATION_DATA['stat_sum'][rarity])
     max_rarity: RarityInstance = Rarity.get_max_stat_rarity(rarity)
 
-    available_stats: list = []
-    chosen_stats: list = []
-    chosen_stats_amounts: dict = {}
+    available_stats: list[StatInstance] = []
 
-    for stat, chance in chosen_desc.stat_weights.items():
+    for stat, weight in chosen_desc.stat_weights.items():
         if stat.rarity.id <= max_rarity.id:
-            available_stats += [stat] * chance
+            available_stats.append(stat)
 
-    while stat_number > 0:
-        index = random.randrange(0, len(available_stats))
-        stat = available_stats[index]
-        chosen_stats.append(stat)
-        chosen_stats_amounts[stat] = 0
-        stat_number -= 1
+    if stat_number >= len(available_stats):
+        chosen_stats: list[StatInstance] = available_stats
+        chosen_stats_weights: list[int] = [chosen_desc.stat_weights[stat] for stat in chosen_stats]
+    else:
+        chosen_stats: list[StatInstance] = []
+        chosen_stats_weights: list[int] = []
+        while stat_number > 0:
+            as_index = random.randint(0, len(available_stats) - 1)
+            stat = available_stats[as_index]
+            chosen_stats.append(stat)
+            chosen_stats_weights.append(chosen_desc.stat_weights[stat])
+            del available_stats[as_index]
+            stat_number -= 1
+
+    stat_sum: int = random.randint(*ITEM_GENERATION_DATA['stat_sum'][rarity])
+    stat_dict: dict[StatInstance, int] = {}
+    stat_limit: dict[StatInstance, int] = {stat: stat.limit for stat in chosen_stats}
 
     while stat_sum > 0:
-        stat = random.choice(chosen_stats)
-        chosen_stats_amounts[stat] = chosen_stats_amounts.get(stat, 0) + 1
+        stat = random.choices(chosen_stats, weights=chosen_stats_weights, k=1)[0]
+        stat_dict[stat] = stat_dict.get(stat, 0) + 1
+
+        stat_limit[stat] -= 1
+        if stat_limit[stat] == 0:
+            stat_index = chosen_stats.index(stat)
+            del chosen_stats[stat_index]
+            del chosen_stats_weights[stat_index]
+
         stat_sum -= 1
 
     ability: Optional[AbilityInstance] = None
@@ -62,7 +101,7 @@ def get_random_shop_item_data(item_type: Optional[ItemType] = None, rarity: Opti
         chosen_tier: int = random.choices(pop, weights=wei, k=1)[0]
         ability = AbilityInstance(chosen_desc.ability, chosen_tier)
 
-    return ItemData(rarity, chosen_desc.id, chosen_stats_amounts, ability=ability)
+    return ItemData(rarity, chosen_desc.id, stat_dict, ability=ability)
 
 
 def create_guild_item(guild_id: int, item_data: ItemData) -> Item:

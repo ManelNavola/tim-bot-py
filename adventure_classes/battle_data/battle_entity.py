@@ -53,8 +53,9 @@ class BattleEntity:
         # Vamp
         if random.random() < self.get_stat(Stats.VAMP):
             ar.vamp = True
-            self.entity.set_current_health(min(self.get_stat(Stats.HP), self.entity.get_current_hp() + real_amount))
-        other.entity.set_current_health(max(0, other.entity.get_current_hp() - real_amount))
+            self.entity.set_persistent(Stats.HP, min(self.get_stat(Stats.HP), self.entity.get_persistent(Stats.HP)
+                                                     + real_amount))
+        other.entity.set_persistent(Stats.HP, max(0, other.entity.get_persistent(Stats.HP) - real_amount))
         ar.damage = real_amount
         return ar
 
@@ -90,7 +91,7 @@ class BattleEntity:
         return stat.get_value(self._get_stat_value(stat))
 
     def _get_stat_value(self, stat: StatInstance) -> int:
-        val = self.entity.get_stat_dict().get(stat, 0)
+        val = self.entity.get_stat_value(stat)
         for effect in self._effects:
             if effect.instance.get().stat == stat:
                 val = val * effect.instance.get().multiplier
@@ -105,15 +106,12 @@ class BattleEntity:
                     stuff.append(f"x{effect.instance.get().multiplier:.2f}")
                 if effect.instance.get().adder != 0:
                     stuff.append(f"{effect.instance.get().adder}")
-        persistent = {
-            Stats.HP: self.entity.get_current_hp(),
-            Stats.MP: self.entity.get_current_mp()
-        }
         if stuff:
-            return stat.print(self._get_stat_value(stat), short=True, persistent_value=persistent.get(stat)) + \
-                   ' (' + ', '.join(stuff) + ')'
+            return stat.print(self._get_stat_value(stat), short=True,
+                              persistent_value=self.entity.get_persistent(stat, None)) + ' (' + ', '.join(stuff) + ')'
         else:
-            return stat.print(self._get_stat_value(stat), short=True, persistent_value=persistent.get(stat))
+            return stat.print(self._get_stat_value(stat), short=True,
+                              persistent_value=self.entity.get_persistent(stat, None))
 
     def print(self) -> str:
         sc: list[str] = []

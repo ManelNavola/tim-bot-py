@@ -14,6 +14,7 @@ from item_data.item_utils import parse_item_data_from_dict
 from item_data.stats import Stats
 from user_data import upgrades
 from user_data.inventory import Inventory
+from user_data.user_classes import UserClass
 from utils import TimeMetric, TimeSlot
 
 if TYPE_CHECKING:
@@ -32,11 +33,18 @@ class User(Row):
             'garden': upgrades.UpgradeLink(upgrades.GARDEN_PROD,
                                            DictRef(self._data, 'garden_lvl'), after=self._update_bank_increment),
             'inventory': upgrades.UpgradeLink(upgrades.INVENTORY_LIMIT,
-                                              DictRef(self._data, 'inventory_lvl'), after=self._update_inventory_limit)
+                                              DictRef(self._data, 'inventory_lvl'), after=self._update_inventory_limit),
+            'hospital': upgrades.UpgradeLink(upgrades.HOSPITAL,
+                                             DictRef(self._data, 'hospital_lvl'))
         }
         self._bank = Incremental(DictRef(self._data, 'bank'), DictRef(self._data, 'bank_time'),
                                  TimeSlot(TimeMetric.HOUR, self.upgrades['garden'].get_value()))
+        self._health = Incremental(DictRef(self._data['persistent_stats'], Stats.HP.abv),
+                                   DictRef(self._data['persistent_time'], Stats.HP.abv),
+                                   TimeSlot(TimeMetric.MINUTE, self.upgrades['hospital'].get_value()))
         self._adventure: Optional[Adventure] = None
+
+        # TODO ENSURE HEALTH IS PROPAGADATED
 
         # Fill inventory
         slots = self.upgrades['inventory'].get_value()
@@ -50,10 +58,11 @@ class User(Row):
             # Too many item_data... log
             print(f"{user_id} exceeded {slots} items: {len(fetched_items)}!")
         self.user_entity: UserEntity = UserEntity(DictRef(self._data, 'last_name'),
-                                                  DictRef(self._data['persistent_stats'], Stats.HP.abv),
-                                                  DictRef(self._data['persistent_stats'], Stats.MP.abv), {
-                Stats.HP: 20, Stats.DEF: 4
-                                                  })
+                                                  {
+                                                      Stats.HP: DictRef(self._data['persistent_stats'], Stats.HP.abv),
+                                                      Stats.MP: DictRef(self._data['persistent_stats'], Stats.MP.abv)
+                                                  },
+                                                  UserClass.WARRIOR)
         self.inventory: Inventory = Inventory(DictRef(self._data, 'equipped'), slots, [
             Item(item_data=parse_item_data_from_dict(item['data']), item_id=item['id']) for item in fetched_items
         ], self.user_entity)
@@ -74,11 +83,16 @@ class User(Row):
             'money_limit_lvl': 1,  # smallint
             'garden_lvl': 1,  # smallint
             'inventory_lvl': 1,  # smallint
+            'hospital_lvl': 1,  # smallint
 
             'equipped': [],  # smallint[]
             'persistent_stats': {  # json
-                Stats.HP.abv: Stats.HP.base,
-                Stats.MP.abv: Stats.MP.base
+                Stats.HP.abv: UserClass.WARRIOR.get(Stats.HP),
+                Stats.MP.abv: UserClass.WARRIOR.get(Stats.MP),
+            },
+            'persistent_time': {
+                Stats.HP.abv: utils.now(),
+                Stats.MP.abv: utils.now(),
             }
         }
 

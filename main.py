@@ -8,11 +8,14 @@ from discord_slash import SlashCommand, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
 import utils
-from commands import command, simple, crate, bet, upgrade, shop, messages, test, adventure
-from helpers import storage
+from commands import simple, crate, bet, upgrade, shop, test, adventure
+from game_data import data_loader
+from helpers import storage, messages, command
 from db import database
 # Load database
 from user_data.user import User
+
+data_loader.load()
 
 registered_guild_ids = None
 if utils.is_test():

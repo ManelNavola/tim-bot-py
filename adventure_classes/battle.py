@@ -170,10 +170,10 @@ class BattleChapter(Chapter):
                 await self._next_turn()
                 return
 
-        if self.battle_entity_a.entity.get_current_hp() == 0:
+        if self.battle_entity_a.entity.get_persistent(Stats.HP) == 0:
             await self._finish(True)
             return
-        elif self.battle_entity_b.entity.get_current_hp() == 0:
+        elif self.battle_entity_b.entity.get_persistent(Stats.HP) == 0:
             await self._finish(False)
             return
 

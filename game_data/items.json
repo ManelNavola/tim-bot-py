@@ -55,8 +55,7 @@
     "Name": "Metal Axe",
     "Type": "Weapon",
     "Stats": {
-      "STR": 1,
-      "STUN": 1
+      "STR": 1
     },
     "Ability": "Blunder"
   },

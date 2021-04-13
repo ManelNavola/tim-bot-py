@@ -62,7 +62,6 @@ class Bet:
             infinite_check -= 1
             if i == len(pool):
                 i = 0
-        print(i)
         self._bot = create_bot(pool[i], limit)
         self._limit = limit
         self._bet_ref.set({

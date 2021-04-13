@@ -6,8 +6,8 @@ from discord import Message
 from discord_slash import SlashContext
 
 import utils
-from commands import messages
-from commands.messages import MessagePlus
+from helpers import messages
+from helpers.messages import MessagePlus
 from enums.emoji import Emoji
 from user_data.user import User
 

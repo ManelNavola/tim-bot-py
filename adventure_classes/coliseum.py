@@ -2,7 +2,7 @@ from discord_slash import SlashContext
 
 from adventure_classes.adventure import Adventure, Chapter
 from adventure_classes.battle import BattleChapter
-from enemy_data import enemies
+from enemy_data import enemy_utils
 from enums.emoji import Emoji
 from user_data.user import User
 
@@ -26,15 +26,15 @@ class ColiseumRewardChapter(Chapter):
         level: int = self._adventure.saved_data['level'] + 1
         self._adventure.saved_data['level'] = level
         for i in range(3):
-            self._adventure.add_chapter(BattleChapter(enemies.get_random_enemy(level).instance()))
+            self._adventure.add_chapter(BattleChapter(enemy_utils.get_random_enemy(level).instance()))
         self._adventure.add_chapter(ColiseumRewardChapter())
         await self.end()
 
 
 async def start(ctx: SlashContext, user: User):
     adventure: Adventure = Adventure("Coliseum", Emoji.COLISEUM.value)
-    adventure.saved_data['level'] = -1
+    adventure.saved_data['level'] = 0
     for i in range(3):
-        adventure.add_chapter(BattleChapter(enemies.get_random_enemy(-1).instance()))
+        adventure.add_chapter(BattleChapter(enemy_utils.get_random_enemy(adventure.saved_data['level']).instance()))
     adventure.add_chapter(ColiseumRewardChapter())
     await user.start_adventure(ctx, adventure)

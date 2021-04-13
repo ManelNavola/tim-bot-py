@@ -3,7 +3,7 @@ from typing import Optional
 import discord
 
 import utils
-from commands.command import Command
+from helpers.command import Command
 from helpers import storage
 from enums.item_type import ItemType
 from item_data.item_classes import Item

@@ -20,9 +20,9 @@ with open('game_data/enemies.json', 'r') as f:
             id_v['Name'], stat_dict
         )
         _ENEMIES.append(beb)
-        k: int = stat_sum // 15
+        k: int = (stat_sum - 5) // 10
         if stat_sum < 0:
-            k = -1
+            k = 0
         li = _STAT_RANGE_TO_ENEMY.get(k, [])
         if not li:
             _STAT_RANGE_TO_ENEMY[k] = li

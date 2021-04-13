@@ -68,8 +68,8 @@ class PostgreSQL:
             self._connection.rollback()
             self._pending_commit = False
 
-    def commit(self) -> None:
-        if self._pending_commit:
+    def commit(self, force: bool = False) -> None:
+        if self._pending_commit or force:
             self._connection.commit()
             self._pending_commit = False
 
