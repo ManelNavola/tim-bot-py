@@ -3,4 +3,3 @@ psycopg2~=2.8.6
 discord.py
 discord-py-slash-command==1.1.2
 future~=0.18.2
-ttkthemes~=3.2.2
