@@ -35,26 +35,28 @@ def hp_regen(value):
     return f"+{value}/{utils.TimeMetric.MINUTE.abbreviation()}"
 
 
-async def menu(cmd: Command, mobile: bool = False):
-    if not mobile:
-        tp = ["```fix",
-              format_row(['Upgrade Name', 'Level', 'Current', 'Upgrade Cost', 'Next Value']),
-              format_row(['----------------------', '-------', '----------------',
-                          '--------------', '----------------']),
-              custom_print(cmd.user.upgrades['money_limit'], utils.print_money),
-              custom_print(cmd.user.upgrades['bank'], utils.print_money),
-              custom_print(cmd.user.upgrades['garden'], rate_hour),
-              custom_print(cmd.user.upgrades['inventory']),
-              custom_print(cmd.user.upgrades['hospital'], hp_regen),
-              '```']
-    else:
-        tp = ["Available upgrades:",
-              custom_print(cmd.user.upgrades['money_limit'], utils.print_money, mobile=True),
-              custom_print(cmd.user.upgrades['bank'], utils.print_money, mobile=True),
-              custom_print(cmd.user.upgrades['garden'], rate_hour, mobile=True),
-              custom_print(cmd.user.upgrades['inventory'], mobile=True),
-              custom_print(cmd.user.upgrades['hospital'], hp_regen, mobile=True),
-              ]
+async def menu(cmd: Command):
+    tp = ["```fix",
+          format_row(['Upgrade Name', 'Level', 'Current', 'Upgrade Cost', 'Next Value']),
+          format_row(['----------------------', '-------', '----------------',
+                      '--------------', '----------------']),
+          custom_print(cmd.user.upgrades['money'], utils.print_money),
+          custom_print(cmd.user.upgrades['bank'], utils.print_money),
+          custom_print(cmd.user.upgrades['garden'], rate_hour),
+          custom_print(cmd.user.upgrades['inventory']),
+          # custom_print(cmd.user.upgrades['hospital'], hp_regen),
+          '```']
+    await cmd.send_hidden('\n'.join(tp))
+
+
+async def short_menu(cmd: Command):
+    tp = ["Available upgrades:",
+          custom_print(cmd.user.upgrades['money'], utils.print_money, mobile=True),
+          custom_print(cmd.user.upgrades['bank'], utils.print_money, mobile=True),
+          custom_print(cmd.user.upgrades['garden'], rate_hour, mobile=True),
+          custom_print(cmd.user.upgrades['inventory'], mobile=True),
+          # custom_print(cmd.user.upgrades['hospital'], hp_regen, mobile=True),
+          ]
     await cmd.send_hidden('\n'.join(tp))
 
 

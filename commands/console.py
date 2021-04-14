@@ -3,14 +3,14 @@ import os
 from concurrent.futures.thread import ThreadPoolExecutor
 from functools import partial
 
-from db import database
+from db.database import PostgreSQL
 from helpers import storage
 
 
-def clear():
-    for k in ['guild_items', 'user_items', 'items', 'guilds', 'users']:
-        database.INSTANCE.get_cursor().execute(f"DELETE FROM {k}")
-    database.INSTANCE.commit(True)
+def clear(db: PostgreSQL):
+    for k in ['guild_items', 'user_items', 'items', 'guilds', 'user_upgrades', 'users']:
+        db.get_cursor().execute(f"DELETE FROM {k}")
+    db.commit(True)
     storage.clear_cache()
     print("Data cleared")
 
@@ -21,7 +21,7 @@ def reload():
     exit()
 
 
-async def execute():
+async def execute(db: PostgreSQL):
     rie = partial(asyncio.get_event_loop().run_in_executor, ThreadPoolExecutor(1))
     while True:
         print("> ", end='')
@@ -31,10 +31,10 @@ async def execute():
             if args[0].startswith('rel'):
                 reload()
             elif args[0].startswith('res'):
-                clear()
+                clear(db)
                 reload()
             elif args[0].startswith('cl'):
-                clear()
+                clear(db)
             elif len(args[0]) > 0:
                 print("Unknown command")
         except Exception as e:

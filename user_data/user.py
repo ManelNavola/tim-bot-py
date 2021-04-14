@@ -1,11 +1,11 @@
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 
 from discord_slash import SlashContext
 
 import utils
+from db.database import PostgreSQL
 from helpers.dictref import DictRef
 from helpers.incremental import Incremental
-from db import database
 from db.row import Row
 from entities.user_entity import UserEntity
 from enums.emoji import Emoji
@@ -16,89 +16,83 @@ from user_data import upgrades
 from user_data.inventory import Inventory
 from user_data.user_classes import UserClass
 from utils import TimeMetric, TimeSlot
-
-if TYPE_CHECKING:
-    from adventure_classes.adventure import Adventure
+from adventure_classes.adventure import Adventure
 
 
 class User(Row):
-    def __init__(self, user_id: int):
-        super().__init__("users", dict(id=user_id))
+    def __init__(self, db: PostgreSQL, user_id: int):
+        super().__init__(db, 'users', dict(id=user_id))
         self.id = user_id
+        self.upgrades_row = Row(db, 'user_upgrades', dict(user_id=user_id))
         self.upgrades = {
             'bank': upgrades.UpgradeLink(upgrades.BANK_LIMIT,
-                                         DictRef(self._data, 'bank_lvl'), before=self._update_bank_limit),
-            'money_limit': upgrades.UpgradeLink(upgrades.MONEY_LIMIT,
-                                                DictRef(self._data, 'money_limit_lvl')),
+                                         DictRef(self.upgrades_row._data, 'bank'),
+                                         before=self._update_bank_limit),
+
+            'money': upgrades.UpgradeLink(upgrades.MONEY_LIMIT,
+                                          DictRef(self.upgrades_row._data, 'money')),
+
             'garden': upgrades.UpgradeLink(upgrades.GARDEN_PROD,
-                                           DictRef(self._data, 'garden_lvl'), after=self._update_bank_increment),
+                                           DictRef(self.upgrades_row._data, 'garden'),
+                                           after=self._update_bank_increment),
+
             'inventory': upgrades.UpgradeLink(upgrades.INVENTORY_LIMIT,
-                                              DictRef(self._data, 'inventory_lvl'), after=self._update_inventory_limit),
+                                              DictRef(self.upgrades_row._data, 'inventory'),
+                                              after=self._update_inventory_limit),
+
             'hospital': upgrades.UpgradeLink(upgrades.HOSPITAL,
-                                             DictRef(self._data, 'hospital_lvl'))
+                                             DictRef(self.upgrades_row._data, 'hospital'))
         }
         self._bank = Incremental(DictRef(self._data, 'bank'), DictRef(self._data, 'bank_time'),
                                  TimeSlot(TimeMetric.HOUR, self.upgrades['garden'].get_value()))
-        self._health = Incremental(DictRef(self._data['persistent_stats'], Stats.HP.abv),
-                                   DictRef(self._data['persistent_time'], Stats.HP.abv),
+        self._health = Incremental(DictRef(self._data, 'hospital_value'),
+                                   DictRef(self._data, 'hospital_time'),
                                    TimeSlot(TimeMetric.MINUTE, self.upgrades['hospital'].get_value()))
         self._adventure: Optional[Adventure] = None
 
-        # TODO ENSURE HEALTH IS PROPAGADATED
+        # User entity
+        self.user_entity: UserEntity = UserEntity(DictRef(self._data, 'last_name'),
+                                                  DictRef(self._data, 'persistent_stats'), UserClass.WARRIOR)
 
         # Fill inventory
         slots = self.upgrades['inventory'].get_value()
-        database.INSTANCE.execute(f"SELECT I.* FROM users U "
-                                  f"INNER JOIN user_items UI ON UI.user_id = U.id "
-                                  f"INNER JOIN items I ON I.id = UI.item_id "
-                                  f"WHERE U.id = {self.id} "
-                                  f"LIMIT {self.upgrades['inventory'].get_value()}")
-        fetched_items = database.INSTANCE.get_cursor().fetchall()
-        if len(fetched_items) > slots:
+        inv_items: list[Optional[Item]] = [None] * slots
+        item_slots = self._db.start_join('users', dict(id=self.id), columns=['slot', 'item_id'],
+                                         limit=self.upgrades['inventory'].get_value()) \
+            .join('user_items', field_matches=[('user_id', 'id')]) \
+            .execute()
+        for is_info in item_slots:
+            item_data = self._db.get_row_data('items', dict(id=is_info['item_id']))
+            inv_items[is_info['slot']] = Item(item_data=parse_item_data_from_dict(item_data['data']),
+                                              item_id=item_data['id'])
+        if len(item_slots) > slots:
             # Too many item_data... log
-            print(f"{user_id} exceeded {slots} items: {len(fetched_items)}!")
-        self.user_entity: UserEntity = UserEntity(DictRef(self._data, 'last_name'),
-                                                  {
-                                                      Stats.HP: DictRef(self._data['persistent_stats'], Stats.HP.abv),
-                                                      Stats.MP: DictRef(self._data['persistent_stats'], Stats.MP.abv)
-                                                  },
-                                                  UserClass.WARRIOR)
-        self.inventory: Inventory = Inventory(DictRef(self._data, 'equipped'), slots, [
-            Item(item_data=parse_item_data_from_dict(item['data']), item_id=item['id']) for item in fetched_items
-        ], self.user_entity)
-
-        # TODO Stat regen
-        # TODO Check base stats work good
-        self._data['persistent_stats'][Stats.HP.abv] = 20
+            print(f"{user_id} exceeded {slots} items: {len(item_slots)}!")
+        self.inventory: Inventory = Inventory(self._db, DictRef(self._data, 'equipment'), slots, inv_items,
+                                              self.user_entity)
 
     def load_defaults(self):
         return {
-            'money': 10,  # bigint
-            'last_name': 'Unknown',  # text
-
-            'bank': 0,  # bigint
             'bank_time': utils.now(),  # bigint
-
-            'bank_lvl': 1,  # smallint
-            'money_limit_lvl': 1,  # smallint
-            'garden_lvl': 1,  # smallint
-            'inventory_lvl': 1,  # smallint
-            'hospital_lvl': 1,  # smallint
-
-            'equipped': [],  # smallint[]
+            'hospital_value': Stats.HP.get_value(UserClass.WARRIOR.get(Stats.HP, 0)),  # integer
             'persistent_stats': {  # json
-                Stats.HP.abv: UserClass.WARRIOR.get(Stats.HP),
-                Stats.MP.abv: UserClass.WARRIOR.get(Stats.MP),
-            },
-            'persistent_time': {
-                Stats.HP.abv: utils.now(),
-                Stats.MP.abv: utils.now(),
+                Stats.HP.abv: UserClass.WARRIOR.get(Stats.HP, 0),
+                Stats.MP.abv: UserClass.WARRIOR.get(Stats.MP, 0),
             }
         }
 
-    def update_name(self, name: str):
+    def update(self, name: str):
         if self._data['last_name'] != name:
             self._data['last_name'] = name
+        if self.get_adventure() is None:
+            self.user_entity.set_persistent(Stats.HP,
+                                            min(self._health.get(),
+                                                Stats.HP.get_value(self.user_entity.get_stat_value(Stats.HP))))
+
+    def get_refill(self):
+        return {
+            Stats.HP: self._health.get_until(Stats.HP.get_value(self.user_entity.get_stat_value(Stats.HP)))
+        }
 
     def get_name(self) -> str:
         return self._data['last_name']
@@ -107,7 +101,7 @@ class User(Row):
         return self._data['money']
 
     def get_money_limit(self) -> int:
-        return self.upgrades['money_limit'].get_value()
+        return self.upgrades['money'].get_value()
 
     def get_money_space(self) -> int:
         return max(0, self.get_money_limit() - self.get_money())
@@ -186,14 +180,23 @@ class User(Row):
                 return self._adventure
         return self._adventure
 
+    def can_adventure(self):
+        return self.user_entity.get_persistent(Stats.HP) > Adventure.MIN_HEALTH
+
     async def start_adventure(self, ctx: SlashContext, adventure: 'Adventure'):
         assert self.get_adventure() is None, "User is already in an adventure!"
+        if not self.can_adventure():
+            await ctx.send(f"Your health is too low ({self.user_entity.get_persistent(Stats.HP)})! "
+                           f"You need at least {Adventure.MIN_HEALTH} HP to adventure.")
+            return
         self._adventure = adventure
+        self._health.disable()
         await self._adventure.init(ctx, self)
 
     def end_adventure(self):
         assert self.get_adventure() is not None, "User is not in an adventure!"
         self._adventure = None
+        self._health.set(self.user_entity.get_persistent(Stats.HP))
 
     def get_inventory_limit(self) -> int:
         return self.upgrades['inventory'].get_value()
@@ -234,3 +237,10 @@ class User(Row):
 
     def _update_inventory_limit(self) -> None:
         self.inventory.set_limit(self.get_inventory_limit())
+        if len(self.inventory.items) < self.get_inventory_limit():
+            for i in range(self.get_inventory_limit() - len(self.inventory.items)):
+                self.inventory.items.append(None)
+
+    def save(self) -> None:
+        super().save()
+        self.upgrades_row.save()

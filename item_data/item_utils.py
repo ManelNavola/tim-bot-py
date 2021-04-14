@@ -1,7 +1,7 @@
 import random
 from typing import Optional, Any
 
-from db import database
+from db.database import PostgreSQL
 from enums.item_type import ItemType
 from item_data.abilities import AbilityInstance, ABILITY_TIER_CHANCES
 from item_data.item_classes import ItemData, ItemDescription, Item
@@ -95,33 +95,33 @@ def get_random_shop_item_data(item_type: Optional[ItemType] = None, rarity: Opti
         stat_sum -= 1
 
     ability: Optional[AbilityInstance] = None
-    if (chosen_desc.ability is not None) and random.random() < ITEM_GENERATION_DATA['ability_chance'][rarity]:
-        pop: list[int] = [0, 1, 2][:chosen_desc.ability.get_tier_amount()]
-        wei: list[int] = ABILITY_TIER_CHANCES[:chosen_desc.ability.get_tier_amount()]
-        chosen_tier: int = random.choices(pop, weights=wei, k=1)[0]
-        ability = AbilityInstance(chosen_desc.ability, chosen_tier)
+    # if (chosen_desc.ability is not None) and random.random() < ITEM_GENERATION_DATA['ability_chance'][rarity]:
+    #     pop: list[int] = [0, 1, 2][:chosen_desc.ability.get_tier_amount()]
+    #     wei: list[int] = ABILITY_TIER_CHANCES[:chosen_desc.ability.get_tier_amount()]
+    #     chosen_tier: int = random.choices(pop, weights=wei, k=1)[0]
+    #     ability = AbilityInstance(chosen_desc.ability, chosen_tier)
 
     return ItemData(rarity, chosen_desc.id, stat_dict, ability=ability)
 
 
-def create_guild_item(guild_id: int, item_data: ItemData) -> Item:
+def create_guild_item(db: PostgreSQL, guild_id: int, item_data: ItemData) -> Item:
     item = Item(item_data=item_data)
-    fetch_data = database.INSTANCE.insert_data("items", {
+    fetch_data = db.insert_data("items", {
         'data': item.get_row_data()
-    }, must_return=['id'])
+    }, returns=True, return_columns=['id'])
     item.id = fetch_data['id']
-    database.INSTANCE.insert_data("guild_items", {
+    db.insert_data("guild_items", {
         'guild_id': guild_id,
         'item_id': item.id
     })
     return item
 
 
-def delete_user_item(user_id: int, item_id: int) -> None:
-    database.INSTANCE.delete_row("user_items", dict(user_id=user_id, item_id=item_id))
-    database.INSTANCE.delete_row("items", dict(id=item_id))
+def delete_user_item(db: PostgreSQL, user_id: int, item_id: int) -> None:
+    db.delete_row("user_items", dict(user_id=user_id, item_id=item_id))
+    db.delete_row("items", dict(id=item_id))
 
 
-def transfer_shop(guild_id: int, user_id: int, item_id: int) -> None:
-    database.INSTANCE.delete_row("guild_items", dict(guild_id=guild_id, item_id=item_id))
-    database.INSTANCE.insert_data("user_items", dict(user_id=user_id, item_id=item_id))
+def transfer_shop(db: PostgreSQL, guild_id: int, user_id: int, slot: int, item_id: int) -> None:
+    db.delete_row("guild_items", dict(guild_id=guild_id, item_id=item_id))
+    db.insert_data("user_items", dict(user_id=user_id, slot=slot, item_id=item_id))

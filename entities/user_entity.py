@@ -1,5 +1,6 @@
 from typing import Any
 
+import utils
 from entities.entity import Entity
 from helpers.dictref import DictRef
 from item_data.item_classes import Item, ItemDescription
@@ -7,11 +8,11 @@ from item_data.stats import StatInstance, Stats
 
 
 class UserEntity(Entity):
-    def __init__(self, name_ref: DictRef[str], persistent_ref: dict[StatInstance, DictRef[int]],
+    def __init__(self, name_ref: DictRef[str], persistent_ref: DictRef[dict[str, int]],
                  base_stats: dict[StatInstance, int]):
         super().__init__({})
         self._base_dict = base_stats
-        self._persistent_ref: dict[StatInstance, DictRef[int]] = persistent_ref
+        self._persistent_ref: DictRef[dict[str, int]] = persistent_ref
         self._name_ref: DictRef[str] = name_ref
         self._power: int = 0
 
@@ -22,16 +23,16 @@ class UserEntity(Entity):
         return self._name_ref.get()
 
     def set_persistent(self, stat: StatInstance, value: Any) -> None:
-        if stat not in self._persistent_ref:
-            print('Tried setting non existant persistent stat')
+        if stat.abv not in self._persistent_ref.get():
+            print('Tried setting non existent persistent stat')
             return
-        self._persistent_ref[stat].set(value)
+        self._persistent_ref.get_update()[stat.abv] = value
 
-    def get_persistent(self, stat: StatInstance, default=0) -> Any:
-        got = self._persistent_ref.get(stat, None)
+    def get_persistent(self, stat: StatInstance, default=0) -> int:
+        got = self._persistent_ref.get().get(stat.abv)
         if got is None:
             return default
-        return got.get()
+        return got
 
     def get_stat_value(self, stat: StatInstance) -> int:
         return self._stat_dict.get(stat, 0) + self._base_dict.get(stat, 0)
@@ -54,5 +55,28 @@ class UserEntity(Entity):
 
         for stat in Stats.get_all():
             if (stat in self._stat_dict) or (stat in self._base_dict):
-                dc.append(stat.print(self._stat_dict.get(stat, 0), self._base_dict.get(stat, 0)))
+                dr = self._persistent_ref.get().get(stat.abv)
+                if dr is None:
+                    dc.append(stat.print(self._stat_dict.get(stat, 0), self._base_dict.get(stat, 0)))
+                else:
+                    dc.append(stat.print(self._stat_dict.get(stat, 0), self._base_dict.get(stat, 0),
+                                         persistent_value=dr))
+        return '\n'.join(dc)
+
+    def print_detailed_refill(self, persistent_refill: dict[StatInstance, int]):
+        dc: list[str] = []
+
+        for stat in Stats.get_all():
+            if (stat in self._stat_dict) or (stat in self._base_dict):
+                dr = self._persistent_ref.get().get(stat.abv)
+                if dr is None:
+                    dc.append(stat.print(self._stat_dict.get(stat, 0), self._base_dict.get(stat, 0)))
+                else:
+                    pr = persistent_refill.get(stat, 0)
+                    if pr == 0:
+                        dc.append(stat.print(self._stat_dict.get(stat, 0), self._base_dict.get(stat, 0),
+                                             persistent_value=dr) + " (Full)")
+                    else:
+                        dc.append(stat.print(self._stat_dict.get(stat, 0), self._base_dict.get(stat, 0),
+                                             persistent_value=dr) + f" (Full in {utils.print_time(pr)})")
         return '\n'.join(dc)

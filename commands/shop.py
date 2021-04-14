@@ -16,9 +16,9 @@ async def buy(cmd: Command, number: int):
     ip: ItemPurchase = cmd.guild.shop.purchase_item(cmd.user, number - 1)
     if ip.item is not None:
         ts: list[str] = [f"{Emoji.PURCHASE} {cmd.user.get_name()} purchased {ip.item.print()}!"]
-        if ip.must_equip:
+        if ip.must_equip is not None:
             ts.append("> Equipped automatically")
-            cmd.user.inventory.equip(len(cmd.user.inventory.items) - 1)
+            cmd.user.inventory.equip(ip.must_equip)
         await cmd.send('\n'.join(ts))
     else:
         if ip.reload_shop:
@@ -45,23 +45,10 @@ async def sell(cmd: Command, number: int):
 
 
 async def sell_all(cmd: Command):
-    number: int = 0
-    total_items: int = 0
-    total_price: int = 0
-    while number < len(cmd.user.inventory.items):
-        success, result = cmd.user.inventory.sell(number, cmd.user.id)
-        if success:
-            item: Item = result
-            price = int(item.get_price() * Shop.SELL_MULTIPLIER)
-            total_price += price
-            total_items += 1
-        else:
-            if result:
-                number = 9999999
-            else:
-                number += 1
+    total_items, total_price = cmd.user.inventory.sell_all(cmd.user.id)
     if total_items == 0:
         await cmd.error("You don't have any items to sell!")
     else:
         cmd.user.add_money(total_price)
-        await cmd.send_hidden(f"{Emoji.PURCHASE} Sold {total_items} items for {utils.print_money(total_price)}")
+        await cmd.send_hidden(f"{Emoji.PURCHASE} Sold {total_items} item{'s' if total_items > 0 else ''} "
+                              f"for {utils.print_money(total_price)}")

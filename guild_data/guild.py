@@ -1,4 +1,5 @@
 import utils
+from db.database import PostgreSQL
 from helpers.dictref import DictRef
 from helpers.incremental import Incremental
 from db import database
@@ -17,24 +18,15 @@ class Guild(Row):
     LEADERBOARD_TOP = 5
     SHOP_DURATION = TimeSlot(TimeMetric.HOUR, 1)
 
-    def __init__(self, guild_id: int):
-        super().__init__("guilds", dict(id=guild_id))
+    def __init__(self, db: PostgreSQL, guild_id: int):
+        super().__init__(db, "guilds", dict(id=guild_id))
         self.id: int = guild_id
         self._box: Incremental = Incremental(DictRef(self._data, 'table_money'),
                                              DictRef(self._data, 'table_money_time'),
                                              TimeSlot(TimeMetric.MINUTE, Guild.TABLE_INCREMENT))
-        self.bet: Bet = Bet(DictRef(self._data, 'ongoing_bet'))
+        self.bet: Bet = Bet(db, DictRef(self._data, 'ongoing_bet'))
         self.registered_user_ids: set[int] = set(self._data['user_ids'])
-        self.shop: Shop = Shop(DictRef(self._data, 'shop_time'), self.id)
-
-    def load_defaults(self):
-        return {
-            'table_money': 0,  # bigint
-            'table_money_time': utils.now(),  # bigint
-            'ongoing_bet': {},  # json
-            'user_ids': [],  # bigint[]
-            'shop_time': 0,  # bigint
-        }
+        self.shop: Shop = Shop(db, DictRef(self._data, 'shop_time'), self.id)
 
     def register_user_id(self, user_id: int) -> None:
         if user_id not in self.registered_user_ids:
@@ -42,12 +34,12 @@ class Guild(Row):
             self.registered_user_ids.add(user_id)
 
     def print_leaderboard(self) -> str:
-        database.INSTANCE.execute(f"SELECT last_name, money FROM users "
-                                  f"INNER JOIN guilds ON guilds.id = {self.id} "
-                                  f"AND users.id = ANY({database.convert_sql_value(list(self.registered_user_ids))}) "
-                                  f"ORDER BY money DESC "
-                                  f"LIMIT {Guild.LEADERBOARD_TOP}")
-        users = database.INSTANCE.get_cursor().fetchall()
+        self._db.execute(f"SELECT last_name, money FROM users "
+                         f"INNER JOIN guilds ON guilds.id = {self.id} "
+                         f"AND users.id = ANY({database.convert_sql_value(list(self.registered_user_ids))}) "
+                         f"ORDER BY money DESC "
+                         f"LIMIT {Guild.LEADERBOARD_TOP}")
+        users = self._db.get_cursor().fetchall()
         ld = [f"{Emoji.TROPHY} Top {Guild.LEADERBOARD_TOP} players:"]
         for i in range(len(users)):
             if i == 0:

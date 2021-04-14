@@ -1,12 +1,8 @@
-from typing import Optional
-
 import discord
 
 import utils
 from helpers.command import Command
 from helpers import storage
-from enums.item_type import ItemType
-from item_data.item_classes import Item
 
 
 async def inv(cmd: Command):
@@ -46,11 +42,11 @@ async def leaderboard(cmd: Command):
 
 
 async def stats(cmd: Command):
-    await cmd.send_hidden(cmd.user.user_entity.print_detailed())
+    await cmd.send_hidden(cmd.user.user_entity.print_detailed_refill(cmd.user.get_refill()))
 
 
-async def equip(cmd: Command, index: int):
-    result = cmd.user.inventory.equip(index - 1)
+async def equip(cmd: Command, number: int):
+    result = cmd.user.inventory.equip(number - 1)
     if result is not None:
         cmd.user.user_entity.update_equipment(cmd.user.inventory.get_equipment())
         await cmd.send_hidden(f"Equipped {result}")
@@ -61,18 +57,16 @@ async def equip(cmd: Command, index: int):
 async def equip_best(cmd: Command):
     tr = []
     cmd.user.inventory.equip_best()
-    for item_type in ItemType.get_all():
-        item: Optional[Item] = cmd.user.inventory.get_first(item_type)
-        if item is not None:
-            tr.append(f"Equipped {item.print()}")
+    for item in cmd.user.inventory.get_equipment():
+        tr.append(f"Equipped {item.print()}")
     if tr:
         await cmd.send('\n'.join(tr))
     else:
         await cmd.error("You have no equipment")
 
 
-async def unequip(cmd: Command, index: int):
-    result = cmd.user.inventory.unequip(index - 1)
+async def unequip(cmd: Command, number: int):
+    result = cmd.user.inventory.unequip(number - 1)
     if result is not None:
         cmd.user.user_entity.update_equipment(cmd.user.inventory.get_equipment())
         await cmd.send_hidden(f"Unequipped {result}")

@@ -1,4 +1,5 @@
 import asyncio
+import typing
 from abc import abstractmethod, ABC
 from typing import Optional
 
@@ -9,7 +10,8 @@ import utils
 from helpers import messages
 from helpers.messages import MessagePlus
 from enums.emoji import Emoji
-from user_data.user import User
+if typing.TYPE_CHECKING:
+    from user_data.user import User
 
 
 class Chapter(ABC):
@@ -39,7 +41,7 @@ class Chapter(ABC):
         self._log.clear()
 
     @abstractmethod
-    async def init(self, user: User):
+    async def init(self, user: 'User'):
         pass
 
     async def end(self, lost: bool = False):
@@ -48,6 +50,7 @@ class Chapter(ABC):
 
 class Adventure:
     DELAY_TIME: int = 2
+    MIN_HEALTH: int = 10
 
     def __init__(self, name: str, icon: str):
         self._name: str = name
@@ -58,7 +61,7 @@ class Adventure:
         self.saved_data: dict = {}
         self._current_chapter: int = 0
 
-    async def init(self, ctx: SlashContext, user: User):
+    async def init(self, ctx: SlashContext, user: 'User'):
         assert len(self._chapters) > 0, "Tried starting adventure without chapters"
         self._user = user
         message: Message = await ctx.send(f"{self._user.get_name()} started {self._name}!\n{self.print_progress(None)}")

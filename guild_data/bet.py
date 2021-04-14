@@ -5,6 +5,7 @@ import random
 from discord_slash import SlashContext
 
 import utils
+from db.database import PostgreSQL
 from helpers import storage
 from enums.emoji import Emoji
 from helpers.dictref import DictRef
@@ -32,7 +33,8 @@ class Bet:
         (999999999999, ['robot', 'sunglasses', 'cowboy'])
     ]
 
-    def __init__(self, bet_ref: DictRef[dict]):
+    def __init__(self, db: PostgreSQL, bet_ref: DictRef[dict]):
+        self._db = db
         self._bet_ref: DictRef[dict] = bet_ref
         self._info_changed: bool = False
         self._stored_info = None
@@ -41,7 +43,7 @@ class Bet:
         if self.is_active():
             for user_id, bet_data in self._bet_ref['bets'].items():
                 # USER ID AS A KEY IN JSON IS SAVED AS A STRING! CAREFUL
-                user = storage.get_user(int(user_id))
+                user = storage.get_user(self._db, int(user_id))
                 user.add_money(bet_data[1])
             self._bet_ref.set({})
 
@@ -102,7 +104,7 @@ class Bet:
         else:
             name = self._bet_ref['bets'][winner_id][0]
             result.append(f"{name} won the jackpot! ({money_str})")
-            user = storage.get_user(winner_id)
+            user = storage.get_user(self._db, winner_id)
             user.add_money(total_bet)
         await ctx.send('\n'.join(result))
         self._bet_ref.set({})

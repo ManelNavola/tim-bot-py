@@ -1,4 +1,5 @@
 import inspect
+import typing
 from typing import Callable, Optional
 
 import discord
@@ -6,6 +7,9 @@ from discord import Message, Reaction
 
 import utils
 from enums.emoji import Emoji
+
+if typing.TYPE_CHECKING:
+    from user_data.user import User
 
 
 class MessagePlus:
@@ -22,14 +26,17 @@ class MessagePlus:
         self.last_interaction = utils.now()
         await self.message.edit(content=msg)
 
-    async def on_reaction(self, user, member: discord.User, input_reaction: Reaction) -> None:
+    async def on_reaction(self, user: 'User', member: discord.User, input_reaction: Reaction) -> None:
         if user.id in self.react_to:
             self.last_interaction = utils.now()
             for reaction, hook in self._reaction_hooks.items():
                 if reaction.compare(input_reaction.emoji):
                     li = [user, input_reaction.emoji]
+                    # TODO organize this better
+                    user.update(member.display_name)
                     await hook(*[li[i] for i in range(len(inspect.getfullargspec(hook).args) - 1)])
                     await input_reaction.remove(member)
+                    user.save()  # Save user data (if any changed)
                     return
 
     async def add_reaction(self, reaction: Emoji, hook: Callable) -> None:
