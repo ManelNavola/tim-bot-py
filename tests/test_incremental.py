@@ -1,7 +1,8 @@
 from unittest import TestCase
 
-from data.incremental import Incremental, TimeMetric
-from utils import DictRef
+from helpers.dictref import DictRef
+from helpers.incremental import Incremental
+from utils import TimeSlot, TimeMetric
 
 
 class TestIncremental(TestCase):
@@ -10,7 +11,7 @@ class TestIncremental(TestCase):
             'base': 5,
             'time': 0
         }
-        self.inc = Incremental(DictRef(self.d, 'base'), DictRef(self.d, 'time'), TimeMetric.MINUTE, 27)
+        self.inc = Incremental(DictRef(self.d, 'base'), DictRef(self.d, 'time'), TimeSlot(TimeMetric.MINUTE, 27))
 
     def test_get(self):
         expected = {
@@ -21,24 +22,14 @@ class TestIncremental(TestCase):
         for curr_time, v in expected.items():
             self.assertEqual(v + base, self.inc.get(curr_time))
 
-    def test_change_set(self):
-        tests = {
-            24: (27, 42),
-            47: (43, 96),
-            1717: (0, 847)
-        }
-        for curr_time, v in tests.items():
-            self.inc.change(v[0], curr_time)
-            self.assertEqual(v[1], self.inc.get(curr_time))
-
-    def test_set_absolute(self):
+    def test_set(self):
         tests = {
             24: (27, 27),
             47: (43, 43),
             1717: (847, 847)
         }
         for curr_time, v in tests.items():
-            self.inc.set_absolute(v[0], curr_time)
+            self.inc.set(v[0], curr_time)
             self.assertEqual(v[1], self.inc.get(curr_time))
 
     def test_set_increment(self):

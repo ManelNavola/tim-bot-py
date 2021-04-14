@@ -5,10 +5,12 @@ import random
 from discord_slash import SlashContext
 
 import utils
-from data import storage
-from data.incremental import TimeMetric
-from data.user import User
-from utils import DictRef
+from db.database import PostgreSQL
+from helpers import storage
+from enums.emoji import Emoji
+from helpers.dictref import DictRef
+from user_data.user import User
+from utils import TimeSlot, TimeMetric
 
 
 def create_bot(bot_name: str, limit: int):
@@ -21,7 +23,7 @@ def create_bot(bot_name: str, limit: int):
 
 
 class Bet:
-    DURATION = TimeMetric.MINUTE.seconds() * 10
+    DURATION = TimeSlot(TimeMetric.MINUTE, 10).seconds()
     INFO_DELAY = 30
     MIN_BET = 50
     MIN_INCR = 10
@@ -31,21 +33,21 @@ class Bet:
         (999999999999, ['robot', 'sunglasses', 'cowboy'])
     ]
 
-    def __init__(self, bet_ref: DictRef, metric: TimeMetric, duration: int):
-        self._bet_ref = bet_ref
-        self._duration = metric.seconds() * duration
-        self._info_changed = False
+    def __init__(self, db: PostgreSQL, bet_ref: DictRef[dict]):
+        self._db = db
+        self._bet_ref: DictRef[dict] = bet_ref
+        self._info_changed: bool = False
         self._stored_info = None
         self._bot: BetBot
         self._limit: int = 0
         if self.is_active():
             for user_id, bet_data in self._bet_ref['bets'].items():
                 # USER ID AS A KEY IN JSON IS SAVED AS A STRING! CAREFUL
-                user = storage.get_user(int(user_id))
+                user = storage.get_user(self._db, int(user_id))
                 user.add_money(bet_data[1])
             self._bet_ref.set({})
 
-    def _start(self, ctx: SlashContext, limit: int=1000):
+    def _start(self, ctx: SlashContext, limit: int = 1000):
         self._info_changed = True
         finish_time = utils.now() + Bet.DURATION
         pool = []
@@ -59,7 +61,7 @@ class Bet:
             if random.random() < 0.4:
                 break
             i += 1
-            infinite_check += 1
+            infinite_check -= 1
             if i == len(pool):
                 i = 0
         self._bot = create_bot(pool[i], limit)
@@ -94,7 +96,7 @@ class Bet:
         user_ids.append('BOT')
         weights.append(self._bot.get_bet())
         winner_id = random.choices(user_ids, weights=weights, k=1)[0]
-        result = [f"~ Bet finished! ~"]
+        result = ["~ Bet finished! ~"]
         total_bet = self.get_bet_sum() + self._bot.get_bet()
         money_str = utils.print_money(total_bet)
         if winner_id == 'BOT':
@@ -102,7 +104,7 @@ class Bet:
         else:
             name = self._bet_ref['bets'][winner_id][0]
             result.append(f"{name} won the jackpot! ({money_str})")
-            user = storage.get_user(winner_id)
+            user = storage.get_user(self._db, winner_id)
             user.add_money(total_bet)
         await ctx.send('\n'.join(result))
         self._bet_ref.set({})
@@ -121,7 +123,7 @@ class Bet:
             bets.sort(key=lambda x: x[1], reverse=True)
             total_bet_str = utils.print_money(total_bet)
             # Jackpot
-            self._stored_info.append(f"{utils.Emoji.SPARKLE} **Jackpot** {total_bet_str} {utils.Emoji.SPARKLE} "
+            self._stored_info.append(f"{Emoji.SPARKLE} **Jackpot** {total_bet_str} {Emoji.SPARKLE} "
                                      f"(Max. bet {utils.print_money(self._limit)})")
             # Player+bot bets
             for single_bet in bets:
@@ -200,7 +202,7 @@ class BetBot:
 
 class Cowboy(BetBot):
     def __init__(self, limit: int):
-        super().__init__(utils.Emoji.COWBOY, limit)
+        super().__init__(Emoji.COWBOY.value, limit)
         self.brave = 0
         self.limit = limit
 
@@ -218,7 +220,7 @@ class Cowboy(BetBot):
 
 class Sunglasses(BetBot):
     def __init__(self, limit: int):
-        super().__init__(utils.Emoji.SUNGLASSES, limit)
+        super().__init__(Emoji.SUNGLASSES.value, limit)
         self.scared = 0
         self.limit = limit
 
@@ -239,7 +241,7 @@ class Sunglasses(BetBot):
 
 class Robot(BetBot):
     def __init__(self, limit: int):
-        super().__init__(utils.Emoji.ROBOT, limit)
+        super().__init__(Emoji.ROBOT.value, limit)
         self.scared = 0
         self.limit = limit
         self.limit_pct = 1

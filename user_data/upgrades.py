@@ -1,22 +1,24 @@
 # Dictionary
-from typing import Callable
+from typing import Callable, Any, Optional
 
 from autoslot import Slots
-import utils
+
+from enums.emoji import Emoji
+from helpers.dictref import DictRef
 
 
 class Upgrade(Slots):
-    def __init__(self, name: str, icon: str, upgrades: dict, locked: bool = False):
-        self._name = name
-        self._icon = str(icon)
-        self._upgrades = upgrades
+    def __init__(self, name: str, icon: Emoji, upgrades: dict[int, tuple[Any, int]], locked: bool = False):
+        self._name: str = name
+        self._icon: Emoji = icon
+        self._upgrades: dict[int, tuple[Any, int]] = upgrades
         self._locked = locked
 
     def get_name(self) -> str:
         return self._name
 
     def get_icon(self) -> str:
-        return self._icon
+        return self._icon.value
 
     def get_value(self, level: int) -> object:
         return self._upgrades[level][0]
@@ -32,11 +34,11 @@ class Upgrade(Slots):
 
 
 class UpgradeLink(Slots):
-    def __init__(self, upgrade: Upgrade, lvl_ref: utils.DictRef, before: Callable = None, after: Callable = None):
-        self._upgrade = upgrade
-        self._lvl_ref = lvl_ref
-        self._before = before
-        self._after = after
+    def __init__(self, upgrade: Upgrade, lvl_ref: DictRef[int], before: Callable = None, after: Callable = None):
+        self._upgrade: Upgrade = upgrade
+        self._lvl_ref: DictRef[int] = lvl_ref
+        self._before: Optional[Callable] = before
+        self._after: Optional[Callable] = after
 
     def get_name(self):
         return self._upgrade.get_name()
@@ -69,7 +71,7 @@ class UpgradeLink(Slots):
         return self._upgrade.is_max_level(self.get_level())
 
 
-MONEY_LIMIT = Upgrade('Money Limit', utils.Emoji.MONEY, {
+MONEY_LIMIT = Upgrade('Money Limit', Emoji.MONEY, {
     1: (2500, 0),
     2: (10000, 2000),
     3: (50000, 8000),
@@ -78,7 +80,7 @@ MONEY_LIMIT = Upgrade('Money Limit', utils.Emoji.MONEY, {
     6: (1000000, 400000)
 })
 
-BANK_LIMIT = Upgrade('Bank Limit', utils.Emoji.BANK, {
+BANK_LIMIT = Upgrade('Bank Limit', Emoji.BANK, {
     1: (200, 0),
     2: (400, 500),
     3: (800, 1200),
@@ -93,7 +95,7 @@ BANK_LIMIT = Upgrade('Bank Limit', utils.Emoji.BANK, {
     12: (409600, 819200)
 })
 
-GARDEN_PROD = Upgrade('Garden Production', utils.Emoji.GARDEN, {
+GARDEN_PROD = Upgrade('Garden Production', Emoji.GARDEN, {
     1: (25, 0),
     2: (35, 1500),
     3: (50, 3300),
@@ -104,4 +106,22 @@ GARDEN_PROD = Upgrade('Garden Production', utils.Emoji.GARDEN, {
     8: (175, 170070),
     9: (200, 374154),
     10: (225, 823138)
+})
+
+INVENTORY_LIMIT = Upgrade('Inventory Limit', Emoji.BAG, {
+    1: (4, 0),
+    2: (5, 1000),
+    3: (6, 2000),
+    4: (7, 5000),
+    5: (8, 10000),
+    6: (9, 50000),
+    7: (10, 100000),
+    8: (11, 200000),
+    9: (12, 500000),
+    10: (13, 1000000)
+})
+
+
+HOSPITAL = Upgrade('Hospital Healing', Emoji.HOSPITAL, {
+    1: (5, 0),
 })
