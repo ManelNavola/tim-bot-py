@@ -58,5 +58,30 @@
       "CONT": 5,
       "HP": 15
     }
+  },
+  "7": {
+    "Stats": {
+      "HP": 8,
+      "STR": 8,
+      "DEF": 8
+    },
+    "Name": "Rock Golem"
+  },
+  "8": {
+    "Stats": {
+      "CRIT": 15,
+      "HP": 5,
+      "DEF": 8,
+      "STR": 5
+    },
+    "Name": "Gold Guardian"
+  },
+  "9": {
+    "Stats": {
+      "HP": 10,
+      "STR": 10,
+      "SPD": 10
+    },
+    "Name": "Angry Lion"
   }
 }

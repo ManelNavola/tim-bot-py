@@ -78,7 +78,7 @@ class Inventory:
             self.user_entity.update_equipment(self.get_equipment())
 
     def equip(self, index: int) -> Optional[str]:
-        if 0 <= index < len(self.items):
+        if index in self._get_item_indices():
             item = self.items[index]
             if item.id not in self._equipped_ref.get():
                 item_type = item.data.get_description().type
@@ -130,8 +130,10 @@ class Inventory:
     def get_free_count(self) -> int:
         return self.limit - sum(x is not None for x in self.items)
 
-    def add_item(self, item: Item) -> int:
+    def add_item(self, item: Item) -> Optional[int]:
         slot = self.get_empty_slot()
+        if slot is None:
+            return None
         self.items[slot] = item
         return slot
 

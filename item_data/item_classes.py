@@ -61,6 +61,30 @@ class ItemData(Slots):
     def get_description(self) -> ItemDescription:
         return ItemDescription.INDEX_TO_ITEM[self.desc_id]
 
+    def calculate_price(self, ignore_modifier: bool = False):
+        stat_sum = sum([v * (k.cost + 1) for k, v in self.stats.items()])
+        rarity = self.rarity.id + 1
+        price_mod = 1
+        if (self.price_modifier is not None) and (not ignore_modifier):
+            price_mod = self.price_modifier
+
+        ab_mod = 1
+        if self.ability is not None:
+            ab_mod = 1.5
+
+        before_round = (pow(stat_sum, 0.9) * pow(rarity, 1.1) * 10) * price_mod * ab_mod
+        return round(before_round / 10) * 10
+
+    def print(self) -> str:
+        stats = ', '.join([f"+{v} {k.abv}" for k, v in self.stats.items()])
+        item_desc: ItemDescription = self.get_description()
+        if self.ability is None:
+            return f"{item_desc.type}{item_desc.name} {self.rarity.name} [{stats}]"
+        else:
+            return f"{item_desc.type}{item_desc.name} {self.rarity.name} [{stats}]" \
+                   f" | Ability: {self.ability.desc.get_name()} " \
+                   f"{utils.NUMERAL_TO_ROMAN[self.ability.tier + 1]}"
+
 
 class Item(Slots):
     def __init__(self, item_data: ItemData = None, item_id: int = -1):
@@ -69,6 +93,13 @@ class Item(Slots):
         self.data: ItemData = item_data
         self._price: Optional[int] = None
         self.durability: int = 100
+
+    def get_price(self, ignore_modifier: bool = False) -> int:
+        if ignore_modifier:
+            return self.data.calculate_price(ignore_modifier=True)
+        if not self._price:
+            self._price = self.data.calculate_price()
+        return self._price
 
     def get_row_data(self):
         row_data = {
@@ -84,33 +115,5 @@ class Item(Slots):
             row_data['ability'] = self.data.ability.encode()
         return row_data
 
-    def get_price(self, ignore_modifier: bool = False) -> int:
-        if ignore_modifier:
-            return self._calculate_price(ignore_modifier=True)
-        if not self._price:
-            self._price = self._calculate_price()
-        return self._price
-
-    def _calculate_price(self, ignore_modifier: bool = False):
-        stat_sum = sum([v * (k.cost + 1) for k, v in self.data.stats.items()])
-        rarity = self.data.rarity.id + 1
-        price_mod = 1
-        if (self.data.price_modifier is not None) and (not ignore_modifier):
-            price_mod = self.data.price_modifier
-
-        ab_mod = 1
-        if self.data.ability is not None:
-            ab_mod = 1.5
-
-        before_round = (pow(stat_sum, 0.9) * pow(rarity, 1.1) * 10) * price_mod * ab_mod
-        return round(before_round / 10) * 10
-
     def print(self) -> str:
-        stats = ', '.join([f"+{v} {k.abv}" for k, v in self.data.stats.items()])
-        item_desc: ItemDescription = self.data.get_description()
-        if self.data.ability is None:
-            return f"{item_desc.type}{item_desc.name} {self.data.rarity.name} [{stats}]"
-        else:
-            return f"{item_desc.type}{item_desc.name} {self.data.rarity.name} [{stats}]" \
-                   f" | Ability: {self.data.ability.desc.get_name()} " \
-                   f"{utils.NUMERAL_TO_ROMAN[self.data.ability.tier + 1]}"
+        return self.data.print()

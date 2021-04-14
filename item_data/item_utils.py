@@ -117,6 +117,19 @@ def create_guild_item(db: PostgreSQL, guild_id: int, item_data: ItemData) -> Ite
     return item
 
 
+def create_user_item(db: PostgreSQL, user_id: int, item_data: ItemData) -> Item:
+    item = Item(item_data=item_data)
+    fetch_data = db.insert_data('items', {
+        'data': item.get_row_data()
+    }, returns=True, return_columns=['id'])
+    item.id = fetch_data['id']
+    db.insert_data('user_items', {
+        'user_id': user_id,
+        'item_id': item.id
+    })
+    return item
+
+
 def delete_user_item(db: PostgreSQL, user_id: int, item_id: int) -> None:
     db.delete_row("user_items", dict(user_id=user_id, item_id=item_id))
     db.delete_row("items", dict(id=item_id))

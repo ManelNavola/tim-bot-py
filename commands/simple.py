@@ -13,16 +13,16 @@ async def post_inv(cmd: Command):
     await cmd.send(cmd.user.print(private=True, checking=cmd.user.get_name()))
 
 
-async def check(cmd: Command, member: discord.Member):
-    if member.id in [824935594509336576, 824720383596560444]:
+async def check(cmd: Command, user: discord.Member):
+    if user.id in [824935594509336576, 824720383596560444]:
         await cmd.send("._.")
         return
 
-    user = storage.get_user(member.id, False)
-    if not user:
-        await cmd.send("This user hasn't interacted with me yet")
+    user_m = storage.get_user(cmd.db, user.id, False)
+    if not user_m:
+        await cmd.send_hidden("This user hasn't interacted with me yet!")
         return
-    await cmd.send(user.print(private=False, checking=True))
+    await cmd.send(user_m.print(private=False, checking=True))
 
 
 async def transfer(cmd: Command):

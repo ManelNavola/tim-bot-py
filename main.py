@@ -113,8 +113,8 @@ cmd_handler.register_command(upgrade.short_menu,
                              base="upgrade", name="short_menu", description="View available upgrades",
                              guild_ids=registered_guild_ids)
 
-cmd_handler.register_command(upgrade.upgrade, 'money_limit',
-                             base="upgrade", name="money_limit", description="Upgrade money capacity",
+cmd_handler.register_command(upgrade.upgrade, 'money',
+                             base="upgrade", name="money", description="Upgrade money capacity",
                              guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(upgrade.upgrade, 'bank',
@@ -186,9 +186,9 @@ cmd_handler.register_command(simple.stats,
                              name="stats", description="Check your stats",
                              guild_ids=registered_guild_ids)
 
-cmd_handler.register_command(simple.abilities, ignore_battle=True,
-                             name="abilities", description="Check your abilities",
-                             guild_ids=registered_guild_ids)
+# cmd_handler.register_command(simple.abilities, ignore_battle=True,
+#                              name="abilities", description="Check your abilities",
+#                              guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(simple.equip,
                              name="equip", description="Equip an item",

@@ -40,6 +40,9 @@ class Row(Slots):
     def __getitem__(self, key: str):
         return self._data[key]
 
+    def get_db(self) -> PostgreSQL:
+        return self._db
+
     def load_defaults(self) -> dict[str, Any]:
         return {}
 
