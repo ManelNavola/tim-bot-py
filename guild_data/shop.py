@@ -57,7 +57,7 @@ class Shop:
         diff = utils.now() - self._shop_time.get()
         for i in range(Shop.ITEM_AMOUNT):
             self._last_valid_checks[i] = True
-        to_ret = [f"{Emoji.SHOP} Shop item_data (Restocks in "
+        to_ret = [f"{Emoji.SHOP} Shop (Restocks in "
                   f"{utils.print_time(Shop.SHOP_DURATION.seconds() - diff)}"
                   f"{Emoji.CLOCK})"]
         for i in range(len(self._shop_items)):
