@@ -42,7 +42,7 @@ async def leaderboard(cmd: Command):
 
 
 async def stats(cmd: Command):
-    await cmd.send_hidden(cmd.user.user_entity.print_detailed_refill(cmd.user.get_refill()))
+    await cmd.send_hidden(cmd.user.user_entity.print_detailed())
 
 
 async def equip(cmd: Command, number: int):

@@ -7,12 +7,13 @@ from item_data.stats import StatInstance, Stats
 
 class BotEntityBuilder:
     def __init__(self, name: str, stat_dict: dict[StatInstance, int],
-                 abilities: Optional[list[AbilityInstance]] = None):
+                 abilities: Optional[list[AbilityInstance]] = None, enemy_id: Optional[int] = None):
         if not abilities:
             abilities = []
         self.abilities: list[AbilityInstance] = abilities
         self.stat_dict: dict[StatInstance, int] = stat_dict
         self.name = name
+        self.enemy_id: Optional[int] = enemy_id
 
     def instance(self):
         return BotEntity(self.name, self.stat_dict.copy(), [ab for ab in self.abilities])

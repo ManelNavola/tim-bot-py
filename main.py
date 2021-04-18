@@ -5,7 +5,7 @@ from typing import Optional
 import discord
 from discord.ext import commands
 from discord_slash import SlashCommand
-from discord_slash.utils.manage_commands import create_option
+from discord_slash.utils.manage_commands import create_option, create_choice
 
 import utils
 from commands import simple, crate, bet, upgrade, shop, test, adventure
@@ -224,7 +224,26 @@ cmd_handler.register_command(simple.unequip_all,
 
 # Adventures
 cmd_handler.register_command(adventure.coliseum_start,
-                             name="coliseum", description="MAKE IT RAIN", guild_ids=registered_guild_ids)
+                             name="coliseum", description="Fight against diverse enemies to obtain rewards",
+                             guild_ids=registered_guild_ids)
+
+cmd_handler.register_command(adventure.start_adventure,
+                             name="adventure", description="Adventure time!",
+                             options=[
+                                 create_option(
+                                     name="location",
+                                     description="Location to adventure to",
+                                     option_type=3,
+                                     required=True,
+                                     choices=[
+                                         create_choice(
+                                             name="Forest",
+                                             value="forest"
+                                         )
+                                     ]
+                                 )
+                             ],
+                             guild_ids=registered_guild_ids)
 
 # Register test command
 saved: Optional[User] = None
@@ -232,6 +251,9 @@ fight_bot: bool = True
 if utils.is_test():
     cmd_handler.register_command(test.rich,
                                  name="rich", description="MAKE IT RAIN", guild_ids=registered_guild_ids)
+
+    cmd_handler.register_command(test.heal,
+                                 name="heal", description="Pls hel", guild_ids=registered_guild_ids)
 
     cmd_handler.register_command(test.test,
                                  name="test", description="Quickly test anything!",

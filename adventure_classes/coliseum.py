@@ -8,6 +8,7 @@ from adventure_classes.adventure import Adventure, Chapter
 from adventure_classes.battle import BattleChapter
 from enemy_data import enemy_utils
 from enums.emoji import Emoji
+from enums.location import Location
 from guild_data.shop import Shop
 from item_data import item_utils
 from item_data.item_classes import ItemData
@@ -99,12 +100,13 @@ class ColiseumRewardChapter(Chapter):
     async def venture(self):
         level: int = self._adventure.saved_data['level'] + 1
         self._adventure.saved_data['level'] = level
+        if level == 3:
+            await self.end()
+            return
+
         for i in range(3):
-            enemy_build = enemy_utils.get_random_enemy(level)
-            if enemy_build is None:
-                await self.end()
-                return
-            self._adventure.add_chapter(BattleChapter(enemy_utils.get_random_enemy(level).instance()))
+            enemy_build = enemy_utils.get_random_enemy(Location.COLISEUM, str(level))
+            self._adventure.add_chapter(BattleChapter(enemy_build.instance()))
         self._adventure.add_chapter(ColiseumRewardChapter())
         await self.end()
 
@@ -113,6 +115,7 @@ async def start(ctx: SlashContext, user: User):
     adventure: Adventure = Adventure("Coliseum", Emoji.COLISEUM.value)
     adventure.saved_data['level'] = 0
     for i in range(3):
-        adventure.add_chapter(BattleChapter(enemy_utils.get_random_enemy(adventure.saved_data['level']).instance()))
+        adventure.add_chapter(BattleChapter(
+            enemy_utils.get_random_enemy(Location.COLISEUM, str(adventure.saved_data['level'])).instance()))
     adventure.add_chapter(ColiseumRewardChapter())
     await user.start_adventure(ctx, adventure)

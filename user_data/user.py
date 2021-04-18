@@ -11,7 +11,7 @@ from entities.user_entity import UserEntity
 from enums.emoji import Emoji
 from item_data.item_classes import Item
 from item_data.item_utils import parse_item_data_from_dict
-from item_data.stats import Stats
+from item_data.stats import StatInstance, Stats
 from user_data import upgrades
 from user_data.inventory import Inventory
 from user_data.user_classes import UserClass
@@ -39,20 +39,16 @@ class User(Row):
             'inventory': upgrades.UpgradeLink(upgrades.INVENTORY_LIMIT,
                                               DictRef(self.upgrades_row._data, 'inventory'),
                                               after=self._update_inventory_limit),
-
-            'hospital': upgrades.UpgradeLink(upgrades.HOSPITAL,
-                                             DictRef(self.upgrades_row._data, 'hospital'))
         }
         self._bank = Incremental(DictRef(self._data, 'bank'), DictRef(self._data, 'bank_time'),
                                  TimeSlot(TimeMetric.HOUR, self.upgrades['garden'].get_value()))
-        self._health = Incremental(DictRef(self._data, 'hospital_value'),
-                                   DictRef(self._data, 'hospital_time'),
-                                   TimeSlot(TimeMetric.MINUTE, self.upgrades['hospital'].get_value()))
         self._adventure: Optional[Adventure] = None
 
         # User entity
-        self.user_entity: UserEntity = UserEntity(DictRef(self._data, 'last_name'),
-                                                  DictRef(self._data, 'persistent_stats'), UserClass.WARRIOR)
+        self._persistent_stats: dict[StatInstance, int] = {
+            stat: value for stat, value in UserClass.WARRIOR.items() if stat in [Stats.HP, Stats.MP]
+        }
+        self.user_entity: UserEntity = UserEntity(DictRef(self._data, 'last_name'), UserClass.WARRIOR)
 
         # Fill inventory
         slots = self.upgrades['inventory'].get_value()
@@ -74,25 +70,11 @@ class User(Row):
     def load_defaults(self):
         return {
             'bank_time': utils.now(),  # bigint
-            'hospital_value': Stats.HP.get_value(UserClass.WARRIOR.get(Stats.HP, 0)),  # integer
-            'persistent_stats': {  # json
-                Stats.HP.abv: UserClass.WARRIOR.get(Stats.HP, 0),
-                Stats.MP.abv: UserClass.WARRIOR.get(Stats.MP, 0),
-            }
         }
 
     def update(self, name: str):
         if self._data['last_name'] != name:
             self._data['last_name'] = name
-        if self.get_adventure() is None:
-            self.user_entity.set_persistent(Stats.HP,
-                                            min(self._health.get(),
-                                                Stats.HP.get_value(self.user_entity.get_stat_value(Stats.HP))))
-
-    def get_refill(self):
-        return {
-            Stats.HP: self._health.get_until(Stats.HP.get_value(self.user_entity.get_stat_value(Stats.HP)))
-        }
 
     def get_name(self) -> str:
         return self._data['last_name']
@@ -180,23 +162,20 @@ class User(Row):
                 return self._adventure
         return self._adventure
 
-    def can_adventure(self):
-        return self.user_entity.get_persistent(Stats.HP) > Adventure.MIN_HEALTH
+    @staticmethod
+    def can_adventure():
+        return True
 
     async def start_adventure(self, ctx: SlashContext, adventure: 'Adventure'):
         assert self.get_adventure() is None, "User is already in an adventure!"
-        if not self.can_adventure():
-            await ctx.send(f"Your health is too low ({self.user_entity.get_persistent(Stats.HP)})! "
-                           f"You need at least {Adventure.MIN_HEALTH} HP to adventure.")
-            return
+        self.user_entity.refill_persistent()
         self._adventure = adventure
-        self._health.disable()
         await self._adventure.init(ctx, self)
 
     def end_adventure(self):
         assert self.get_adventure() is not None, "User is not in an adventure!"
+        self.user_entity.refill_persistent()
         self._adventure = None
-        self._health.set(self.user_entity.get_persistent(Stats.HP))
 
     def get_inventory_limit(self) -> int:
         return self.upgrades['inventory'].get_value()

@@ -3,7 +3,7 @@ from typing import Optional, Any
 
 from db.database import PostgreSQL
 from enums.item_type import ItemType
-from item_data.abilities import AbilityInstance, ABILITY_TIER_CHANCES
+from item_data.abilities import AbilityInstance
 from item_data.item_classes import ItemData, ItemDescription, Item
 from item_data.rarity import Rarity, RarityInstance
 from item_data.stats import Stats, StatInstance

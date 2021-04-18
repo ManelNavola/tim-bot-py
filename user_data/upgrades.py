@@ -120,8 +120,3 @@ INVENTORY_LIMIT = Upgrade('Inventory Limit', Emoji.BAG, {
     9: (12, 500000),
     10: (13, 1000000)
 })
-
-
-HOSPITAL = Upgrade('Hospital Healing', Emoji.HOSPITAL, {
-    1: (5, 0),
-})

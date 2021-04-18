@@ -4,7 +4,9 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter.ttk import Notebook
 
+from enums.location import Location
 from enums.item_type import ItemType
+from item_data.stats import Stats
 from tk_utils import center
 from easy import EasyJSONField, EasyItem, EasyJSONKey, EasyJSONEnum, EasyGridTree, EasyValidation, \
     EasyJSONStatsWeights, EasyJSONBattleStats
@@ -45,7 +47,7 @@ class JSONEditor(Frame):
         self.editor_grid.on_remove()
 
     def on_consolidate(self):
-        if messagebox.askyesno('Consolidate', "Are you sure you want to consolidate the JSON? "
+        if messagebox.askyesno('Consolidate', "Are you sure you want to consolidate the WHOLE JSON? "
                                               "This action cannot be undone!"):
             # Save all
             self.data.update(self.editor_grid.modified_data)
@@ -103,9 +105,6 @@ class JSONEditor(Frame):
         self.editor_grid.update(self.data)
         self.editor_grid.grid(0, 0)
 
-        scroll = Scrollbar(self, orient="vertical", command=self.editor_grid.tree_view.yview)
-        scroll.grid(row=0, column=1, sticky='news')
-
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=0)
         self.grid_rowconfigure(0, weight=1)
@@ -136,8 +135,9 @@ class Items(JSONEditor):
     def __init__(self, master=None):
         super().__init__(master,
                          EasyGridTree([
-                             EasyItem('Id', EasyJSONKey(), 0, 0),
-                             EasyItem('Name', EasyJSONField('Name', 'Name', EasyValidation.not_empty), 0, 0),
+                             EasyItem('Id', EasyJSONKey(), 0, 0, field_width=4),
+                             EasyItem('Name', EasyJSONField('Name', 'Name', EasyValidation.not_empty), 0, 0,
+                                      field_width=20),
                              EasyItem('Type', EasyJSONEnum('Type', 'Type', ItemType), 1, 0),
                              EasyItem('Stats', EasyJSONStatsWeights('Stats'), 0, 1, row_span=2),
                          ], [64, 128, 128]),
@@ -153,13 +153,21 @@ class Enemies(JSONEditor):
     def __init__(self, master=None):
         super().__init__(master,
                          EasyGridTree([
-                             EasyItem('Id', EasyJSONKey(), 0, 0),
-                             EasyItem('Name', EasyJSONField('Name', 'Name', EasyValidation.not_empty), 0, 0),
-                             EasyItem('Stats', EasyJSONBattleStats('Stats'), 0, 1, row_span=2),
-                         ], [64, 128]),
+                             EasyItem('Id', EasyJSONKey(), 0, 0, field_width=4),
+                             EasyItem('Name', EasyJSONField('Name', 'Name', EasyValidation.not_empty), 0, 0,
+                                      field_width=20),
+                             EasyItem('Location', EasyJSONEnum('Location', 'Location', Location), 1, 0),
+                             EasyItem('Pool', EasyJSONField('Pool', 'Pool', width=8), 2, 0),
+                             EasyItem('Stats', EasyJSONBattleStats('Stats'), 0, 1, row_span=3),
+                         ], [64, 128, 128, 64]),
                          {
                              'Name': 'Enemy',
-                             'Stats': {}
+                             'Location': Location.NO_LOCATION.get_name(),
+                             'Stats': {
+                                 Stats.HP.abv: 4,
+                                 Stats.STR.abv: 4,
+                                 Stats.DEF.abv: 2
+                             }
                          },
                          read_from='../game_data/enemies.json')
 
@@ -171,6 +179,12 @@ class Editor(Tk):
         self.title('Tim Bot Editor')
         self.minsize(960, 480)
         self.create_widgets()
+
+        def try_close():
+            if messagebox.askyesno("Quit", "Are you sure you want to exit?"):
+                self.destroy()
+
+        self.protocol("WM_DELETE_WINDOW", try_close)
 
     def create_widgets(self):
         tabs = Notebook(self)

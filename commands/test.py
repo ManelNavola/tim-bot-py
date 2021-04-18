@@ -15,7 +15,12 @@ async def rich(cmd: Command):
         while not upg.is_max_level():
             upg.level_up()
     cmd.user.add_money(999999999999)
-    await cmd.send_hidden("yay")
+    await cmd.send_hidden("capitalism ho")
+
+
+async def heal(cmd: Command):
+    cmd.user.user_entity.set_persistent(Stats.HP, Stats.HP.get_value(cmd.user.user_entity.get_stat_value(Stats.HP)))
+    await cmd.send_hidden("cheater... hp up")
 
 
 async def test(cmd: Command):

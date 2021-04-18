@@ -6,7 +6,7 @@ from typing import Optional
 import utils
 from adventure_classes.adventure import Chapter
 from adventure_classes.battle_data.battle_entity import BattleEntity, AttackResult
-from entities.entity import Entity
+from entities.bot_entity import BotEntity
 from enums.emoji import Emoji
 from item_data.abilities import AbilityInstance
 from enums.item_type import ItemType
@@ -21,7 +21,7 @@ class BattleAction(Enum):
 
 
 class BattleChapter(Chapter):
-    def __init__(self, entity_b: Entity):
+    def __init__(self, entity_b: BotEntity):
         super().__init__(Emoji.BATTLE)
         self.battle_entity_a: Optional[BattleEntity] = None
         self.battle_entity_b: BattleEntity = BattleEntity(entity_b)

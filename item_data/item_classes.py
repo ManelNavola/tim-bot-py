@@ -41,7 +41,7 @@ class ItemDescription(Slots):
                         }, Ability.get_by_name(id_v['Ability'])
                     ))
             ItemDescription.INDEX_TO_ITEM = {item.id: item for item in ItemDescription.ITEMS}
-            ItemDescription.TYPE_TO_ITEMS = {it: [] for it in ItemType.get_all()}
+            ItemDescription.TYPE_TO_ITEMS = {it: [] for it in ItemType}
 
             for item in ItemDescription.ITEMS:
                 ItemDescription.TYPE_TO_ITEMS[item.type].append(item)

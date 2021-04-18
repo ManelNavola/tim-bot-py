@@ -6,7 +6,6 @@ from typing import Optional
 from discord import Message
 from discord_slash import SlashContext
 
-import utils
 from helpers import messages
 from helpers.messages import MessagePlus
 from enums.emoji import Emoji
@@ -49,7 +48,6 @@ class Chapter(ABC):
 
 
 class Adventure:
-    DELAY_TIME: int = 2
     MIN_HEALTH: int = 10
 
     def __init__(self, name: str, icon: str):
@@ -60,6 +58,7 @@ class Adventure:
         self._chapters: list[Chapter] = []
         self.saved_data: dict = {}
         self._current_chapter: int = 0
+        self.lost: bool = False
 
     async def init(self, ctx: SlashContext, user: 'User'):
         assert len(self._chapters) > 0, "Tried starting adventure without chapters"
@@ -84,13 +83,9 @@ class Adventure:
             path.append(chapter.icon.value)
         return f"{self._icon} Progress: {' ⎯ '.join(path)}"
 
-    async def end_chapter(self, lost: bool = False):
-        now = utils.current_ms()
+    async def _end_end_chapter(self):
         await self.message.clear_reactions()
-        diff = (utils.current_ms() - now) / 1000
-        if diff < Adventure.DELAY_TIME:
-            await asyncio.sleep(Adventure.DELAY_TIME - diff)
-        if lost:
+        if self.lost:
             await self.message.edit(f"{self._user.get_name()} died on {self._name}...")
             self._user.end_adventure()
             messages.unregister(self.message)
@@ -103,3 +98,8 @@ class Adventure:
                 await self.message.edit(f"{self._user.get_name()} finished {self._name}.")
                 self._user.end_adventure()
                 messages.unregister(self.message)
+
+    async def end_chapter(self, lost: bool = False):
+        self.lost = lost
+        await self.message.clear_reactions()
+        await self.message.add_reaction(Emoji.OK, self._end_end_chapter)

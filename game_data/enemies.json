@@ -6,7 +6,9 @@
       "STR": 4,
       "HP": 4,
       "EVA": 5
-    }
+    },
+    "Location": "Coliseum",
+    "Pool": "0"
   },
   "1": {
     "Name": "Green Slime",
@@ -15,21 +17,27 @@
       "EVA": 2,
       "STR": 4,
       "HP": 3
-    }
+    },
+    "Location": "Coliseum",
+    "Pool": "0"
   },
   "2": {
     "Name": "Weak Bandit",
     "Stats": {
       "HP": 6,
       "SPD": 8
-    }
+    },
+    "Location": "Coliseum",
+    "Pool": "0"
   },
   "3": {
     "Name": "Small Wolf",
     "Stats": {
       "STR": 10,
       "HP": 5
-    }
+    },
+    "Location": "Coliseum",
+    "Pool": "1"
   },
   "4": {
     "Name": "Angry Tree",
@@ -38,7 +46,9 @@
       "DEF": 2,
       "CONT": 2,
       "HP": 10
-    }
+    },
+    "Location": "Coliseum",
+    "Pool": "1"
   },
   "5": {
     "Name": "Bat",
@@ -48,7 +58,9 @@
       "SPD": 1,
       "VAMP": 9,
       "HP": 8
-    }
+    },
+    "Location": "Coliseum",
+    "Pool": "1"
   },
   "6": {
     "Name": "Warrior",
@@ -57,7 +69,9 @@
       "DEF": 5,
       "CONT": 5,
       "HP": 15
-    }
+    },
+    "Location": "Coliseum",
+    "Pool": "2"
   },
   "7": {
     "Stats": {
@@ -65,7 +79,9 @@
       "STR": 8,
       "DEF": 8
     },
-    "Name": "Rock Golem"
+    "Name": "Rock Golem",
+    "Location": "Coliseum",
+    "Pool": "1"
   },
   "8": {
     "Stats": {
@@ -74,7 +90,9 @@
       "DEF": 8,
       "STR": 5
     },
-    "Name": "Gold Guardian"
+    "Name": "Gold Guardian",
+    "Location": "Coliseum",
+    "Pool": "2"
   },
   "9": {
     "Stats": {
@@ -82,6 +100,123 @@
       "STR": 10,
       "SPD": 10
     },
-    "Name": "Angry Lion"
+    "Name": "Angry Lion",
+    "Location": "Coliseum",
+    "Pool": "2"
+  },
+  "10": {
+    "Location": "Forest",
+    "Stats": {
+      "HP": 4,
+      "STR": 2,
+      "DEF": 2
+    },
+    "Pool": "A",
+    "Name": "Squirrel"
+  },
+  "11": {
+    "Location": "Forest",
+    "Stats": {
+      "HP": 4,
+      "DEF": 2,
+      "EVA": 4,
+      "STR": 2
+    },
+    "Name": "Floaty Owl",
+    "Pool": "A"
+  },
+  "12": {
+    "Location": "Forest",
+    "Stats": {
+      "HP": 4,
+      "STR": 4,
+      "DEF": 1,
+      "VAMP": 4
+    },
+    "Name": "Small Bat",
+    "Pool": "A"
+  },
+  "13": {
+    "Location": "Forest",
+    "Stats": {
+      "HP": 5,
+      "DEF": 3,
+      "SPD": 4,
+      "STR": 5
+    },
+    "Pool": "B",
+    "Name": "Jumpy Deer"
+  },
+  "14": {
+    "Location": "Forest",
+    "Stats": {
+      "HP": 4,
+      "STR": 4,
+      "EVA": 8,
+      "SPD": 4
+    },
+    "Name": "Brown Fox",
+    "Pool": "B"
+  },
+  "15": {
+    "Location": "Forest",
+    "Stats": {
+      "HP": 4,
+      "STR": 6,
+      "EVA": 10
+    },
+    "Name": "Angry Butterfly",
+    "Pool": "B"
+  },
+  "16": {
+    "Location": "Forest",
+    "Stats": {
+      "HP": 6,
+      "DEF": 6,
+      "STR": 6,
+      "SPD": 4
+    },
+    "Name": "Lizard",
+    "Pool": "C"
+  },
+  "17": {
+    "Location": "Forest",
+    "Stats": {
+      "STR": 4,
+      "HP": 6,
+      "SPD": 10,
+      "CONT": 10
+    },
+    "Name": "Fast Hedgehog",
+    "Pool": "C"
+  },
+  "18": {
+    "Location": "Forest",
+    "Stats": {
+      "STR": 4,
+      "DEF": 10,
+      "HP": 10
+    },
+    "Name": "Beetle",
+    "Pool": "C"
+  },
+  "19": {
+    "Location": "Forest",
+    "Stats": {
+      "STR": 4,
+      "DEF": 8,
+      "HP": 8
+    },
+    "Name": "Bear"
+  },
+  "20": {
+    "Location": "Forest",
+    "Stats": {
+      "STR": 10,
+      "DEF": 10,
+      "CONT": 10,
+      "HP": 20
+    },
+    "Name": "Godly Ent"
   }
 }

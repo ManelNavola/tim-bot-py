@@ -42,7 +42,7 @@ class Easy(ABC):
 
 class EasyItem:
     def __init__(self, name: str, easy: Easy, row: int, column: int, sticky: str = 'nsew',
-                 column_span: int = 1, row_span: int = 1):
+                 column_span: int = 1, row_span: int = 1, field_width: int = 10):
         self.name = name
         self.easy = easy
         self.row = row
@@ -50,6 +50,7 @@ class EasyItem:
         self.sticky = sticky
         self.row_span = row_span
         self.column_span = column_span
+        self.field_width = field_width
 
 
 class EasyJSON(Easy, ABC):
@@ -97,6 +98,10 @@ class EasyJSONKey(EasyJSON):
 
 
 class EasyValidation:
+    @staticmethod
+    def any(new_value: str):
+        return True, new_value
+
     @staticmethod
     def not_empty(new_value: str):
         if new_value:
@@ -180,7 +185,7 @@ class EasyJSONWithValidation(EasyJSONWithVar):
 
 
 class EasyJSONField(EasyJSONWithValidation):
-    def __init__(self, name: str, path: str, validation=None, width: int = 20):
+    def __init__(self, name: str, path: str, validation: Any = EasyValidation.any, width: int = 20):
         super().__init__(path, validation)
         self.name = name
         self.width = width
@@ -217,7 +222,7 @@ class EasyJSONEnum(EasyJSONWithVar):
         label = Label(self.frame, text=self.name)
         label.pack(anchor=CENTER, padx=10, pady=(10, 5))
 
-        inp = OptionMenu(self.frame, self.var, *[x.get_name() for x in self.enum.get_all()], command=self.save)
+        inp = OptionMenu(self.frame, self.var, *[x.get_name() for x in self.enum], command=self.save)
         inp.configure(width=12)
         inp.pack(padx=10, pady=(0, 5))
 
@@ -324,6 +329,8 @@ class EasyGridTree(EasyGrid):
         self.widths = widths
         self.sample_create = None
         self.creating = False
+        self.filters = None
+        self.filtering_by = None
 
     def is_modified(self):
         return not (self.original_row == self.modified_row)
@@ -418,8 +425,39 @@ class EasyGridTree(EasyGrid):
         self.window.grab_set()
         self.window.deiconify()
 
+    def inp_upd_serve(self, i):
+        def inp_upd(x):
+            self.filtering_by[i] = x.lower()
+            self.update()
+            return True
+        return inp_upd
+
     def build(self, parent):
         self.frame = Frame(parent)
+
+        self.filtering_by = [None] * len(self.structure)
+
+        self.filters = Frame(self.frame)
+
+        for i in range(len(self.structure)):
+            element = self.structure[i]
+            if isinstance(element.easy, EasyJSONKey) or isinstance(element.easy, EasyJSONStats):
+                continue
+            text = Label(self.filters, text=element.name)
+            text.pack(side=LEFT, padx=5)
+            if isinstance(element.easy, EasyJSONEnum):
+                inp = OptionMenu(self.filters, StringVar(), '', *[x.get_name() for x in element.easy.enum],
+                                 command=self.inp_upd_serve(i))
+                inp.configure(width=element.field_width)
+                inp.pack(side=LEFT, pady=5)
+            else:
+                inp = Entry(self.filters)
+                inp.configure(width=element.field_width)
+                validation_command = self.frame.register(self.inp_upd_serve(i))
+                inp.configure(validate='all', validatecommand=(validation_command, '%P'))
+                inp.pack(side=LEFT, pady=5)
+
+        self.filters.grid(row=0, column=0, columnspan=2, sticky='ew')
 
         self.tree_view = Treeview(self.frame, selectmode='browse', column=tuple([ei.name for ei in self.structure]),
                                   show='headings')
@@ -428,7 +466,13 @@ class EasyGridTree(EasyGrid):
             self.tree_view.heading(f'#{i + 1}', text=ei.name, anchor=CENTER)
             self.tree_view.column(f'#{i + 1}', anchor=W)
         self.tree_view.bind("<Double-1>", self.on_double_click)
-        self.tree_view.pack(fill=BOTH, expand=True)
+        self.tree_view.bind("<Return>", self.on_double_click)
+        self.tree_view.grid(row=1, column=0, sticky='news')
+
+        scroll = Scrollbar(self.frame, orient="vertical", command=self.tree_view.yview)
+        scroll.grid(row=1, column=1, sticky='ns')
+
+        self.tree_view.configure(yscrollcommand=scroll.set)
 
         for i in range(len(self.widths)):
             val = self.widths[i]
@@ -440,7 +484,9 @@ class EasyGridTree(EasyGrid):
         self.frame.grid_columnconfigure(0, weight=1)
         self.frame.grid_columnconfigure(1, weight=0)
 
-        self.frame.pack(fill=BOTH, expand=True)
+        self.frame.grid(row=2, column=0, columnspan=2, sticky='news')
+
+        self.frame.rowconfigure(0, weight=0)
 
         # Window
 
@@ -499,7 +545,6 @@ class EasyGridTree(EasyGrid):
                             del self.modified_data[self.current_id]
                         self.modified_row = None
                         self.update_row(self.current_id, total)
-                        messagebox.showinfo("Saved", "Saved successfully!")
 
             self.tree_view.after(0, after_focus)
 
@@ -538,7 +583,7 @@ class EasyGridTree(EasyGrid):
 
         def try_close():
             if self.is_modified():
-                if messagebox.askokcancel("Quit", "Are you sure you want to exit without saving?"):
+                if messagebox.askyesno("Quit", "Are you sure you want to exit without saving?"):
                     self.window.grab_release()
                     self.window.withdraw()
             else:
@@ -569,8 +614,26 @@ class EasyGridTree(EasyGrid):
         else:
             self.tree_view.insert('', END, row_id, values=tuple(to_show))
 
-    def update(self, data):
-        self.data = data
+    @staticmethod
+    def sort(x: str):
+        if x.isnumeric():
+            return int(x)
+        else:
+            return -1
+
+    def update(self, data=None):
+        if data:
+            self.data = data
+        else:
+            data = copy.deepcopy(self.data)
+            data.update(self.modified_data)
         self.tree_view.delete(*self.tree_view.get_children())
-        for k in sorted(data.keys()):
-            self.update_row(k, data[k])
+        for k in sorted(data.keys(), key=EasyGridTree.sort):
+            correct = True
+            for i in range(len(self.structure)):
+                if self.filtering_by[i]:
+                    if self.filtering_by[i] not in data[k][self.structure[i].name].lower():
+                        correct = False
+                        break
+            if correct:
+                self.update_row(k, data[k])
