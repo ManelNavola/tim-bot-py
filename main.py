@@ -184,7 +184,7 @@ cmd_handler.register_command(shop.sell_all,
 # RPG management
 cmd_handler.register_command(simple.stats,
                              name="stats", description="Check your stats",
-                             guild_ids=registered_guild_ids)
+                             guild_ids=registered_guild_ids, ignore_battle=True)
 
 # cmd_handler.register_command(simple.abilities, ignore_battle=True,
 #                              name="abilities", description="Check your abilities",

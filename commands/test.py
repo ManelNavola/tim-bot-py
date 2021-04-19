@@ -1,10 +1,9 @@
-from adventure_classes.adventure import Adventure
-from adventure_classes.battle import BattleChapter
-from adventure_classes.reward import RewardChapter
+from adventure_classes.generic.adventure import Adventure
+from adventure_classes.generic.battle import BattleChapter
 from helpers.command import Command
 from entities.bot_entity import BotEntityBuilder
 from enums.emoji import Emoji
-from item_data.stats import Stats
+from item_data.stat import Stat
 
 FIGHT_BOT: bool = True
 
@@ -19,20 +18,19 @@ async def rich(cmd: Command):
 
 
 async def heal(cmd: Command):
-    cmd.user.user_entity.set_persistent(Stats.HP, Stats.HP.get_value(cmd.user.user_entity.get_stat_value(Stats.HP)))
-    await cmd.send_hidden("cheater... hp up")
+    cmd.user.user_entity.change_persistent(Stat.HP, 999999)
+    await cmd.send_hidden("cheater... healed")
 
 
 async def test(cmd: Command):
     if FIGHT_BOT:
         potato = BotEntityBuilder('Potato', {
-            Stats.HP: -16,
-            Stats.MP: 0,
-            Stats.STR: -1,
+            Stat.HP: -16,
+            Stat.MP: 0,
+            Stat.STR: -1,
         })
         adventure: Adventure = Adventure("Test Adventure", f"{Emoji.BANK}")
         adventure.add_chapter(BattleChapter(potato.instance()))
-        adventure.add_chapter(RewardChapter())
         await cmd.user.start_adventure(cmd.ctx, adventure)
     else:
         pass

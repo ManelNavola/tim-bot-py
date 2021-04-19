@@ -1,30 +1,28 @@
 import asyncio
 import random
-from enum import unique, Enum
 from typing import Optional
 
 import utils
-from adventure_classes.adventure import Chapter
-from adventure_classes.battle_data.battle_entity import BattleEntity, AttackResult
+from adventure_classes.generic.adventure import Adventure
+from adventure_classes.generic.battle_entity import BattleEntity, AttackResult
+from adventure_classes.generic.chapter import Chapter
+from enemy_data import enemy_utils
 from entities.bot_entity import BotEntity
 from enums.emoji import Emoji
+from enums.location import Location
 from item_data.abilities import AbilityInstance
 from enums.item_type import ItemType
-from item_data.stats import Stats
+from item_data.stat import Stat
 from user_data.user import User
 
 
-@unique
-class BattleAction(Enum):
-    ATTACK = Emoji.BATTLE
-    ABILITY = 1
-
-
 class BattleChapter(Chapter):
-    def __init__(self, entity_b: BotEntity):
+    def __init__(self, entity_b: BotEntity, message: str = ''):
         super().__init__(Emoji.BATTLE)
         self.battle_entity_a: Optional[BattleEntity] = None
         self.battle_entity_b: BattleEntity = BattleEntity(entity_b)
+
+        self._message: str = message
 
         self._speedDiff: float = 0
         self._battle_log: list[str] = []
@@ -34,26 +32,31 @@ class BattleChapter(Chapter):
         self._first_message: str = ""
         self._turn_a: bool = False
 
-    async def init(self, user: User):
-        battle_num: int = self._adventure.saved_data.get('battle_num', 0) + 1
+    async def init(self):
+        assert len(self.get_adventure().get_users()) == 1, 'Battle with more than one user not currently supported'
+
+        user = list(self.get_adventure().get_users().keys())[0]
+        battle_num: int = self._adventure.saved_data.get('_battle_num', 0) + 1
         battle_started: str = f"{Emoji.BATTLE} BATTLE #{battle_num} STARTED {Emoji.BATTLE}"
-        self._adventure.saved_data['battle_num'] = battle_num
+        self._adventure.saved_data['_battle_num'] = battle_num
         self._first_message = battle_started
+        if self._message:
+            self.add_log(f"_{self._message}_")
         self.add_log(battle_started)
         setup_wait: int = utils.current_ms()
         await self.pop_log()
         self.battle_entity_a = BattleEntity(user.user_entity)
 
         # Get who is first
-        speed_a = self.battle_entity_a.get_stat(Stats.SPD)
-        speed_b = self.battle_entity_b.get_stat(Stats.SPD)
+        speed_a = self.battle_entity_a.get_stat(Stat.SPD)
+        speed_b = self.battle_entity_b.get_stat(Stat.SPD)
         if speed_b > speed_a:
             self._turn_a = True
         elif speed_b == speed_a and random.random() < 0.5:
             self._turn_a = True
 
         # Add basic actions
-        await self.message.add_reaction(BattleAction.ATTACK.value, self.attack)
+        await self.get_adventure().add_reaction(Emoji.BATTLE, self.attack)
 
         # Add equipment actions
         for _, itemType in self.battle_entity_a.get_abilities():
@@ -63,7 +66,7 @@ class BattleChapter(Chapter):
                 self._equipment_emoji[itemType] = self._equipment_emoji.get(itemType, 0) + 1
 
         for emoji in self._equipment_emoji.keys():
-            await self.message.add_reaction(emoji.get_type_icon()[1:], self.ability)
+            await self.get_adventure().add_reaction(emoji.get_type_icon()[1:], self.ability)
 
         # Start
         diff = (utils.current_ms() - setup_wait) / 1000
@@ -88,16 +91,16 @@ class BattleChapter(Chapter):
         self._equipment_emoji[item_type] -= 1
         if self._equipment_emoji[item_type] <= 0:
             del self._equipment_emoji[item_type]
-            await self.message.remove_reactions(item_type.get_type_icon()[1:])
+            await self.get_adventure().remove_reactions(item_type.get_type_icon()[1:])
 
         # Who to add effect to
-        if ability.get().other:
-            victim.add_effect(ability)
-            self._battle_log.append(f"> {issuer.entity.get_name()} used {ability.get_name()} "
-                                    f"on {victim.entity.get_name()}!")
-        else:
-            issuer.add_effect(ability, True)
-            self._battle_log.append(f"> {issuer.entity.get_name()} used {ability.get_name()}!")
+        # if ability.get().other:
+        #     victim.add_effect(ability)
+        #     self._battle_log.append(f"> {issuer.entity.get_name()} used {ability.get_name()} "
+        #                             f"on {victim.entity.get_name()}!")
+        # else:
+        #     issuer.add_effect(ability, True)
+        #     self._battle_log.append(f"> {issuer.entity.get_name()} used {ability.get_name()}!")
 
         # Next turn
         await self._next_turn()
@@ -161,7 +164,7 @@ class BattleChapter(Chapter):
             # A action (New turn)
             self.battle_entity_b.end_turn()
             self._turn_a = True
-            diff: float = self.battle_entity_a.get_stat(Stats.SPD) - self.battle_entity_b.get_stat(Stats.SPD)
+            diff: float = self.battle_entity_a.get_stat(Stat.SPD) - self.battle_entity_b.get_stat(Stat.SPD)
             if first_time:
                 diff = 0
             self._speedDiff += diff
@@ -170,10 +173,10 @@ class BattleChapter(Chapter):
                 await self._next_turn()
                 return
 
-        if self.battle_entity_a.entity.get_persistent(Stats.HP) == 0:
+        if self.battle_entity_a.entity.get_persistent(Stat.HP) == 0:
             await self._finish(True)
             return
-        elif self.battle_entity_b.entity.get_persistent(Stats.HP) == 0:
+        elif self.battle_entity_b.entity.get_persistent(Stat.HP) == 0:
             await self._finish(False)
             return
 
@@ -201,6 +204,8 @@ class BattleChapter(Chapter):
                                    f"{self.battle_entity_a.entity.get_name()}`` Speed Advantage")
         if self._first_message:
             self._battle_log.insert(0, self._first_message)
+            if self._message:
+                self._battle_log.insert(0, self._message)
             self._first_message = ""
         self._battle_log.append(f"{self.battle_entity_a.entity.get_name()} - {self.battle_entity_a.print()}")
         self._battle_log.append(f"{self.battle_entity_b.entity.get_name()} - {self.battle_entity_b.print()}")
@@ -221,3 +226,11 @@ class BattleChapter(Chapter):
                                     f"{self.battle_entity_a.entity.get_name()} won the battle!")
             await self.pop_battle_log()
             await self.end()
+
+
+def add_to_adventure(adventure: Adventure, location: Location, pool: str = '', message: str = '') -> BattleChapter:
+    enemy = enemy_utils.get_random_enemy(location, pool, last_chosen_id=adventure.saved_data.get('_enemy_id'))
+    adventure.saved_data['_enemy_id'] = enemy.enemy_id
+    bc = BattleChapter(enemy.instance(), message=message)
+    adventure.add_chapter(bc)
+    return bc

@@ -1,15 +1,15 @@
-from item_data.stats import Stats
+from item_data.stat import Stat
 
 
 # UserClass total should be 10
 class UserClass:
     WARRIOR = {
-        Stats.HP: 4,
-        Stats.STR: 4,
-        Stats.DEF: 2
+        Stat.HP: 4,
+        Stat.STR: 4,
+        Stat.DEF: 2
     }
     ROGUE = {
-        Stats.HP: 4,
-        Stats.STR: 4,
-        Stats.SPD: 2
+        Stat.HP: 4,
+        Stat.STR: 4,
+        Stat.SPD: 2
     }

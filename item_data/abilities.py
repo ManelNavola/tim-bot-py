@@ -3,12 +3,12 @@ from typing import Optional
 from autoslot import Slots
 
 import utils
-from item_data.stats import StatInstance, Stats
+from item_data.stat import Stat
 
 
 class AbilityTier(Slots):
-    def __init__(self, stat: StatInstance, duration: int, multiplier: float = 1, adder: int = 0, other: bool = False):
-        self.stat: StatInstance = stat
+    def __init__(self, stat: Stat, duration: int, multiplier: float = 1, adder: int = 0, other: bool = False):
+        self.stat: Stat = stat
         self.duration: int = duration
         self.multiplier: float = multiplier
         self.adder: int = adder
@@ -73,21 +73,21 @@ ABILITY_TIER_CHANCES = [100, 40, 8]
 
 
 PROTECTION = AbilityDesc(0, "Protection", [
-    AbilityTier(Stats.DEF, 3, multiplier=2),
-    AbilityTier(Stats.DEF, 4, multiplier=2),
-    AbilityTier(Stats.DEF, 5, multiplier=2)
+    AbilityTier(Stat.DEF, 3, multiplier=2),
+    AbilityTier(Stat.DEF, 4, multiplier=2),
+    AbilityTier(Stat.DEF, 5, multiplier=2)
 ])
 
 FLEE = AbilityDesc(2, "Flee", [
-    AbilityTier(Stats.EVA, 3, adder=20),
-    AbilityTier(Stats.EVA, 3, adder=40),
-    AbilityTier(Stats.EVA, 3, adder=60)
+    AbilityTier(Stat.EVA, 3, adder=20),
+    AbilityTier(Stat.EVA, 3, adder=40),
+    AbilityTier(Stat.EVA, 3, adder=60)
 ])
 
 CURSE = AbilityDesc(3, "Curse", [
-    AbilityTier(Stats.STR, 2, multiplier=0.8, other=True),
-    AbilityTier(Stats.STR, 3, multiplier=0.8, other=True),
-    AbilityTier(Stats.STR, 3, multiplier=0.6, other=True)
+    AbilityTier(Stat.STR, 2, multiplier=0.8, other=True),
+    AbilityTier(Stat.STR, 3, multiplier=0.8, other=True),
+    AbilityTier(Stat.STR, 3, multiplier=0.6, other=True)
 ])
 
 

@@ -1,3 +1,4 @@
+import typing
 from typing import Optional
 
 from discord_slash import SlashContext
@@ -11,12 +12,14 @@ from entities.user_entity import UserEntity
 from enums.emoji import Emoji
 from item_data.item_classes import Item
 from item_data.item_utils import parse_item_data_from_dict
-from item_data.stats import StatInstance, Stats
+from item_data.stat import StatInstance, Stat
 from user_data import upgrades
 from user_data.inventory import Inventory
 from user_data.user_classes import UserClass
 from utils import TimeMetric, TimeSlot
-from adventure_classes.adventure import Adventure
+
+if typing.TYPE_CHECKING:
+    from adventure_classes.generic.adventure import Adventure
 
 
 class User(Row):
@@ -46,7 +49,7 @@ class User(Row):
 
         # User entity
         self._persistent_stats: dict[StatInstance, int] = {
-            stat: value for stat, value in UserClass.WARRIOR.items() if stat in [Stats.HP, Stats.MP]
+            stat: value for stat, value in UserClass.WARRIOR.items() if stat in [Stat.HP, Stat.MP]
         }
         self.user_entity: UserEntity = UserEntity(DictRef(self._data, 'last_name'), UserClass.WARRIOR)
 
@@ -153,28 +156,26 @@ class User(Row):
         self.add_money(need)
         return need
 
+    @staticmethod
+    def can_adventure():
+        return True
+
+    def start_adventure(self, adventure: 'Adventure'):
+        assert self.get_adventure() is None, "User is already in an adventure!"
+        self._adventure = adventure
+
     def get_adventure(self) -> Optional['Adventure']:
         if self._adventure is not None:
-            if self._adventure.message.has_finished():
+            if self._adventure.has_finished():
                 self._adventure = None
                 return None
             else:
                 return self._adventure
         return self._adventure
 
-    @staticmethod
-    def can_adventure():
-        return True
-
-    async def start_adventure(self, ctx: SlashContext, adventure: 'Adventure'):
-        assert self.get_adventure() is None, "User is already in an adventure!"
-        self.user_entity.refill_persistent()
-        self._adventure = adventure
-        await self._adventure.init(ctx, self)
-
     def end_adventure(self):
         assert self.get_adventure() is not None, "User is not in an adventure!"
-        self.user_entity.refill_persistent()
+        self.user_entity.reset()
         self._adventure = None
 
     def get_inventory_limit(self) -> int:

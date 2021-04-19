@@ -8,10 +8,10 @@ from tkinter import *
 
 from jsonpath_ng import parse
 
-from adventure_classes.battle_data.battle_entity import BattleEntity
+from adventure_classes.generic.battle_entity import BattleEntity
 from entities.bot_entity import BotEntity
 from tk_utils import center
-from item_data.stats import Stats
+from item_data.stat import Stat
 
 
 class EasyData:
@@ -262,9 +262,10 @@ class EasyJSONStats(EasyGrid, EasyJSON):
         y = 0
         limit = 4
         structure = []
-        for stat in Stats.get_all():
-            structure.append(EasyItem(stat.abv,
-                                      EasyJSONField(stat.abv, path + '.' + stat.abv, EasyValidation.empty_or_positive,
+        for stat in Stat:
+            structure.append(EasyItem(stat.get_abv(),
+                                      EasyJSONField(stat.get_abv(), path + '.' + stat.get_abv(),
+                                                    EasyValidation.empty_or_positive,
                                                     width=5),
                                       y, x))
             x += 1
@@ -286,7 +287,7 @@ class EasyJSONStats(EasyGrid, EasyJSON):
 
     def show(self, data: dict[str, Any], key) -> str:
         tr = []
-        for stat in Stats.get_all():
+        for stat in Stat.get_all():
             value = EasyJSON.get_value(self, data).get(stat.abv, 0)
             if value:
                 tr.append(f"{stat.abv}: {value}")
@@ -296,20 +297,20 @@ class EasyJSONStats(EasyGrid, EasyJSON):
 class EasyJSONStatsWeights(EasyJSONStats):
     def show(self, data: dict[str, Any], key) -> str:
         tr = []
-        for stat in Stats.get_all():
-            value = EasyJSON.get_value(self, data).get(stat.abv, 0)
+        for stat in Stat:
+            value = EasyJSON.get_value(self, data).get(stat.get_abv(), 0)
             if value:
                 if value == 1:
-                    tr.append((f"{stat.abv}", value))
+                    tr.append((f"{stat.get_abv()}", value))
                 else:
-                    tr.append((f"{stat.abv} x{value}", value))
+                    tr.append((f"{stat.get_abv()} x{value}", value))
         tr.sort(key=lambda x: -x[1])
         return ', '.join([x[0] for x in tr])
 
 
 class EasyJSONBattleStats(EasyJSONStats):
     def show(self, data: dict[str, Any], key) -> str:
-        stat_data = {Stats.get_by_abv(x): v for x, v in data['Stats'].items()}
+        stat_data = {Stat.get_by_abv(x): v for x, v in data['Stats'].items()}
         return BattleEntity(BotEntity('', stat_data)).print() + f' [{sum(stat_data.values())}]'
 
 

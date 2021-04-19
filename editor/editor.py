@@ -6,7 +6,7 @@ from tkinter.ttk import Notebook
 
 from enums.location import Location
 from enums.item_type import ItemType
-from item_data.stats import Stats
+from item_data.stat import Stat
 from tk_utils import center
 from easy import EasyJSONField, EasyItem, EasyJSONKey, EasyJSONEnum, EasyGridTree, EasyValidation, \
     EasyJSONStatsWeights, EasyJSONBattleStats
@@ -164,9 +164,9 @@ class Enemies(JSONEditor):
                              'Name': 'Enemy',
                              'Location': Location.NO_LOCATION.get_name(),
                              'Stats': {
-                                 Stats.HP.abv: 4,
-                                 Stats.STR.abv: 4,
-                                 Stats.DEF.abv: 2
+                                 Stat.HP.get_abv(): 4,
+                                 Stat.STR.get_abv(): 4,
+                                 Stat.DEF.get_abv(): 2
                              }
                          },
                          read_from='../game_data/enemies.json')

@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Optional, Any
 
 from autoslot import Slots
@@ -139,7 +140,8 @@ class VAMP(StatInstancePercent):
                          multiplier=0.02, limit_per_item=5)
 
 
-class Stats:
+class Stat(Enum):
+    _ignore_ = ['_INFO']
     HP = HP()
     MP = MP()
     STR = STR()
@@ -149,28 +151,27 @@ class Stats:
     CONT = CONT()
     CRIT = CRIT()
     VAMP = VAMP()
-    _STAT_INFO = {}
+    _INFO = {}
 
     @staticmethod
-    def get_all() -> list[StatInstance]:
-        return [Stats.HP,
-                Stats.MP,
-                Stats.STR,
-                Stats.DEF,
-                Stats.SPD,
-                Stats.EVA,
-                Stats.CONT,
-                Stats.CRIT,
-                Stats.VAMP
-                ]
+    def get_by_abv(abv: str) -> 'Stat':
+        return Stat._INFO['from_abv'][abv]
 
-    @staticmethod
-    def get_by_abv(abv: str) -> StatInstance:
-        return Stats._STAT_INFO['from_abv'][abv]
+    def is_persistent(self) -> bool:
+        return self.value.is_persistent
+
+    def get_value(self, value: int) -> Any:
+        return self.value.get_value(value)
+
+    def get_abv(self) -> str:
+        return self.value.abv
+
+    def print(self, value: int, base: int = 0, short: bool = False, persistent_value: Optional[int] = None) -> str:
+        return self.value.print(value, base, short, persistent_value)
 
 
 stat_dict = {
-    'from_abv': {x.abv: x for x in Stats.get_all()}
+    'from_abv': {stat.value.abv: stat for stat in Stat}
 }
 
-Stats._STAT_INFO = stat_dict
+Stat._INFO = stat_dict

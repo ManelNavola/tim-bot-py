@@ -6,7 +6,7 @@ from enums.item_type import ItemType
 from item_data.abilities import AbilityInstance
 from item_data.item_classes import ItemData, ItemDescription, Item
 from item_data.rarity import Rarity, RarityInstance
-from item_data.stats import Stats, StatInstance
+from item_data.stat import Stat
 
 
 ITEM_GENERATION_DATA: dict[str, dict[RarityInstance, Any]] = {
@@ -42,7 +42,7 @@ def parse_item_data_from_dict(dictionary: dict):
     if ability_d is not None:
         ability = AbilityInstance(decode=ability_d)
     return ItemData(Rarity.get_by_index(dictionary['rarity']), dictionary['desc_id'],
-                    {Stats.get_by_abv(k): v for k, v in dictionary['stats'].items()},
+                    {Stat.get_by_abv(k): v for k, v in dictionary['stats'].items()},
                     price_modifier=price_modifier, durability=durability, ability=ability)
 
 
@@ -58,17 +58,17 @@ def get_random_shop_item_data(item_type: Optional[ItemType] = None, rarity: Opti
     stat_number: int = random.randint(*ITEM_GENERATION_DATA['stat_number'][rarity])
     max_rarity: RarityInstance = Rarity.get_max_stat_rarity(rarity)
 
-    available_stats: list[StatInstance] = []
+    available_stats: list[Stat] = []
 
     for stat, weight in chosen_desc.stat_weights.items():
         if stat.rarity.id <= max_rarity.id:
             available_stats.append(stat)
 
     if stat_number >= len(available_stats):
-        chosen_stats: list[StatInstance] = available_stats
+        chosen_stats: list[Stat] = available_stats
         chosen_stats_weights: list[int] = [chosen_desc.stat_weights[stat] for stat in chosen_stats]
     else:
-        chosen_stats: list[StatInstance] = []
+        chosen_stats: list[Stat] = []
         chosen_stats_weights: list[int] = []
         while stat_number > 0:
             as_index = random.randint(0, len(available_stats) - 1)
@@ -79,8 +79,8 @@ def get_random_shop_item_data(item_type: Optional[ItemType] = None, rarity: Opti
             stat_number -= 1
 
     stat_sum: int = random.randint(*ITEM_GENERATION_DATA['stat_sum'][rarity])
-    stat_dict: dict[StatInstance, int] = {}
-    stat_limit: dict[StatInstance, int] = {stat: stat.limit for stat in chosen_stats}
+    stat_dict: dict[Stat, int] = {}
+    stat_limit: dict[Stat, int] = {stat: stat.limit for stat in chosen_stats}
 
     while stat_sum > 0:
         stat = random.choices(chosen_stats, weights=chosen_stats_weights, k=1)[0]

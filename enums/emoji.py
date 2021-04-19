@@ -58,13 +58,19 @@ class Emoji(Enum):
     VAMP = r'\🧛'
 
     # Adventure
-    COLISEUM = r'\🔱'
     BATTLE = r'\⚔️'
     UP = r'\⬆'
     DOWN = r'⬇'
     LEFT = r'\⬅'
     RIGHT = r'\➡'
     OK = r'\✅'
+
+    # Coliseum
+    COLISEUM = r'\🔱'
+
+    # Forest
+    FOREST = r'\🌳'
+    BEAR = r'\🐻'
 
     def __str__(self) -> str:
         return self.value

@@ -207,7 +207,8 @@
       "DEF": 8,
       "HP": 8
     },
-    "Name": "Bear"
+    "Name": "Bear",
+    "Pool": "D"
   },
   "20": {
     "Location": "Forest",
@@ -217,6 +218,7 @@
       "CONT": 10,
       "HP": 20
     },
-    "Name": "Godly Ent"
+    "Name": "Godly Ent",
+    "Pool": "BOSS"
   }
 }

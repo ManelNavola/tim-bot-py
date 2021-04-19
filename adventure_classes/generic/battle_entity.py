@@ -3,17 +3,12 @@ from typing import Optional, Any
 
 from autoslot import Slots
 
+from adventure_classes.generic.stat_modifier import StatModifier
 from entities.bot_entity import BotEntity
 from entities.entity import Entity
 from enums.item_type import ItemType
 from item_data.abilities import AbilityInstance
-from item_data.stats import Stats, StatInstance
-
-
-class AbilityEffect(Slots):
-    def __init__(self, ability_instance: AbilityInstance):
-        self.instance = ability_instance
-        self.duration = ability_instance.get().duration
+from item_data.stat import Stat
 
 
 class AttackResult(Slots):
@@ -26,50 +21,54 @@ class AttackResult(Slots):
 
 
 class BattleEntity:
-    def __init__(self, entity: Entity):
+    def __init__(self, entity: Entity, battle_modifiers: list[StatModifier] = None):
         self.entity = entity
         self._available_abilities: list[tuple[AbilityInstance, Optional[ItemType]]] = entity.get_abilities()
-        self._effects: list[AbilityEffect] = []
+        self._turn_modifiers: list[StatModifier] = []
+        if battle_modifiers:
+            for modifier in battle_modifiers:
+                self._turn_modifiers.append(modifier.clone(-1))
         self._is_user: bool = not isinstance(entity, BotEntity)
 
     def attack(self, other: 'BattleEntity', ignore_cont: bool = False) -> AttackResult:
         ar: AttackResult = AttackResult()
         # Evasion
-        if random.random() < other.get_stat(Stats.EVA):
+        if random.random() < other.get_stat(Stat.EVA):
             ar.eva = True
             return ar
         # Counter
-        if (not ignore_cont) and random.random() < other.get_stat(Stats.CONT):
+        if (not ignore_cont) and random.random() < other.get_stat(Stat.CONT):
             ar.counter = other.attack(self, True).damage
 
         # Damage
-        dealt: int = self.get_stat(Stats.STR)
-        br: float = (dealt / (dealt + other.get_stat(Stats.DEF))) * dealt
+        dealt: int = self.get_stat(Stat.STR)
+        br: float = (dealt / (dealt + other.get_stat(Stat.DEF))) * dealt
         real_amount: int = max(1, round(br))
         # Crit
-        if random.random() < self.get_stat(Stats.CRIT):
+        if random.random() < self.get_stat(Stat.CRIT):
             real_amount *= 2
             ar.crit = True
         # Vamp
-        if random.random() < self.get_stat(Stats.VAMP):
+        if random.random() < self.get_stat(Stat.VAMP):
             ar.vamp = True
-            self.entity.set_persistent(Stats.HP, min(self.get_stat(Stats.HP), self.entity.get_persistent(Stats.HP)
-                                                     + real_amount))
-        other.entity.set_persistent(Stats.HP, max(0, other.entity.get_persistent(Stats.HP) - real_amount))
+            self.entity.change_persistent(Stat.HP, min(self.get_stat(Stat.HP), real_amount))
+        other.entity.change_persistent(Stat.HP, -real_amount)
         ar.damage = real_amount
         return ar
 
-    def add_effect(self, ability_instance: AbilityInstance, include: bool = False):
-        ae = AbilityEffect(ability_instance)
+    def add_effect(self, modifier: StatModifier, include: bool = False):
+        c_modifier: StatModifier
         if include:
-            ae.duration += 1
-        self._effects.append(ae)
+            c_modifier = modifier.clone(modifier.duration + 1)
+        else:
+            c_modifier = modifier.clone()
+        self._turn_modifiers.append(c_modifier)
 
     def end_turn(self):
-        for i in range(len(self._effects) - 1, -1, -1):
-            self._effects[i].duration -= 1
-            if self._effects[i].duration <= 0:
-                del self._effects[i]
+        for i in range(len(self._turn_modifiers) - 1, -1, -1):
+            self._turn_modifiers[i].duration -= 1
+            if self._turn_modifiers[i].duration == 0:
+                del self._turn_modifiers[i]
 
     def use_ability(self, ability: Optional[AbilityInstance], item_type: Optional[ItemType]) \
             -> Optional[AbilityInstance]:
@@ -87,36 +86,32 @@ class BattleEntity:
     def is_user(self) -> bool:
         return self._is_user
 
-    def get_stat(self, stat: StatInstance) -> Any:
+    def get_stat(self, stat: Stat) -> Any:
         return stat.get_value(self._get_stat_value(stat))
 
-    def _get_stat_value(self, stat: StatInstance) -> int:
-        val = self.entity.get_stat_value(stat)
-        for effect in self._effects:
-            if effect.instance.get().stat == stat:
-                val = val * effect.instance.get().multiplier
-                val += effect.instance.get().adder
-        return round(val)
+    def _get_stat_value(self, stat: Stat) -> int:
+        value = self.entity.get_stat_value(stat)
+        for modifier in self._turn_modifiers:
+            if modifier.stat == stat:
+                value = modifier.apply(value)
+        return round(value)
 
-    def _print_battle_stat(self, stat: StatInstance) -> str:
+    def _print_battle_stat(self, stat: Stat) -> str:
         stuff: list[str] = []
-        for effect in self._effects:
-            if effect.instance.get().stat == stat:
-                if effect.instance.get().multiplier != 1:
-                    stuff.append(f"x{effect.instance.get().multiplier:.2f}")
-                if effect.instance.get().adder != 0:
-                    stuff.append(f"{effect.instance.get().adder}")
+        for modifier in self._turn_modifiers:
+            if modifier.stat == stat:
+                stuff.append(modifier.print())
         if stuff:
             return stat.print(self._get_stat_value(stat), short=True,
-                              persistent_value=self.entity.get_persistent(stat, None)) + ' (' + ', '.join(stuff) + ')'
+                              persistent_value=self.entity.get_persistent(stat)) + ' (' + ', '.join(stuff) + ')'
         else:
             return stat.print(self._get_stat_value(stat), short=True,
-                              persistent_value=self.entity.get_persistent(stat, None))
+                              persistent_value=self.entity.get_persistent(stat))
 
     def print(self) -> str:
         sc: list[str] = []
 
-        for stat in Stats.get_all():
+        for stat in Stat:
             if self.get_stat(stat) > 0:
                 sc.append(self._print_battle_stat(stat))
 

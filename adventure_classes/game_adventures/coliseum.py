@@ -4,8 +4,9 @@ import random
 from discord_slash import SlashContext
 
 import utils
-from adventure_classes.adventure import Adventure, Chapter
-from adventure_classes.battle import BattleChapter
+from adventure_classes.generic.adventure import Adventure
+from adventure_classes.generic.battle import BattleChapter
+from adventure_classes.generic.chapter import Chapter
 from enemy_data import enemy_utils
 from enums.emoji import Emoji
 from enums.location import Location
@@ -85,29 +86,29 @@ class ColiseumRewardChapter(Chapter):
     def __init__(self):
         super().__init__(Emoji.BOX)
 
-    async def init(self, user: User):
+    async def init(self):
         self.add_log("You find a box beneath your feet.")
         self.add_log("You may collect the reward and exit, or venture further to find bigger rewards.")
         await self.pop_log()
-        await self.message.add_reaction(Emoji.BOX, self.reward)
-        await self.message.add_reaction(Emoji.COLISEUM, self.venture)
+        await self.get_adventure().add_reaction(Emoji.BOX, self.reward)
+        await self.get_adventure().add_reaction(Emoji.COLISEUM, self.venture)
 
     async def reward(self, user: User):
-        await REWARDS[self._adventure.saved_data['level']].award(self, user)
+        await REWARDS[self.get_adventure().saved_data['level']].award(self, user)
         await self.pop_log()
         await self.end()
 
     async def venture(self):
-        level: int = self._adventure.saved_data['level'] + 1
-        self._adventure.saved_data['level'] = level
+        level: int = self.get_adventure().saved_data['level'] + 1
+        self.get_adventure().saved_data['level'] = level
         if level == 3:
             await self.end()
             return
 
         for i in range(3):
             enemy_build = enemy_utils.get_random_enemy(Location.COLISEUM, str(level))
-            self._adventure.add_chapter(BattleChapter(enemy_build.instance()))
-        self._adventure.add_chapter(ColiseumRewardChapter())
+            self.get_adventure().add_chapter(BattleChapter(enemy_build.instance()))
+        self.get_adventure().add_chapter(ColiseumRewardChapter())
         await self.end()
 
 

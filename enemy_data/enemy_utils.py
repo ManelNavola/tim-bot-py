@@ -2,10 +2,9 @@ import json
 import random
 from typing import Any, Optional
 
-import utils
 from entities.bot_entity import BotEntityBuilder
 from enums.location import Location
-from item_data.stats import Stats, StatInstance
+from item_data.stat import Stat
 
 _ENEMIES: dict[Location, dict[str, list[BotEntityBuilder]]] = {
     x: {} for x in Location
@@ -20,9 +19,9 @@ def load():
                 print(f"JSON not consolidated: {id_v['Name']}")
                 continue
             stat_sum: int = 0
-            stat_dict: dict[StatInstance, int] = {}
+            stat_dict: dict[Stat, int] = {}
             for abv, v in id_v['Stats'].items():
-                stat_dict[Stats.get_by_abv(abv)] = v
+                stat_dict[Stat.get_by_abv(abv)] = v
                 stat_sum += v
             beb: BotEntityBuilder = BotEntityBuilder(
                 id_v['Name'], stat_dict, enemy_id=int(id_k)
@@ -42,7 +41,7 @@ def get_random_enemy(location: Location, pool: str = '', last_chosen_id: Optiona
     possible_enemies: list[BotEntityBuilder] = _ENEMIES[location][pool]
     if len(possible_enemies) == 0:
         return BotEntityBuilder('MissingNo, please contact the developer', {
-            Stats.HP: 10
+            Stat.HP: 10
         })
     if len(possible_enemies) == 1:
         return possible_enemies[0]

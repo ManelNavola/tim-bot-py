@@ -1,4 +1,4 @@
-from adventure_classes import coliseum, forest
+from adventure_classes.game_adventures import coliseum, forest
 from helpers.command import Command
 
 
