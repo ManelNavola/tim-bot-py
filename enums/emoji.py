@@ -1,7 +1,7 @@
-from enums.enum_plus import EnumPlus
+from enum import Enum
 
 
-class Emoji(EnumPlus):
+class Emoji(Enum):
     # User profile
     MONEY = r'\💵'
     BANK = r'\💰'
@@ -27,6 +27,7 @@ class Emoji(EnumPlus):
 
     # Inventory
     EQUIPPED = r'\✔️'
+    TOKEN = r'\🧭'
     SHOP = r'\🛒'
     PURCHASE = r'\🛍️'
     STATS = r'\🧮'
@@ -58,12 +59,25 @@ class Emoji(EnumPlus):
     VAMP = r'\🧛'
 
     # Adventure
-    COLISEUM = r'\🔱'
     BATTLE = r'\⚔️'
+    UP = r'\⬆'
+    DOWN = r'⬇'
+    LEFT = r'\⬅'
+    RIGHT = r'\➡'
+    OK = r'\✅'
 
-    @classmethod
-    def get_all(cls) -> list['Emoji']:
-        return list(cls)
+    # Coliseum
+    COLISEUM = r'\🔱'
+
+    # Forest
+    FOREST = r'\🌳'
+    BEAR = r'\🐻'
+    MUSHROOM = r'\🍄'
+
+    # Colors
+    RED = r'\🟥'
+    BLUE = r'\🟦'
+    GREEN = r'\🟩'
 
     def __str__(self) -> str:
         return self.value
@@ -72,4 +86,4 @@ class Emoji(EnumPlus):
         return self.value[1]
 
     def compare(self, other: str) -> bool:
-        return other in self.value
+        return (other == self.value) or self.value[1:].startswith(other)

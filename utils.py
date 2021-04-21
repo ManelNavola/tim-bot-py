@@ -56,6 +56,15 @@ NUMERAL_TO_ROMAN: dict[int, str] = {
 }
 
 
+def pretty(d, indent=0):
+    for key, value in d.items():
+        print('\t' * indent + str(key))
+        if isinstance(value, dict):
+            pretty(value, indent + 1)
+        else:
+            print('\t' * (indent + 1) + str(value))
+
+
 def now() -> int:
     return int(calendar.timegm(time.gmtime()))
 
@@ -73,9 +82,12 @@ def is_test():
 
 
 def print_time(seconds: int):
-    minutes = seconds // 60
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
     seconds = seconds % 60
-    if minutes > 0:
+    if hours > 0:
+        return f"{hours}h, {minutes}m"
+    elif minutes > 0:
         return f"{minutes}m, {seconds}s"
     else:
         return f"{seconds}s"

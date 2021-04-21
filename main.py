@@ -5,7 +5,7 @@ from typing import Optional
 import discord
 from discord.ext import commands
 from discord_slash import SlashCommand
-from discord_slash.utils.manage_commands import create_option
+from discord_slash.utils.manage_commands import create_option, create_choice
 
 import utils
 from commands import simple, crate, bet, upgrade, shop, test, adventure
@@ -184,7 +184,7 @@ cmd_handler.register_command(shop.sell_all,
 # RPG management
 cmd_handler.register_command(simple.stats,
                              name="stats", description="Check your stats",
-                             guild_ids=registered_guild_ids)
+                             guild_ids=registered_guild_ids, ignore_battle=True)
 
 # cmd_handler.register_command(simple.abilities, ignore_battle=True,
 #                              name="abilities", description="Check your abilities",
@@ -223,15 +223,40 @@ cmd_handler.register_command(simple.unequip_all,
                              guild_ids=registered_guild_ids)
 
 # Adventures
-cmd_handler.register_command(adventure.coliseum_start,
-                             name="coliseum", description="MAKE IT RAIN", guild_ids=registered_guild_ids)
+# cmd_handler.register_command(adventure.coliseum_start,
+#                              name="coliseum",
+#                              description="Fight against diverse enemies to obtain rewards (Tokens: 1)",
+#                              guild_ids=registered_guild_ids)
+
+cmd_handler.register_command(adventure.start_adventure,
+                             name="adventure", description="Adventure time!",
+                             options=[
+                                 create_option(
+                                     name="location",
+                                     description="Location to adventure to",
+                                     option_type=3,
+                                     required=True,
+                                     choices=[
+                                         create_choice(
+                                             name="Forest",
+                                             value="Forest"
+                                         )
+                                     ]
+                                 )
+                             ],
+                             guild_ids=registered_guild_ids)
 
 # Register test command
 saved: Optional[User] = None
 fight_bot: bool = True
 if utils.is_test():
     cmd_handler.register_command(test.rich,
-                                 name="rich", description="MAKE IT RAIN", guild_ids=registered_guild_ids)
+                                 name="rich", description="MAKE IT RAIN", guild_ids=registered_guild_ids,
+                                 ignore_battle=True)
+
+    cmd_handler.register_command(test.heal,
+                                 name="invincible", description="Hax", guild_ids=registered_guild_ids,
+                                 ignore_battle=True)
 
     cmd_handler.register_command(test.test,
                                  name="test", description="Quickly test anything!",

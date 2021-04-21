@@ -26,7 +26,7 @@ class Inventory:
     def get_first(self, item_type: ItemType) -> Optional[Item]:
         for i in self._get_item_indices():
             item: Item = self.items[i]
-            if item.data.get_description().type == item_type:
+            if item.get_description().type == item_type:
                 return item
         return None
 
@@ -44,7 +44,7 @@ class Inventory:
             return False, True
         if self._is_equipped(item):
             return False, False
-        delete_user_item(self._db, user_id, item.id)
+        delete_user_item(self._db, user_id, item)
         self.items[index] = None
         return True, item
 
@@ -81,10 +81,10 @@ class Inventory:
         if index in self._get_item_indices():
             item = self.items[index]
             if item.id not in self._equipped_ref.get():
-                item_type = item.data.get_description().type
+                item_type = item.get_description().type
                 for other_index in self._get_item_indices():
                     if other_index != index and self.items[other_index].id in self._equipped_ref.get() \
-                            and self.items[other_index].data.get_description().type == item_type:
+                            and self.items[other_index].get_description().type == item_type:
                         self._unequip(self.items[other_index], False)
                         break
                 self._equip(item)
@@ -96,7 +96,7 @@ class Inventory:
         best: dict[ItemType, tuple[Item, int]] = {}
         for index in self._get_item_indices():
             item = self.items[index]
-            item_type = item.data.get_description().type
+            item_type = item.get_description().type
             other_item: Optional[tuple[Item, int]] = best.get(item_type)
             if other_item is not None:
                 item_price: int = item.get_price(ignore_modifier=True)
@@ -147,13 +147,13 @@ class Inventory:
     def print(self) -> str:
         il = self.limit - self.get_free_count()
         if il == 0:
-            return f"{Emoji.BAG} Inventory is empty {il}/{self.limit}"
-        tr = [f"{Emoji.BAG} Inventory: {il}/{self.limit}"]
+            return f"{Emoji.BAG} Inventory empty {il} / {self.limit}"
+        tr = [f"{Emoji.BAG} Inventory: {il} / {self.limit}"]
         for i in self._get_item_indices():
             index = i + 1
             item_str = self.items[i].print()
+            equipped: str = ''
             if self.items[i].id in self._equipped_ref.get():
-                tr.append(f"{index}: {item_str} {Emoji.EQUIPPED} ({self.items[i].durability}%)")
-            else:
-                tr.append(f"{index}: {item_str} ({self.items[i].durability}%)")
+                equipped = f' {Emoji.EQUIPPED}'
+            tr.append(f"{index}: {item_str}{equipped}")  # TODO: durability broken stuff
         return '\n'.join(tr)

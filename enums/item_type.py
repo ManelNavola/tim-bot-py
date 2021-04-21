@@ -1,63 +1,43 @@
-from enum import unique
+from enum import unique, Enum
 from typing import Optional
 
 from autoslot import Slots
 
 from enums.emoji import Emoji
-from enums.enum_plus import EnumPlus
 
 
-class ItemTypeInfo(Slots):
+class ItemTypeInstance(Slots):
     def __init__(self, name: str, icon: Emoji):
         self.icon: Emoji = icon
         self.name: str = name
 
 
 @unique
-class ItemType(EnumPlus):
-    _ignore_ = ['_ITEM_TYPE_INFO']
-    BOOT = 0
-    CHEST = 1
-    HELMET = 2
-    WEAPON = 3
-    SECONDARY = 4
-    _ITEM_TYPE_INFO = {}
-
-    @classmethod
-    def get_all(cls) -> list['ItemType']:
-        return list(cls)
+class ItemType(Enum):
+    _ignore_ = ['_INFO']
+    BOOT = ItemTypeInstance('Boot', Emoji.BOOTS)
+    CHEST = ItemTypeInstance('Chest', Emoji.CHEST_PLATE)
+    HELMET = ItemTypeInstance('Helmet', Emoji.HELMET)
+    WEAPON = ItemTypeInstance('Weapon', Emoji.WEAPON)
+    SECONDARY = ItemTypeInstance('Secondary', Emoji.SHIELD)
+    _INFO = {}
 
     def __str__(self) -> str:
-        return self.get_icon_str()
-
-    @staticmethod
-    def get_from_icon(other: str) -> Optional['ItemType']:
-        for it, iti in ItemType._ITEM_TYPE_INFO['items']:
-            if iti.icon.compare(other):
-                return it
-        return None
+        return str(self.value.icon)
 
     @staticmethod
     def get_from_name(name: str) -> Optional['ItemType']:
-        return ItemType._ITEM_TYPE_INFO['from_name'].get(name)
+        return ItemType._INFO['from_name'].get(name)
 
     def get_name(self) -> str:
-        return ItemType._ITEM_TYPE_INFO['items'][self].name
+        return self.value.name
 
     def get_icon_str(self) -> str:
-        return str(ItemType._ITEM_TYPE_INFO['items'][self].icon)
+        return str(self.value.icon)
 
 
-iti_dict = {
-    'items': {
-        ItemType.BOOT: ItemTypeInfo('Boot', Emoji.BOOTS),
-        ItemType.CHEST: ItemTypeInfo('Chest', Emoji.CHEST_PLATE),
-        ItemType.HELMET: ItemTypeInfo('Helmet', Emoji.HELMET),
-        ItemType.WEAPON: ItemTypeInfo('Weapon', Emoji.WEAPON),
-        ItemType.SECONDARY: ItemTypeInfo('Secondary', Emoji.SHIELD),
-    }
+it_dict = {
+    'from_name': {x.value.name: x for x in ItemType}
 }
 
-iti_dict['from_name'] = {iti.name: it for it, iti in iti_dict['items'].items()}
-
-ItemType._ITEM_TYPE_INFO = iti_dict
+ItemType._INFO = it_dict

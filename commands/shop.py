@@ -34,7 +34,7 @@ async def sell(cmd: Command, number: int):
     success, result = cmd.user.inventory.sell(number - 1, cmd.user.id)
     if success:
         item: Item = result
-        price = int(item.get_price() * Shop.SELL_MULTIPLIER)
+        price = Shop.get_sell_price(item)
         cmd.user.add_money(price)
         await cmd.send(f"{Emoji.PURCHASE} Sold {item.print()} for {utils.print_money(price)}")
     else:

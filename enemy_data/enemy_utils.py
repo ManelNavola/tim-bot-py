@@ -3,37 +3,56 @@ import random
 from typing import Any, Optional
 
 from entities.bot_entity import BotEntityBuilder
-from item_data.stats import Stats, StatInstance
+from enums.location import Location
+from item_data.stat import Stat
 
-_ENEMIES: list[BotEntityBuilder] = []
-_STAT_RANGE_TO_ENEMY: dict[int, list[BotEntityBuilder]] = {}
-
-with open('game_data/enemies.json', 'r') as f:
-    item_dict: dict[str, Any] = json.load(f)
-    for id_k, id_v in item_dict.items():
-        stat_sum: int = 0
-        stat_dict: dict[StatInstance, int] = {}
-        for abv, v in id_v['Stats'].items():
-            stat_dict[Stats.get_by_abv(abv)] = v
-            stat_sum += v
-        beb: BotEntityBuilder = BotEntityBuilder(
-            id_v['Name'], stat_dict
-        )
-        _ENEMIES.append(beb)
-        k: int = (stat_sum - 5) // 10
-        if stat_sum < 0:
-            k = 0
-        li = _STAT_RANGE_TO_ENEMY.get(k, [])
-        if not li:
-            _STAT_RANGE_TO_ENEMY[k] = li
-        li.append(beb)
+_ENEMIES: dict[Location, dict[str, list[BotEntityBuilder]]] = {
+    x: {} for x in Location
+}
 
 
-for k, v in _STAT_RANGE_TO_ENEMY.items():
-    print(str(k) + ':', '/'.join([x.name for x in v]))
+def load():
+    enemy_count: int = 0
+    with open('game_data/enemies.json', 'r') as f:
+        item_dict: dict[str, Any] = json.load(f)
+        for id_k, id_v in item_dict.items():
+            if id_k.startswith('X'):
+                print(f"JSON not consolidated: {id_v['Name']}")
+                continue
+            stat_sum: int = 0
+            stat_dict: dict[Stat, int] = {}
+            for abv, v in id_v['Stats'].items():
+                stat_dict[Stat.get_by_abv(abv)] = v
+                stat_sum += v
+            beb: BotEntityBuilder = BotEntityBuilder(
+                id_v['Name'], stat_dict, enemy_id=int(id_k)
+            )
 
+            location = Location.get_from_name(id_v['Location'])
+            pool = id_v.get('Pool', '')
+            to_pool = _ENEMIES[location].get(pool)
+            if to_pool is None:
+                to_pool = []
+                _ENEMIES[location][pool] = to_pool
+            to_pool.append(beb)
+            enemy_count += 1
+    print(f"Loaded {enemy_count} enemies")
 
-def get_random_enemy(stat_range: int) -> Optional[BotEntityBuilder]:
-    if stat_range not in _STAT_RANGE_TO_ENEMY:
-        return None
-    return random.choice(_STAT_RANGE_TO_ENEMY[stat_range])
+def get_random_enemy(location: Location, pool: str = '', last_chosen_id: Optional[int] = None) \
+        -> BotEntityBuilder:
+    possible_enemies: list[BotEntityBuilder] = _ENEMIES[location][pool]
+    if len(possible_enemies) == 0:
+        return BotEntityBuilder('MissingNo, please contact the developer', {
+            Stat.HP: 10
+        })
+    if len(possible_enemies) == 1:
+        return possible_enemies[0]
+    elif len(possible_enemies) == 2 and (last_chosen_id is not None):
+        for i in range(2):
+            if possible_enemies[i].enemy_id != last_chosen_id:
+                return possible_enemies[i]
+    for i in range(50):
+        chosen = random.choice(possible_enemies)
+        if chosen != last_chosen_id:
+            return chosen
+    return random.choice(possible_enemies)
