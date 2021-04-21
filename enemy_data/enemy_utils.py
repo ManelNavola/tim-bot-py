@@ -12,6 +12,7 @@ _ENEMIES: dict[Location, dict[str, list[BotEntityBuilder]]] = {
 
 
 def load():
+    enemy_count: int = 0
     with open('game_data/enemies.json', 'r') as f:
         item_dict: dict[str, Any] = json.load(f)
         for id_k, id_v in item_dict.items():
@@ -34,7 +35,8 @@ def load():
                 to_pool = []
                 _ENEMIES[location][pool] = to_pool
             to_pool.append(beb)
-
+            enemy_count += 1
+    print(f"Loaded {enemy_count} enemies")
 
 def get_random_enemy(location: Location, pool: str = '', last_chosen_id: Optional[int] = None) \
         -> BotEntityBuilder:

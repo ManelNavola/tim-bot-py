@@ -27,6 +27,7 @@ class Emoji(Enum):
 
     # Inventory
     EQUIPPED = r'\✔️'
+    TOKEN = r'\🧭'
     SHOP = r'\🛒'
     PURCHASE = r'\🛍️'
     STATS = r'\🧮'
@@ -71,6 +72,12 @@ class Emoji(Enum):
     # Forest
     FOREST = r'\🌳'
     BEAR = r'\🐻'
+    MUSHROOM = r'\🍄'
+
+    # Colors
+    RED = r'\🟥'
+    BLUE = r'\🟦'
+    GREEN = r'\🟩'
 
     def __str__(self) -> str:
         return self.value

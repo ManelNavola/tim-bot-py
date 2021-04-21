@@ -17,12 +17,14 @@ from user_data.user import User
 
 
 class BattleChapter(Chapter):
-    def __init__(self, entity_b: BotEntity, message: str = ''):
+    def __init__(self, entity_b: BotEntity, messages: list[str] = None, is_boss: bool = False):
         super().__init__(Emoji.BATTLE)
         self.battle_entity_a: Optional[BattleEntity] = None
         self.battle_entity_b: BattleEntity = BattleEntity(entity_b)
 
-        self._message: str = message
+        if messages is None:
+            messages = []
+        self._messages: list[str] = [f"_{x}_" for x in messages]
 
         self._speedDiff: float = 0
         self._battle_log: list[str] = []
@@ -31,6 +33,7 @@ class BattleChapter(Chapter):
         self._equipment_emoji: dict[ItemType, int] = {}
         self._first_message: str = ""
         self._turn_a: bool = False
+        self._is_boss = is_boss
 
     async def init(self):
         assert len(self.get_adventure().get_users()) == 1, 'Battle with more than one user not currently supported'
@@ -38,11 +41,18 @@ class BattleChapter(Chapter):
         user = list(self.get_adventure().get_users().keys())[0]
         battle_num: int = self._adventure.saved_data.get('_battle_num', 0) + 1
         battle_started: str = f"{Emoji.BATTLE} BATTLE #{battle_num} STARTED {Emoji.BATTLE}"
+        if self._is_boss:
+            battle_started = f"{Emoji.BATTLE} **BOSS BATTLE** STARTED {Emoji.BATTLE}"
+            await self.send_log('')
+            for msg in self._messages:
+                await self.get_adventure().append_message(msg)
+                await asyncio.sleep(3)
+            await asyncio.sleep(3)
+        else:
+            self.add_log(battle_started)
+            self.add_log('\n'.join(self._messages))
         self._adventure.saved_data['_battle_num'] = battle_num
         self._first_message = battle_started
-        if self._message:
-            self.add_log(f"_{self._message}_")
-        self.add_log(battle_started)
         setup_wait: int = utils.current_ms()
         await self.pop_log()
         self.battle_entity_a = BattleEntity(user.user_entity)
@@ -204,8 +214,9 @@ class BattleChapter(Chapter):
                                    f"{self.battle_entity_a.entity.get_name()}`` Speed Advantage")
         if self._first_message:
             self._battle_log.insert(0, self._first_message)
-            if self._message:
-                self._battle_log.insert(0, self._message)
+            if not self._is_boss:
+                if self._messages:
+                    self._battle_log.insert(0, '\n'.join(self._messages))
             self._first_message = ""
         self._battle_log.append(f"{self.battle_entity_a.entity.get_name()} - {self.battle_entity_a.print()}")
         self._battle_log.append(f"{self.battle_entity_b.entity.get_name()} - {self.battle_entity_b.print()}")
@@ -216,6 +227,8 @@ class BattleChapter(Chapter):
 
     async def _finish(self, b_won: bool = False):
         self._finished = True
+        self.battle_entity_a.entity.end_battle()
+        self.battle_entity_b.entity.end_battle()
         if b_won:
             self._battle_log.append(f"{Emoji.FIRST_PLACE} "
                                     f"{self.battle_entity_b.entity.get_name()} won the battle!")
@@ -228,9 +241,10 @@ class BattleChapter(Chapter):
             await self.end()
 
 
-def add_to_adventure(adventure: Adventure, location: Location, pool: str = '', message: str = '') -> BattleChapter:
+def add_to_adventure(adventure: Adventure, location: Location, pool: str = '', messages: list[str] = None,
+                     boss: bool = False) -> BattleChapter:
     enemy = enemy_utils.get_random_enemy(location, pool, last_chosen_id=adventure.saved_data.get('_enemy_id'))
     adventure.saved_data['_enemy_id'] = enemy.enemy_id
-    bc = BattleChapter(enemy.instance(), message=message)
+    bc = BattleChapter(enemy.instance(), messages=messages, is_boss=boss)
     adventure.add_chapter(bc)
     return bc

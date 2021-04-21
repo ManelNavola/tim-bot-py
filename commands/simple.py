@@ -84,10 +84,10 @@ async def unequip_all(cmd: Command):
 
 async def abilities(cmd: Command):
     tp = []
-    for item in cmd.user.inventory.get_equipment():
-        if item.data.ability is not None:
-            tp.append(f"{item.data.get_description().type.get_type_icon()} {item.data.ability.get_name()}: "
-                      f"{item.data.ability.get_effect()} (once per battle)")
+    # for item in cmd.user.inventory.get_equipment():
+    #     if item.data.ability is not None:
+    #         tp.append(f"{item.data.get_description().type.get_type_icon()} {item.data.ability.get_name()}: "
+    #                   f"{item.data.ability.get_effect()} (once per battle)")
     if not tp:
         await cmd.send_hidden("You currently have no abilities equipped")
     else:

@@ -223,9 +223,10 @@ cmd_handler.register_command(simple.unequip_all,
                              guild_ids=registered_guild_ids)
 
 # Adventures
-cmd_handler.register_command(adventure.coliseum_start,
-                             name="coliseum", description="Fight against diverse enemies to obtain rewards",
-                             guild_ids=registered_guild_ids)
+# cmd_handler.register_command(adventure.coliseum_start,
+#                              name="coliseum",
+#                              description="Fight against diverse enemies to obtain rewards (Tokens: 1)",
+#                              guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(adventure.start_adventure,
                              name="adventure", description="Adventure time!",
@@ -238,7 +239,7 @@ cmd_handler.register_command(adventure.start_adventure,
                                      choices=[
                                          create_choice(
                                              name="Forest",
-                                             value="forest"
+                                             value="Forest"
                                          )
                                      ]
                                  )
@@ -250,10 +251,12 @@ saved: Optional[User] = None
 fight_bot: bool = True
 if utils.is_test():
     cmd_handler.register_command(test.rich,
-                                 name="rich", description="MAKE IT RAIN", guild_ids=registered_guild_ids)
+                                 name="rich", description="MAKE IT RAIN", guild_ids=registered_guild_ids,
+                                 ignore_battle=True)
 
     cmd_handler.register_command(test.heal,
-                                 name="heal", description="Pls hel", guild_ids=registered_guild_ids)
+                                 name="invincible", description="Hax", guild_ids=registered_guild_ids,
+                                 ignore_battle=True)
 
     cmd_handler.register_command(test.test,
                                  name="test", description="Quickly test anything!",

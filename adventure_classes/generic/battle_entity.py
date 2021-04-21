@@ -21,13 +21,12 @@ class AttackResult(Slots):
 
 
 class BattleEntity:
-    def __init__(self, entity: Entity, battle_modifiers: list[StatModifier] = None):
+    def __init__(self, entity: Entity):
         self.entity = entity
         self._available_abilities: list[tuple[AbilityInstance, Optional[ItemType]]] = entity.get_abilities()
         self._turn_modifiers: list[StatModifier] = []
-        if battle_modifiers:
-            for modifier in battle_modifiers:
-                self._turn_modifiers.append(modifier.clone(-1))
+        for modifier in entity.get_modifiers():
+            self._turn_modifiers.append(modifier.clone(-1))
         self._is_user: bool = not isinstance(entity, BotEntity)
 
     def attack(self, other: 'BattleEntity', ignore_cont: bool = False) -> AttackResult:
@@ -41,19 +40,19 @@ class BattleEntity:
             ar.counter = other.attack(self, True).damage
 
         # Damage
-        dealt: int = self.get_stat(Stat.STR)
-        br: float = (dealt / (dealt + other.get_stat(Stat.DEF))) * dealt
-        real_amount: int = max(1, round(br))
+        dealt: float = self.get_stat(Stat.STR) * 4 + 8
+        dealt = dealt / (other.get_stat(Stat.DEF) + 8)
         # Crit
         if random.random() < self.get_stat(Stat.CRIT):
-            real_amount *= 2
+            dealt *= 2
             ar.crit = True
+        int_dealt: int = max(round(dealt), 1)
         # Vamp
         if random.random() < self.get_stat(Stat.VAMP):
             ar.vamp = True
-            self.entity.change_persistent(Stat.HP, min(self.get_stat(Stat.HP), real_amount))
-        other.entity.change_persistent(Stat.HP, -real_amount)
-        ar.damage = real_amount
+            self.entity.change_persistent(Stat.HP, min(self.get_stat(Stat.HP), int_dealt))
+        other.entity.change_persistent(Stat.HP, -int_dealt)
+        ar.damage = int_dealt
         return ar
 
     def add_effect(self, modifier: StatModifier, include: bool = False):
@@ -86,6 +85,13 @@ class BattleEntity:
     def is_user(self) -> bool:
         return self._is_user
 
+    def _has_stat(self, stat: Stat) -> bool:
+        if stat.get_value(self._get_stat_value(stat)) > 0:
+            return True
+        if self.entity.get_stat_value(stat) > 0:
+            return True
+        return False
+
     def get_stat(self, stat: Stat) -> Any:
         return stat.get_value(self._get_stat_value(stat))
 
@@ -112,7 +118,7 @@ class BattleEntity:
         sc: list[str] = []
 
         for stat in Stat:
-            if self.get_stat(stat) > 0:
+            if self._has_stat(stat):
                 sc.append(self._print_battle_stat(stat))
 
         return ', '.join(sc)

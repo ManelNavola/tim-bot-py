@@ -1,6 +1,6 @@
 from entities.entity import Entity
 from helpers.dictref import DictRef
-from item_data.item_classes import Item, ItemDescription
+from item_data.item_classes import Item
 from item_data.stat import Stat
 
 
@@ -12,6 +12,7 @@ class UserEntity(Entity):
         self._power: int = 0
 
     def reset(self):
+        self.clear_modifiers()
         self._persistent_stats.clear()
         for stat in Stat:
             if stat.is_persistent():
@@ -33,11 +34,11 @@ class UserEntity(Entity):
         self._stat_dict.clear()
         self._available_abilities.clear()
         for item in item_list:
-            for stat, value in item.data.stats.items():
+            for stat, value in item.get_stats().items():
                 self._stat_dict[stat] = self._stat_dict.get(stat, 0) + value
-            if item.data.ability is not None:
-                self._available_abilities.append((item.data.ability,
-                                                  ItemDescription.INDEX_TO_ITEM[item.data.desc_id].type))
+            # if item.data.ability is not None:
+            #     self._available_abilities.append((item.data.ability,
+            #                                       ItemDescription.INDEX_TO_ITEM[item.data.desc_id].type))
             calc_power += item.get_price()
         self._power = calc_power // 100
         self.reset()

@@ -73,7 +73,7 @@ class EasyJSON(Easy, ABC):
         while len(to_explore) > 1:
             current = current[to_explore[0]]
             del to_explore[0]
-        if value:
+        if value is not None:
             if type(value) == str:
                 value = value.strip()
             current[to_explore[0]] = value
@@ -106,6 +106,16 @@ class EasyValidation:
     def not_empty(new_value: str):
         if new_value:
             return True, new_value
+        return False, None
+
+    @staticmethod
+    def positive(new_value: str):
+        try:
+            if new_value:
+                if int(new_value) >= 0:
+                    return True, int(new_value)
+        except ValueError:
+            return False, None
         return False, None
 
     @staticmethod
@@ -298,12 +308,9 @@ class EasyJSONStatsWeights(EasyJSONStats):
     def show(self, data: dict[str, Any], key) -> str:
         tr = []
         for stat in Stat:
-            value = EasyJSON.get_value(self, data).get(stat.get_abv(), 0)
+            value = EasyJSON.get_value(self, data).get(stat.get_abv())
             if value:
-                if value == 1:
-                    tr.append((f"{stat.get_abv()}", value))
-                else:
-                    tr.append((f"{stat.get_abv()} x{value}", value))
+                tr.append((f"{stat.value.represent(stat.get_value(value))} {stat.get_abv()}", value))
         tr.sort(key=lambda x: -x[1])
         return ', '.join([x[0] for x in tr])
 
@@ -633,8 +640,9 @@ class EasyGridTree(EasyGrid):
             correct = True
             for i in range(len(self.structure)):
                 if self.filtering_by[i]:
-                    if self.filtering_by[i] not in data[k][self.structure[i].name].lower():
-                        correct = False
-                        break
+                    if self.structure[i].name in data[k]:
+                        if self.filtering_by[i] not in data[k][self.structure[i].name].lower():
+                            correct = False
+                            break
             if correct:
                 self.update_row(k, data[k])

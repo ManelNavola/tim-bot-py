@@ -1,7 +1,5 @@
 import typing
-from typing import Optional
-
-from discord_slash import SlashContext
+from typing import Optional, Any
 
 import utils
 from db.database import PostgreSQL
@@ -10,8 +8,8 @@ from helpers.incremental import Incremental
 from db.row import Row
 from entities.user_entity import UserEntity
 from enums.emoji import Emoji
+from item_data import item_utils
 from item_data.item_classes import Item
-from item_data.item_utils import parse_item_data_from_dict
 from item_data.stat import StatInstance, Stat
 from user_data import upgrades
 from user_data.inventory import Inventory
@@ -45,6 +43,8 @@ class User(Row):
         }
         self._bank = Incremental(DictRef(self._data, 'bank'), DictRef(self._data, 'bank_time'),
                                  TimeSlot(TimeMetric.HOUR, self.upgrades['garden'].get_value()))
+        self._tokens = Incremental(DictRef(self._data, 'tokens'), DictRef(self._data, 'tokens_time'),
+                                   TimeSlot(TimeMetric.DAY, 12))
         self._adventure: Optional[Adventure] = None
 
         # User entity
@@ -61,9 +61,10 @@ class User(Row):
             .join('user_items', field_matches=[('user_id', 'id')]) \
             .execute()
         for is_info in item_slots:
-            item_data = self._db.get_row_data('items', dict(id=is_info['item_id']))
-            inv_items[is_info['slot']] = Item(item_data=parse_item_data_from_dict(item_data['data']),
-                                              item_id=item_data['id'])
+            item_dict: dict[str, Any] = self._db.get_row_data('items', dict(id=is_info['item_id']))
+            item: Item = item_utils.from_dict(item_dict['data'])
+            item.id = item_dict['id']
+            inv_items[is_info['slot']] = item
         if len(item_slots) > slots:
             # Too many item_data... log
             print(f"{user_id} exceeded {slots} items: {len(item_slots)}!")
@@ -118,6 +119,22 @@ class User(Row):
             self.set_money(new_money)
             return True
         return False
+
+    def get_tokens(self) -> int:
+        if self._tokens.get_base() > self.get_token_limit():
+            # Overflow
+            return self._tokens.get_base()
+        return min(self._tokens.get(), self.get_token_limit())
+
+    def remove_tokens(self, tokens: int) -> bool:
+        if self.get_tokens() >= tokens:
+            self._tokens.set(self.get_tokens() - tokens)
+            return True
+        return False
+
+    @staticmethod
+    def get_token_limit() -> int:
+        return 5
 
     def get_bank_limit(self) -> int:
         return self.upgrades['bank'].get_value()
@@ -200,6 +217,11 @@ class User(Row):
             to_print.append(f"{Emoji.BANK} Bank: {utils.print_money(self.get_bank())} "
                             f"/ {utils.print_money(self.get_bank_limit())} "
                             f"({self.print_garden_rate()} {Emoji.GARDEN})")
+            if self.get_tokens() >= self.get_token_limit():
+                to_print.append(f"{Emoji.TOKEN} Tokens: {self.get_tokens()} / {self.get_token_limit()}")
+            else:
+                to_print.append(f"{Emoji.TOKEN} Tokens: {self.get_tokens()} / {self.get_token_limit()} "
+                                f"(Next in {utils.print_time(self._tokens.get_until(self.get_tokens() + 1))})")
             if checking:
                 to_print.append(f"{Emoji.STATS} Equipment Power: {self.user_entity.get_power()}")
             to_print.append(self.inventory.print())

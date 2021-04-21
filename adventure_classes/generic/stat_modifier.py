@@ -50,7 +50,10 @@ class StatModifierAdd(StatModifier):
         return value + self.value
 
     def print(self) -> str:
-        return f"+{up_to(self.value, 2)}"
+        if self.value > 0:
+            return f"+{up_to(self.value, 2)}"
+        else:
+            return f"{up_to(self.value, 2)}"
 
     def clone(self, override_duration: Optional[int] = None):
         if override_duration is None:

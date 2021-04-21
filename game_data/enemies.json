@@ -3,9 +3,9 @@
     "Name": "Toxic Sludge",
     "Stats": {
       "CONT": 1,
-      "STR": 4,
-      "HP": 4,
-      "EVA": 5
+      "HP": 2,
+      "STR": 2,
+      "EVA": 4
     },
     "Location": "Coliseum",
     "Pool": "0"
@@ -13,10 +13,10 @@
   "1": {
     "Name": "Green Slime",
     "Stats": {
-      "SPD": 2,
       "EVA": 2,
-      "STR": 4,
-      "HP": 3
+      "HP": 2,
+      "STR": 2,
+      "SPD": 1
     },
     "Location": "Coliseum",
     "Pool": "0"
@@ -24,8 +24,8 @@
   "2": {
     "Name": "Weak Bandit",
     "Stats": {
-      "HP": 6,
-      "SPD": 8
+      "HP": 3,
+      "SPD": 3
     },
     "Location": "Coliseum",
     "Pool": "0"
@@ -33,8 +33,8 @@
   "3": {
     "Name": "Small Wolf",
     "Stats": {
-      "STR": 10,
-      "HP": 5
+      "HP": 3,
+      "STR": 5
     },
     "Location": "Coliseum",
     "Pool": "1"
@@ -42,10 +42,10 @@
   "4": {
     "Name": "Angry Tree",
     "Stats": {
-      "STR": 3,
-      "DEF": 2,
       "CONT": 2,
-      "HP": 10
+      "HP": 5,
+      "STR": 2,
+      "DEF": 1
     },
     "Location": "Coliseum",
     "Pool": "1"
@@ -54,10 +54,10 @@
     "Name": "Bat",
     "Stats": {
       "STR": 2,
-      "DEF": 2,
       "SPD": 1,
       "VAMP": 9,
-      "HP": 8
+      "HP": 6,
+      "DEF": 1
     },
     "Location": "Coliseum",
     "Pool": "1"
@@ -65,19 +65,19 @@
   "6": {
     "Name": "Warrior",
     "Stats": {
-      "STR": 3,
-      "DEF": 5,
       "CONT": 5,
-      "HP": 15
+      "HP": 8,
+      "STR": 2,
+      "DEF": 3
     },
     "Location": "Coliseum",
     "Pool": "2"
   },
   "7": {
     "Stats": {
-      "HP": 8,
-      "STR": 8,
-      "DEF": 8
+      "HP": 6,
+      "STR": 4,
+      "DEF": 2
     },
     "Name": "Rock Golem",
     "Location": "Coliseum",
@@ -86,9 +86,9 @@
   "8": {
     "Stats": {
       "CRIT": 15,
-      "HP": 5,
-      "DEF": 8,
-      "STR": 5
+      "HP": 3,
+      "STR": 3,
+      "DEF": 4
     },
     "Name": "Gold Guardian",
     "Location": "Coliseum",
@@ -96,9 +96,9 @@
   },
   "9": {
     "Stats": {
-      "HP": 10,
-      "STR": 10,
-      "SPD": 10
+      "SPD": 10,
+      "HP": 5,
+      "STR": 6
     },
     "Name": "Angry Lion",
     "Location": "Coliseum",
@@ -107,9 +107,9 @@
   "10": {
     "Location": "Forest",
     "Stats": {
-      "HP": 4,
-      "STR": 2,
-      "DEF": 2
+      "STR": 1,
+      "HP": 2,
+      "DEF": 1
     },
     "Pool": "A",
     "Name": "Squirrel"
@@ -117,10 +117,9 @@
   "11": {
     "Location": "Forest",
     "Stats": {
-      "HP": 4,
-      "DEF": 2,
-      "EVA": 4,
-      "STR": 2
+      "STR": 2,
+      "HP": 2,
+      "EVA": 2
     },
     "Name": "Floaty Owl",
     "Pool": "A"
@@ -128,10 +127,10 @@
   "12": {
     "Location": "Forest",
     "Stats": {
-      "HP": 4,
-      "STR": 4,
       "DEF": 1,
-      "VAMP": 4
+      "HP": 3,
+      "STR": 1,
+      "VAMP": 2
     },
     "Name": "Small Bat",
     "Pool": "A"
@@ -139,10 +138,9 @@
   "13": {
     "Location": "Forest",
     "Stats": {
-      "HP": 5,
-      "DEF": 3,
-      "SPD": 4,
-      "STR": 5
+      "HP": 4,
+      "SPD": 2,
+      "STR": 3
     },
     "Pool": "B",
     "Name": "Jumpy Deer"
@@ -151,9 +149,9 @@
     "Location": "Forest",
     "Stats": {
       "HP": 4,
-      "STR": 4,
-      "EVA": 8,
-      "SPD": 4
+      "STR": 3,
+      "SPD": 3,
+      "EVA": 3
     },
     "Name": "Brown Fox",
     "Pool": "B"
@@ -161,9 +159,9 @@
   "15": {
     "Location": "Forest",
     "Stats": {
-      "HP": 4,
-      "STR": 6,
-      "EVA": 10
+      "STR": 4,
+      "HP": 3,
+      "EVA": 5
     },
     "Name": "Angry Butterfly",
     "Pool": "B"
@@ -172,9 +170,9 @@
     "Location": "Forest",
     "Stats": {
       "HP": 6,
-      "DEF": 6,
-      "STR": 6,
-      "SPD": 4
+      "SPD": 4,
+      "STR": 5,
+      "DEF": 5
     },
     "Name": "Lizard",
     "Pool": "C"
@@ -184,8 +182,8 @@
     "Stats": {
       "STR": 4,
       "HP": 6,
-      "SPD": 10,
-      "CONT": 10
+      "CONT": 8,
+      "SPD": 8
     },
     "Name": "Fast Hedgehog",
     "Pool": "C"
@@ -194,8 +192,8 @@
     "Location": "Forest",
     "Stats": {
       "STR": 4,
-      "DEF": 10,
-      "HP": 10
+      "HP": 8,
+      "DEF": 6
     },
     "Name": "Beetle",
     "Pool": "C"
@@ -203,9 +201,9 @@
   "19": {
     "Location": "Forest",
     "Stats": {
-      "STR": 4,
-      "DEF": 8,
-      "HP": 8
+      "STR": 3,
+      "DEF": 5,
+      "HP": 5
     },
     "Name": "Bear",
     "Pool": "D"
@@ -213,10 +211,10 @@
   "20": {
     "Location": "Forest",
     "Stats": {
-      "STR": 10,
-      "DEF": 10,
-      "CONT": 10,
-      "HP": 20
+      "CONT": 5,
+      "STR": 5,
+      "DEF": 5,
+      "HP": 8
     },
     "Name": "Godly Ent",
     "Pool": "BOSS"

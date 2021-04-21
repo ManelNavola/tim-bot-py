@@ -5,9 +5,11 @@ from typing import Optional
 import utils
 from db.database import PostgreSQL
 from enums.emoji import Emoji
+from enums.location import Location
 from helpers.dictref import DictRef
+from item_data import item_utils
 from item_data.item_classes import Item
-from item_data.item_utils import transfer_shop, parse_item_data_from_dict, create_guild_item, get_random_shop_item_data
+from item_data.item_utils import transfer_shop, create_guild_item
 from utils import TimeSlot, TimeMetric
 if typing.TYPE_CHECKING:
     from user_data.user import User
@@ -32,6 +34,10 @@ class Shop:
         self._shop_time: DictRef[int] = shop_time
         self._shop_items: list[Optional[Item]] = [None] * Shop.ITEM_AMOUNT
         self._last_valid_checks: list[Optional[bool]] = [False] * Shop.ITEM_AMOUNT
+
+    @staticmethod
+    def get_sell_price(item: Item):
+        return int(item.get_price() * Shop.SELL_MULTIPLIER)
 
     def _check_shop(self):
         diff = utils.now() - self._shop_time.get()
@@ -62,11 +68,11 @@ class Shop:
                   f"{Emoji.CLOCK})"]
         for i in range(len(self._shop_items)):
             item = self._shop_items[i]
-            if item.data.price_modifier is None:
+            if item.price_modifier is None:
                 to_ret.append(f"{i + 1}: {item.print()}"
                               f" - {utils.print_money(item.get_price())}")
             else:
-                if item.data.price_modifier > 1:
+                if item.price_modifier > 1:
                     to_ret.append(f"{i + 1}: {item.print()}"
                                   f" - {utils.print_money(item.get_price())} {Emoji.INCREASE}")
                 else:
@@ -85,9 +91,9 @@ class Shop:
         item = self._shop_items[item_index]
         if user.inventory.get_free_count() > 0:
             if user.remove_money(item.get_price()):
-                was_there_before = (user.inventory.get_first(item.data.get_description().type) is not None)
+                was_there_before = (user.inventory.get_first(item.get_description().type) is not None)
                 slot = user.inventory.add_item(item)
-                transfer_shop(self._db, self._guild_id, user.id, slot, item.id)
+                transfer_shop(self._db, self._guild_id, user.id, slot, item)
                 self._shop_items[item_index] = None
                 item.durability = 100
                 self._last_valid_checks[item_index] = False
@@ -108,8 +114,7 @@ class Shop:
             .join('items', [('id', 'item_id')])\
             .execute()
         for index in range(len(found_items)):
-            item: dict = found_items[index]
-            self._shop_items[index] = Item(item_data=parse_item_data_from_dict(item['data']), item_id=item['id'])
+            self._shop_items[index] = item_utils.from_dict(found_items[index]['data'])
 
     def _clear_shop(self) -> None:
         shop_items: list[Optional[Item]] = self._shop_items  # PYCHARM WHAT
@@ -125,12 +130,13 @@ class Shop:
         restocked = False
         for i in range(0, Shop.ITEM_AMOUNT):
             if self._shop_items[i] is None:
-                item: Item = create_guild_item(self._db, self._guild_id, get_random_shop_item_data())
+                item: Item = create_guild_item(self._db, self._guild_id,
+                                               item_utils.get_random_item(0, Location.ANYWHERE))
                 if random.random() < 0.2:
                     if random.random() < 0.5:
-                        item.data.price_modifier = 0.75
+                        item.price_modifier = 0.75
                     else:
-                        item.data.price_modifier = 1.25
+                        item.price_modifier = 1.25
                 self._last_valid_checks[i] = False
                 self._shop_items[i] = item
                 restocked = True

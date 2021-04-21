@@ -18,7 +18,10 @@ def get_column_names(columns: SQLColumns, as_name: str = ''):
         else:
             return ', '.join(columns)
     else:
-        return '*'
+        if as_name:
+            return f'{as_name}.*'
+        else:
+            return '*'
 
 
 def convert_sql_value(value):
@@ -60,12 +63,6 @@ class PostgreSQL:
 
     def start_join(self, table_from: str, match_columns: SQLDict, columns: SQLColumns = None, limit: int = 1) -> 'Join':
         return Join(self, table_from, match_columns, columns, limit)
-        # column_names = get_column_names(columns)
-        # self._cursor.execute(f"SELECT I.* FROM users U "
-        #                           f"INNER JOIN user_items UI ON UI.user_id = U.id "
-        #                           f"INNER JOIN items I ON I.id = UI.item_id "
-        #                           f"WHERE U.id = {self.id} "
-        #                           f"LIMIT {self.upgrades['inventory'].get_value()}")
 
     def insert_data(self, table_name: str, column_data: SQLDict, returns: bool = False,
                     return_columns: SQLColumns = None) -> Optional[SQLDict]:
@@ -167,7 +164,7 @@ class Join:
 
 
 def load_test_database():
-    with open('C:/Users/Manel/git/tim-bot-py/local/b.txt', 'r') as f:  # TODO please
+    with open('C:/Users/Manel/git/tim-bot-py/local/b.txt', 'r') as f:
         return PostgreSQL(host="localhost", user="postgres", password=f.readline(), database='testing')
 
 

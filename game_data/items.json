@@ -1,55 +1,61 @@
 {
   "0": {
-    "Name": "Dagger",
+    "Name": "Sharp Spear",
     "Type": "Weapon",
     "Stats": {
-      "STR": 1,
-      "SPD": 1,
-      "CRIT": 1
-    }
+      "STR": 2
+    },
+    "Tier": 0,
+    "Location": "Anywhere"
   },
   "1": {
     "Name": "Leather Boots",
     "Type": "Boot",
     "Stats": {
-      "SPD": 2,
-      "EVA": 1
-    }
+      "SPD": 2
+    },
+    "Tier": 0,
+    "Location": "Anywhere"
   },
   "2": {
-    "Name": "Breastplate",
+    "Name": "Cotton Shirt",
     "Type": "Chest",
     "Stats": {
       "HP": 1,
-      "DEF": 2
-    }
+      "DEF": 1
+    },
+    "Tier": 0,
+    "Location": "Anywhere"
   },
   "3": {
-    "Name": "Iron Sword",
+    "Name": "Wooden Sword",
     "Type": "Weapon",
     "Stats": {
       "STR": 1,
-      "CONT": 1
+      "SPD": 1
     },
-    "Ability": "Protection"
+    "Ability": "Protection",
+    "Tier": 0,
+    "Location": "Anywhere"
   },
   "4": {
     "Name": "Sandals",
     "Type": "Boot",
     "Stats": {
-      "SPD": 1,
       "EVA": 2
     },
-    "Ability": "Flee"
+    "Ability": "Flee",
+    "Tier": 0,
+    "Location": "Anywhere"
   },
   "5": {
-    "Name": "Metal Helmet",
+    "Name": "Simple Headband",
     "Type": "Helmet",
     "Stats": {
-      "HP": 1,
-      "DEF": 1,
-      "EVA": 1
-    }
+      "EVA": 2
+    },
+    "Tier": 0,
+    "Location": "Anywhere"
   },
   "6": {
     "Name": "Metal Axe",
@@ -57,16 +63,19 @@
     "Stats": {
       "STR": 1
     },
-    "Ability": "Blunder"
+    "Ability": "Blunder",
+    "Tier": 0,
+    "Location": "Nowhere"
   },
   "7": {
-    "Name": "Wooden Shield",
+    "Name": "Broken Shield",
     "Type": "Secondary",
     "Stats": {
-      "DEF": 1,
-      "CONT": 1
+      "DEF": 2
     },
-    "Ability": "Protection"
+    "Ability": "Protection",
+    "Tier": 0,
+    "Location": "Anywhere"
   },
   "8": {
     "Name": "Sharp Spear",
@@ -75,6 +84,70 @@
       "STR": 1,
       "SPD": 1,
       "CRIT": 1
+    },
+    "Tier": 0,
+    "Location": "Nowhere"
+  },
+  "9": {
+    "Name": "Leather Coat",
+    "Location": "Anywhere",
+    "Tier": 0,
+    "Type": "Chest",
+    "Stats": {
+      "HP": 2
+    }
+  },
+  "10": {
+    "Name": "Wool Beanie",
+    "Location": "Anywhere",
+    "Tier": 0,
+    "Type": "Helmet",
+    "Stats": {
+      "HP": 1,
+      "DEF": 1
+    }
+  },
+  "11": {
+    "Name": "Forest Hat",
+    "Location": "Forest",
+    "Tier": 0,
+    "Type": "Helmet",
+    "Stats": {
+      "DEF": 2,
+      "HP": 2,
+      "SPD": 1
+    }
+  },
+  "12": {
+    "Name": "Forest Bandana",
+    "Location": "Forest",
+    "Tier": 0,
+    "Type": "Helmet",
+    "Stats": {
+      "SPD": 2,
+      "EVA": 2,
+      "DEF": 1,
+      "HP": 1
+    }
+  },
+  "13": {
+    "Name": "Forest Tunic",
+    "Location": "Forest",
+    "Tier": 0,
+    "Type": "Chest",
+    "Stats": {
+      "EVA": 3,
+      "DEF": 3
+    }
+  },
+  "14": {
+    "Name": "Forest Boots",
+    "Location": "Forest",
+    "Tier": 0,
+    "Type": "Boot",
+    "Stats": {
+      "SPD": 3,
+      "EVA": 3
     }
   }
 }

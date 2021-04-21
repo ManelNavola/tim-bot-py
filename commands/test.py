@@ -1,5 +1,6 @@
 from adventure_classes.generic.adventure import Adventure
 from adventure_classes.generic.battle import BattleChapter
+from adventure_classes.generic.stat_modifier import StatModifierAdd
 from helpers.command import Command
 from entities.bot_entity import BotEntityBuilder
 from enums.emoji import Emoji
@@ -18,8 +19,9 @@ async def rich(cmd: Command):
 
 
 async def heal(cmd: Command):
-    cmd.user.user_entity.change_persistent(Stat.HP, 999999)
-    await cmd.send_hidden("cheater... healed")
+    cmd.user.user_entity.add_modifier(StatModifierAdd(Stat.EVA, 9999))
+    cmd.user.user_entity.add_modifier(StatModifierAdd(Stat.STR, 9999))
+    await cmd.send_hidden("cheater...")
 
 
 async def test(cmd: Command):
@@ -29,9 +31,9 @@ async def test(cmd: Command):
             Stat.MP: 0,
             Stat.STR: -1,
         })
-        adventure: Adventure = Adventure("Test Adventure", f"{Emoji.BANK}")
+        adventure: Adventure = Adventure("Test Adventure", Emoji.BANK)
         adventure.add_chapter(BattleChapter(potato.instance()))
-        await cmd.user.start_adventure(cmd.ctx, adventure)
+        await adventure.start(cmd.ctx, [cmd.user])
     else:
         pass
         # if saved is None:

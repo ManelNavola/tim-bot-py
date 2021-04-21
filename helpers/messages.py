@@ -32,7 +32,6 @@ class MessagePlus:
             for reaction, hook in self._reaction_hooks.items():
                 if reaction.compare(input_reaction.emoji):
                     li = [user, input_reaction.emoji]
-                    # TODO organize this better
                     user.update(member.display_name)
                     await hook(*[li[i] for i in range(len(inspect.getfullargspec(hook).args) - 1)])
                     await input_reaction.remove(member)

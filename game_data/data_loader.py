@@ -1,7 +1,7 @@
 from enemy_data import enemy_utils
-from item_data.item_classes import ItemDescription
+from item_data import item_utils
 
 
 def load():
-    ItemDescription.load()
+    item_utils.load()
     enemy_utils.load()

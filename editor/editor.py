@@ -138,11 +138,17 @@ class Items(JSONEditor):
                              EasyItem('Id', EasyJSONKey(), 0, 0, field_width=4),
                              EasyItem('Name', EasyJSONField('Name', 'Name', EasyValidation.not_empty), 0, 0,
                                       field_width=20),
-                             EasyItem('Type', EasyJSONEnum('Type', 'Type', ItemType), 1, 0),
-                             EasyItem('Stats', EasyJSONStatsWeights('Stats'), 0, 1, row_span=2),
-                         ], [64, 128, 128]),
+                             EasyItem('Location', EasyJSONEnum('Location', 'Location', Location), 1, 0),
+                             EasyItem('Tier', EasyJSONField('Tier', 'Tier', EasyValidation.positive, width=5),
+                                      2, 0,
+                                      field_width=5),
+                             EasyItem('Type', EasyJSONEnum('Type', 'Type', ItemType), 3, 0),
+                             EasyItem('Stats', EasyJSONStatsWeights('Stats'), 0, 1, row_span=4),
+                         ], [64, 128, 128, 32, 128]),
                          {
                              'Name': 'Item',
+                             'Location': Location.NOWHERE.get_name(),
+                             'Tier': 0,
                              'Type': ItemType.BOOT.get_name(),
                              'Stats': {}
                          },
@@ -162,7 +168,7 @@ class Enemies(JSONEditor):
                          ], [64, 128, 128, 64]),
                          {
                              'Name': 'Enemy',
-                             'Location': Location.NO_LOCATION.get_name(),
+                             'Location': Location.NOWHERE.get_name(),
                              'Stats': {
                                  Stat.HP.get_abv(): 4,
                                  Stat.STR.get_abv(): 4,
