@@ -4,7 +4,7 @@ from autoslot import Slots
 
 from enums.item_type import ItemType
 from item_data import stat_utils
-from enums.rarity import Rarity
+from enums.item_rarity import ItemRarity
 from item_data.stat import Stat
 
 
@@ -18,13 +18,13 @@ class ItemDescription(Slots):
 
 
 class Item:
-    def __init__(self, description: ItemDescription, rarity: Rarity, stat_bonus: dict[Stat, int] = None,
+    def __init__(self, description: ItemDescription, rarity: ItemRarity, stat_bonus: dict[Stat, int] = None,
                  durability: int = 100):
         self.id: int = -1
         self.price_modifier: Optional[int] = None
         self.durability: int = durability
         self._description: ItemDescription = description
-        self._rarity: Rarity = rarity
+        self._rarity: ItemRarity = rarity
         if stat_bonus is None:
             stat_bonus = {}
         self._stat_bonus: dict[Stat, int] = stat_bonus

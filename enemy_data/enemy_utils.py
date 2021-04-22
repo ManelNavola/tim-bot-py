@@ -38,6 +38,7 @@ def load():
             enemy_count += 1
     print(f"Loaded {enemy_count} enemies")
 
+
 def get_random_enemy(location: Location, pool: str = '', last_chosen_id: Optional[int] = None) \
         -> BotEntityBuilder:
     possible_enemies: list[BotEntityBuilder] = _ENEMIES[location][pool]

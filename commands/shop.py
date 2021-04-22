@@ -36,7 +36,7 @@ async def sell(cmd: Command, number: int):
         item: Item = result
         price = Shop.get_sell_price(item)
         cmd.user.add_money(price)
-        await cmd.send(f"{Emoji.PURCHASE} Sold {item.print()} for {utils.print_money(price)}")
+        await cmd.send_hidden(f"{Emoji.PURCHASE} Sold {item.print()} for {utils.print_money(price)}")
     else:
         if result:
             await cmd.error("Invalid item index!")

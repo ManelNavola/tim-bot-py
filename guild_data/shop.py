@@ -6,10 +6,11 @@ import utils
 from db.database import PostgreSQL
 from enums.emoji import Emoji
 from enums.location import Location
+from enums.item_rarity import ItemRarity
 from helpers.dictref import DictRef
 from item_data import item_utils
 from item_data.item_classes import Item
-from item_data.item_utils import transfer_shop, create_guild_item
+from item_data.item_utils import transfer_shop, create_guild_item, RandomItemBuilder
 from utils import TimeSlot, TimeMetric
 if typing.TYPE_CHECKING:
     from user_data.user import User
@@ -130,8 +131,13 @@ class Shop:
         restocked = False
         for i in range(0, Shop.ITEM_AMOUNT):
             if self._shop_items[i] is None:
-                item: Item = create_guild_item(self._db, self._guild_id,
-                                               item_utils.get_random_item(0, Location.ANYWHERE))
+                rarities: list[ItemRarity] = [ItemRarity.UNCOMMON, ItemRarity.RARE, ItemRarity.EPIC]
+                chances: list[float] = [x.get_chance() for x in rarities]
+                rarities = [ItemRarity.COMMON] + rarities
+                chances = [ItemRarity.COMMON.get_chance() + ItemRarity.LEGENDARY.get_chance()] + chances
+                item: Item = RandomItemBuilder(0).set_location(Location.ANYWHERE)\
+                    .choose_rarity(rarities, chances).build()
+                create_guild_item(self._db, self._guild_id, item)
                 if random.random() < 0.2:
                     if random.random() < 0.5:
                         item.price_modifier = 0.75

@@ -12,18 +12,18 @@ from utils import TimeSlot, TimeMetric
 
 
 class Guild(Row):
-    TABLE_HYPE = TimeSlot(TimeMetric.MINUTE, 30)
-    TABLE_INCREMENT = 2
-    TABLE_MIN = 10
-    LEADERBOARD_TOP = 5
-    SHOP_DURATION = TimeSlot(TimeMetric.HOUR, 1)
+    TABLE_MIN: int = 10
+    TABLE_HYPE: TimeSlot = TimeSlot(TimeMetric.MINUTE, 30)
+    TABLE_INCREMENT: TimeSlot = TimeSlot(TimeMetric.MINUTE, 1)
+    LEADERBOARD_TOP: int = 5
+    SHOP_DURATION: TimeSlot = TimeSlot(TimeMetric.HOUR, 1)
 
     def __init__(self, db: PostgreSQL, guild_id: int):
         super().__init__(db, "guilds", dict(id=guild_id))
         self.id: int = guild_id
         self._box: Incremental = Incremental(DictRef(self._data, 'table_money'),
                                              DictRef(self._data, 'table_money_time'),
-                                             TimeSlot(TimeMetric.MINUTE, Guild.TABLE_INCREMENT))
+                                             Guild.TABLE_INCREMENT)
         self.bet: Bet = Bet(db, DictRef(self._data, 'ongoing_bet'))
         self.registered_user_ids: set[int] = set(self._data['user_ids'])
         self.shop: Shop = Shop(db, DictRef(self._data, 'shop_time'), self.id)

@@ -1,10 +1,6 @@
-from adventure_classes.game_adventures import coliseum, forest
+from adventure_classes.game_adventures import forest
 from enums.location import Location
 from helpers.command import Command
-
-
-async def coliseum_start(cmd: Command):
-    await forest.start(cmd.ctx, cmd.user)
 
 
 async def start_adventure(cmd: Command, location: str):

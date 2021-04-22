@@ -10,9 +10,9 @@ from adventure_classes.generic.reward import MoneyRewardChapter, ItemRewardChapt
 from adventure_classes.generic.stat_modifier import StatModifier, StatModifierAdd
 from enums.emoji import Emoji
 from enums.location import Location
-from enums.rarity import Rarity
-from item_data import item_utils
+from enums.item_rarity import ItemRarity
 from item_data.item_classes import Item
+from item_data.item_utils import RandomItemBuilder
 from item_data.stat import Stat
 from user_data.user import User
 
@@ -117,14 +117,14 @@ def aa_deeper(adventure: Adventure):
                                            'But it is not a wild animal...'], boss=True)
     bc.icon = Emoji.FOREST
 
-    item: Item = item_utils.get_random_item(0, Location.FOREST)
+    item: Item = RandomItemBuilder(0).set_location(Location.FOREST).build()
     adventure.add_chapter(ItemRewardChapter(item))
 
 
 def ab_continue_path(adventure):
     if random.random() < 0.5:
         bc = BonusChapter('You find some aloe behind a bush')
-        bc.add_modifier(StatModifierAdd(Stat.DEF, 2))
+        bc.add_modifier(StatModifierAdd(Stat.DEF, 3))
         adventure.add_chapter(bc)
     else:
         bc = BonusChapter('You find healing herbs near a tree')
@@ -135,12 +135,8 @@ def ab_continue_path(adventure):
     if random.random() < 0.5:
         adventure.add_chapter(MoneyRewardChapter(random.randint(300, 400)))
     else:
-        rarity: Rarity = Rarity.UNCOMMON
-        if random.random() < 0.3:
-            rarity = Rarity.RARE
-        if random.random() < 0.1:
-            rarity = Rarity.EPIC
-        item: Item = item_utils.get_random_item(0, Location.ANYWHERE, rarity=rarity)
+        item: Item = RandomItemBuilder(0).set_location(Location.ANYWHERE)\
+            .choose_rarity([ItemRarity.UNCOMMON, ItemRarity.RARE, ItemRarity.EPIC], [6, 3, 1]).build()
         adventure.add_chapter(ItemRewardChapter(item))
 
 
@@ -156,10 +152,8 @@ def b_reward(adventure):
     if random.random() < 0:
         adventure.add_chapter(MoneyRewardChapter(random.randint(100, 200)))
     else:
-        rarity: Rarity = Rarity.COMMON
-        if random.random() < 0.2:
-            rarity = Rarity.UNCOMMON
-        item: Item = item_utils.get_random_item(0, Location.ANYWHERE, rarity=rarity)
+        item: Item = RandomItemBuilder(0).set_location(Location.ANYWHERE) \
+            .choose_rarity([ItemRarity.COMMON, ItemRarity.UNCOMMON], [2, 1]).build()
         adventure.add_chapter(ItemRewardChapter(item))
 
 
