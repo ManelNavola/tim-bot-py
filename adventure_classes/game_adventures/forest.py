@@ -56,28 +56,28 @@ class BonusChapter(Chapter):
 
 
 class ChoiceChapter(Chapter):
-    def __init__(self, emoji: Emoji, msg: str):
+    def __init__(self, emoji: Emoji, msg: str = '', skip: bool = True):
         super().__init__(emoji)
         self.msg: str = msg
         self.choices: list[tuple[Emoji, str, Callable]] = []
+        self.skip = skip
 
     def add_choice(self, icon: Emoji, desc: str, result: Callable):
         self.choices.append((icon, desc, result))
         return self
 
     async def init(self):
-        self.add_log(self.msg)
+        self.start_log(self.msg)
         for choice in self.choices:
             self.add_log(f"{choice[0].first()} {choice[1]}")
-        await self.pop_log()
+        await self.send_log()
         for choice in self.choices:
             await self.get_adventure().add_reaction(choice[0], self.choose_path(choice[2]))
 
     def choose_path(self, action: Callable):
         async def end_path():
             action(self.get_adventure())
-            await self.end(skip=True)
-
+            await self.end(skip=self.skip)
         return end_path
 
 
@@ -87,9 +87,9 @@ def eat_mushroom(color: int):
         if color == 0:
             bc.add_modifier(StatModifierAdd(Stat.DEF, -2, 1))
         elif color == 1:
-            bc.add_modifier(StatModifierAdd(Stat.SPD, 3))
+            bc.add_modifier(StatModifierAdd(Stat.SPD, 5))
         else:
-            bc.add_persistent(Stat.HP, Stat.HP.get_value(3))
+            bc.add_persistent(Stat.HP, Stat.HP.get_value(4))
         adventure.insert_chapter(bc)
 
     return mushroom_effect
@@ -113,7 +113,7 @@ def aa_deeper(adventure: Adventure):
 
     battle.add_to_adventure(adventure, Location.FOREST, 'B')
     bc = battle.add_to_adventure(adventure, Location.FOREST, 'BOSS',
-                                 messages=['You feel the forest watching you...', 'Suddenly you see something move!',
+                                     messages=['You feel the forest watching you...', 'Suddenly you see something move!',
                                            'But it is not a wild animal...'], boss=True)
     bc.icon = Emoji.FOREST
 

@@ -1,0 +1,10 @@
+{
+  "PRONOUN.SECOND": "You",
+
+  "COMMAND.IN_ADVENTURE": "This command cannot be issued during an adventure!",
+  "COMMAND.GUILD_ONLY": "This command an only be called in a guild!",
+
+  "ADVENTURE.NO_TOKENS": "{pronoun} don't have enough tokens! (Required: {tokens}{EMOJI_TOKEN})",
+  "ADVENTURE.START": "{players} started {name}!",
+  "ADVENTURE.PROGRESS": "{icon} Progress: {progress}"
+}

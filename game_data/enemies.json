@@ -191,9 +191,9 @@
   "18": {
     "Location": "Forest",
     "Stats": {
-      "STR": 4,
-      "HP": 8,
-      "DEF": 6
+      "DEF": 6,
+      "STR": 3,
+      "HP": 7
     },
     "Name": "Beetle",
     "Pool": "C"
@@ -212,11 +212,21 @@
     "Location": "Forest",
     "Stats": {
       "CONT": 5,
+      "HP": 10,
       "STR": 5,
-      "DEF": 5,
-      "HP": 8
+      "DEF": 5
     },
     "Name": "Godly Ent",
     "Pool": "BOSS"
+  },
+  "21": {
+    "Name": "Seagull",
+    "Location": "Tutorial",
+    "Stats": {
+      "HP": 3,
+      "STR": 1,
+      "DEF": 1
+    },
+    "Pool": ""
   }
 }

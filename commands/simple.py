@@ -60,7 +60,7 @@ async def equip_best(cmd: Command):
     for item in cmd.user.inventory.get_equipment():
         tr.append(f"Equipped {item.print()}")
     if tr:
-        await cmd.send('\n'.join(tr))
+        await cmd.send_hidden('\n'.join(tr))
     else:
         await cmd.error("You have no equipment")
 

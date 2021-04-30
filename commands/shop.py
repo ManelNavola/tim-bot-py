@@ -45,7 +45,7 @@ async def sell(cmd: Command, number: int):
 
 
 async def sell_all(cmd: Command):
-    total_items, total_price = cmd.user.inventory.sell_all(cmd.user.id)
+    total_items, total_price = cmd.user.inventory.sell_all()
     if total_items == 0:
         await cmd.error("You don't have any items to sell!")
     else:

@@ -6,11 +6,17 @@ from autoslot import Slots
 from enums.emoji import Emoji
 
 
+class StatType(Enum):
+    MAIN = 0
+    CHANCE = 1
+
+
 class StatInstance(Slots):
-    def __init__(self, abv: str, name: str, icon: Emoji, cost: int, multiplier: Any = 1,
-                 limit_per_item: int = 9999, is_persistent: bool = False):
+    def __init__(self, abv: str, name: str, icon: Emoji, cost: int, stat_type: StatType = StatType.MAIN,
+                 multiplier: Any = 1, limit_per_item: int = 9999, is_persistent: bool = False):
         self.name: str = name
         self.abv: str = abv
+        self.type: StatType = stat_type
         self.icon: Emoji = icon
         self.cost: int = cost
         self.limit: int = limit_per_item
@@ -33,32 +39,23 @@ class StatInstance(Slots):
 
         total = base + value
         if persistent_value is not None:
-            if base > 0:
-                if value == 0:
-                    tp.append(f"{self.represent(persistent_value)}/{self.represent(self.get_value(total))}")
-                else:
-                    if short:
-                        tp.append(f"{self.represent(persistent_value)}/{self.represent(self.get_value(total))}")
-                    else:
-                        tp.append(f"{self.represent(persistent_value)}/{self.represent(self.get_value(total))} "
-                                  f"(+{value})")
+            if base > 0 and value == 0:
+                tp.append(f"{self.represent(persistent_value)}/{self.represent(self.get_value(total))}")
             else:
-                if short:
+                if short or value == 0:
                     tp.append(f"{self.represent(persistent_value)}/{self.represent(self.get_value(total))}")
                 else:
-                    tp.append(f"{self.represent(persistent_value)}/{self.represent(self.get_value(total))} (+{value})")
+                    tp.append(f"{self.represent(persistent_value)}/{self.represent(self.get_value(total))} "
+                              f"(+{value})")
         else:
-            if base > 0:
+            if base > 0 and value == 0:
+                tp.append(f"{self.represent(self.get_value(total))}")
+            else:
                 if short or value == 0:
                     tp.append(f"{self.represent(self.get_value(total))}")
                 else:
                     tp.append(f"{self.represent(self.get_value(total))} "
                               f"(+{value})")
-            else:
-                if short:
-                    tp.append(f"{self.represent(self.get_value(value))}")
-                else:
-                    tp.append(f"{self.represent(self.get_value(value))} (+{value})")
         return ''.join(tp)
 
 
@@ -74,31 +71,46 @@ class StatInstancePercent(StatInstance):
         return f"{value:.0%}"
 
 
+class StatInstancePercentWeighted(StatInstance):
+    def __init__(self, abv: str, name: str, icon: Emoji, cost: int, weight: int, stat_type: StatType = StatType.MAIN,
+                 multiplier: Any = 1,
+                 limit_per_item: int = 9999, is_persistent: bool = False):
+        super().__init__(abv, name, icon, cost, stat_type, multiplier, limit_per_item, is_persistent)
+        self._weight = weight
+
+    def get_value(self, value: int) -> Any:
+        return (value/(value + self._weight)) * self.multiplier
+
+    @staticmethod
+    def represent(value: Any) -> str:
+        return f"{value:.0%}"
+
+
 class HP(StatInstance):
     def __init__(self):
         super().__init__('HP', "Health Points", Emoji.HP, 10,
                          multiplier=2, is_persistent=True)
 
 
-class MP(StatInstance):
+class AP(StatInstance):
     def __init__(self):
-        super().__init__('MP', "Mana", Emoji.MP, 10,
+        super().__init__('AP', "Action Points", Emoji.AP, 10,
                          is_persistent=True)
 
 
 class STR(StatInstance):
     def __init__(self):
-        super().__init__('STR', "Attack strength", Emoji.STR, 8)
+        super().__init__('STR', "Attack strength", Emoji.STR, 20)
 
 
 class DEF(StatInstance):
     def __init__(self):
-        super().__init__('DEF', "Damage reduction", Emoji.DEF, 8)
+        super().__init__('DEF', "Damage reduction", Emoji.DEF, 10)
 
 
 class SPD(StatInstanceDecimals):
     def __init__(self):
-        super().__init__('SPD', "Attack speed", Emoji.SPD, 8,
+        super().__init__('SPD', "Attack speed", Emoji.SPD, 10,
                          multiplier=0.05)
 
     @staticmethod
@@ -106,34 +118,35 @@ class SPD(StatInstanceDecimals):
         return f"{value + 1}"
 
 
-class EVA(StatInstancePercent):
+class EVA(StatInstancePercentWeighted):
     def __init__(self):
-        super().__init__('EVA', "Chance of ignoring an attack", Emoji.EVA, 12,
-                         multiplier=0.02, limit_per_item=5)
+        super().__init__('EVA', "Chance of ignoring an attack", Emoji.EVA, 10, stat_type=StatType.CHANCE,
+                         weight=30)
 
 
-class CONT(StatInstancePercent):
+class CONT(StatInstancePercentWeighted):
     def __init__(self):
-        super().__init__('CONT', "Chance of attacking immediately when receiving damage", Emoji.CONT, 20,
-                         multiplier=0.02, limit_per_item=5)
+        super().__init__('CONT', "Chance of attacking immediately when receiving damage", Emoji.CONT, 10,
+                         stat_type=StatType.CHANCE,
+                         weight=30)
 
 
-class CRIT(StatInstancePercent):
+class CRIT(StatInstancePercentWeighted):
     def __init__(self):
-        super().__init__('CRIT', "Chance of attack with double damage", Emoji.CRIT, 15,
-                         multiplier=0.02, limit_per_item=5)
+        super().__init__('CRIT', "Chance of attack with double damage", Emoji.CRIT, 10, stat_type=StatType.CHANCE,
+                         weight=30)
 
 
-class VAMP(StatInstancePercent):
+class VAMP(StatInstancePercentWeighted):
     def __init__(self):
-        super().__init__('VAMP', "Chance of stealing health on attack", Emoji.VAMP, 25,
-                         multiplier=0.02, limit_per_item=5)
+        super().__init__('VAMP', "Chance of stealing health on attack", Emoji.VAMP, 10, stat_type=StatType.CHANCE,
+                         weight=30)
 
 
 class Stat(Enum):
     _ignore_ = ['_INFO']
     HP = HP()
-    MP = MP()
+    AP = AP()
     STR = STR()
     DEF = DEF()
     SPD = SPD()
@@ -156,6 +169,13 @@ class Stat(Enum):
     def get_abv(self) -> str:
         return self.value.abv
 
+    def get_type(self) -> StatType:
+        return self.value.type
+
+    @staticmethod
+    def get_type_list(st: StatType) -> list['Stat']:
+        return Stat._INFO['of_type'][st]
+
     def get_limit(self) -> int:
         return self.value.limit
 
@@ -164,7 +184,8 @@ class Stat(Enum):
 
 
 stat_dict = {
-    'from_abv': {stat.value.abv: stat for stat in Stat}
+    'from_abv': {stat.value.abv: stat for stat in Stat},
+    'of_type': {st: [stat for stat in Stat if stat.get_type() == st] for st in StatType}
 }
 
 Stat._INFO = stat_dict

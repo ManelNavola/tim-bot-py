@@ -8,9 +8,9 @@ from enums.location import Location
 from enums.item_rarity import ItemRarity
 from item_data import stat_utils
 from item_data.item_classes import ItemDescription, Item
-from item_data.stat import Stat
+from item_data.stat import Stat, StatType
 
-_ITEMS: dict[Location, dict[int, dict[ItemType, list[ItemDescription]]]] = {
+_ITEMS: dict[int, dict[Location, dict[ItemType, list[ItemDescription]]]] = {
     tier: {location: {itemType: [] for itemType in ItemType} for location in Location} for tier in range(5)
 }
 
@@ -26,39 +26,61 @@ def load():
             location: Location = Location.get_from_name(id_v['Location'])
             item_type: ItemType = ItemType.get_from_name(id_v['Type'])
             desc: ItemDescription = ItemDescription(int(id_k), id_v)
-            _ITEMS[location][tier][item_type].append(desc)
+            _ITEMS[tier][location][item_type].append(desc)
             _INDEX_TO_ITEM[int(id_k)] = desc
             item_count += 1
     print(f"Loaded {item_count} items")
 
 
 def get_stat_bonus(desc: ItemDescription, rarity: ItemRarity) -> dict[Stat, int]:
+    base_main: list[Stat] = [x for x in desc.base_stats.keys() if x.get_type() == StatType.MAIN]
+    chance_main: list[Stat] = [x for x in desc.base_stats.keys() if x.get_type() == StatType.CHANCE]
+
     sb: dict[Stat, int] = {}
     if rarity == ItemRarity.COMMON:  # =
         pass
 
     elif rarity == ItemRarity.UNCOMMON:  # +1
-        base_stat: Stat = random.choice(list(desc.base_stats.keys()))
-        sb[base_stat] = 1
+        if chance_main:
+            sb[random.choice(chance_main)] = 1
+        else:
+            sb[random.choice(Stat.get_type_list(StatType.CHANCE))] = 1
 
     elif rarity == ItemRarity.RARE:  # +2
-        for i in range(2):
-            base_stat: Stat = random.choice(list(desc.base_stats.keys()))
-            sb[base_stat] = sb.get(base_stat, 0) + 1
+        if chance_main:
+            sb[random.choice(chance_main)] = 1
+        else:
+            sb[random.choice(Stat.get_type_list(StatType.CHANCE))] = 1
+        if base_main:
+            sb[random.choice(base_main)] = 1
+        else:
+            if chance_main:
+                rc = random.choice(chance_main)
+                sb[rc] = sb.get(rc, 0) + 1
+            else:
+                rc = random.choice(Stat.get_type_list(StatType.CHANCE))
+                sb[rc] = sb.get(rc, 0) + 1
 
     elif rarity == ItemRarity.EPIC:  # +3
-        for i in range(2):
-            base_stat: Stat = random.choice(list(desc.base_stats.keys()))
-            sb[base_stat] = sb.get(base_stat, 0) + 1
-        random_stat: Stat = random.choice([x for x in Stat])
-        sb[random_stat] = sb.get(random_stat, 0) + 1
+        first_one = random.randint(1, 2)
+        if base_main:
+            sb[random.choice(base_main)] = first_one
+        else:
+            sb[random.choice(Stat.get_type_list(StatType.MAIN))] = first_one
+        if chance_main:
+            sb[random.choice(chance_main)] = 3 - first_one
+        else:
+            sb[random.choice(Stat.get_type_list(StatType.CHANCE))] = 3 - first_one
 
     elif rarity == ItemRarity.LEGENDARY:  # +4
-        for i in range(2):
-            base_stat: Stat = random.choice(list(desc.base_stats.keys()))
-            sb[base_stat] = sb.get(base_stat, 0) + 1
-        random_stat: Stat = random.choice([x for x in Stat])
-        sb[random_stat] = sb.get(random_stat, 0) + 2
+        if base_main:
+            sb[random.choice(base_main)] = 2
+        else:
+            sb[random.choice(Stat.get_type_list(StatType.MAIN))] = 2
+        if chance_main:
+            sb[random.choice(chance_main)] = 2
+        else:
+            sb[random.choice(Stat.get_type_list(StatType.CHANCE))] = 2
 
     return sb
 
@@ -66,47 +88,50 @@ def get_stat_bonus(desc: ItemDescription, rarity: ItemRarity) -> dict[Stat, int]
 class RandomItemBuilder:
     def __init__(self, tier: int):
         self.tier: int = tier
-        self.item_type: Optional[ItemType] = None
-        self.item_rarity: Optional[ItemRarity] = None
-        self.location: Optional[Location] = None
+        self.location: Location = Location.ANYWHERE
+        self.item_type: list[ItemType] = [x for x in ItemType]
+        self.item_type_weights: list[int] = [1 for _ in ItemType]
+        self.item_rarity: list[ItemRarity] = [x for x in ItemRarity]
+        self.item_rarity_weights: list[int] = [1 for _ in ItemRarity]
 
     def set_location(self, location: Location) -> 'RandomItemBuilder':
         self.location = location
         return self
 
     def set_type(self, item_type: ItemType) -> 'RandomItemBuilder':
-        self.item_type = item_type
+        self.item_type = [item_type]
+        self.item_type_weights = [1]
         return self
 
-    def choose_type(self, item_types: list[ItemType], weights: Optional[list[float]] = None)\
-            -> 'RandomItemBuilder':
+    def choose_type(self, item_types: list[ItemType], weights: Optional[list[int]]) -> 'RandomItemBuilder':
+        self.item_type = item_types
         if weights:
-            self.item_type = random.choices(item_types, weights=weights, k=1)[0]
+            assert len(weights) == len(item_types)
+            self.item_type_weights = weights
         else:
-            self.item_type = random.choice(item_types)
+            self.item_type_weights = [1] * len(item_types)
         return self
 
     def set_rarity(self, rarity: ItemRarity):
-        self.item_rarity = rarity
+        self.item_rarity = [rarity]
+        self.item_rarity_weights = [1]
         return self
 
-    def choose_rarity(self, item_types: list[ItemRarity], weights: Optional[list[float]] = None)\
+    def choose_rarity(self, item_rarities: list[ItemRarity], weights: Optional[list[float]] = None)\
             -> 'RandomItemBuilder':
+        self.item_rarity = item_rarities
         if weights:
-            self.item_rarity = random.choices(item_types, weights=weights, k=1)[0]
+            assert len(weights) == len(item_rarities)
+            self.item_rarity_weights = weights
         else:
-            self.item_rarity = random.choice(item_types)
+            self.item_rarity_weights = [1] * len(item_rarities)
         return self
 
     def build(self):
-        if self.location is None:
-            self.location = Location.ANYWHERE
-        if self.item_type is None:
-            self.item_type = random.choice([x for x in ItemType])
-        if self.item_rarity is None:
-            self.item_rarity = ItemRarity.get_random()
-        desc: ItemDescription = random.choice(_ITEMS[self.location][self.tier][self.item_type])
-        return Item(desc, self.item_rarity, get_stat_bonus(desc, self.item_rarity))
+        item_type: ItemType = random.choices(self.item_type, weights=self.item_type_weights, k=1)[0]
+        item_rarity: ItemRarity = random.choices(self.item_rarity, weights=self.item_rarity_weights, k=1)[0]
+        desc: ItemDescription = random.choice(_ITEMS[self.tier][self.location][item_type])
+        return Item(desc, item_rarity, get_stat_bonus(desc, item_rarity))
 
 
 def create_guild_item(db: PostgreSQL, guild_id: int, item: Item) -> None:

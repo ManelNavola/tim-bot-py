@@ -2,15 +2,14 @@ from abc import ABCMeta, abstractmethod
 from typing import Optional, Any
 
 from adventure_classes.generic.stat_modifier import StatModifier
-from item_data.abilities import AbilityInstance
-from enums.item_type import ItemType
+# from enums.item_type import ItemType
 from item_data.stat import Stat
 
 
 class Entity(metaclass=ABCMeta):
     def __init__(self, stat_dict: dict[Stat, int], modifiers: list[StatModifier] = None):
         self._stat_dict: dict[Stat, int] = stat_dict
-        self._available_abilities: list[tuple[AbilityInstance, Optional[ItemType]]] = []
+        # self._available_abilities: list[tuple[AbilityInstance, Optional[ItemType]]] = []
         self._persistent_stats: dict[Stat, int] = {}
         if modifiers is None:
             modifiers = []
@@ -31,8 +30,8 @@ class Entity(metaclass=ABCMeta):
     def clear_modifiers(self):
         self._entity_modifiers.clear()
 
-    def get_abilities(self) -> list[tuple[AbilityInstance, Optional[ItemType]]]:
-        return self._available_abilities
+    # def get_abilities(self) -> list[tuple[AbilityInstance, Optional[ItemType]]]:
+    #     return self._available_abilities
 
     @abstractmethod
     def get_name(self) -> str:

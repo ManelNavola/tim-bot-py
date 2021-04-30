@@ -2,14 +2,19 @@ from entities.entity import Entity
 from helpers.dictref import DictRef
 from item_data.item_classes import Item
 from item_data.stat import Stat
+from enums.user_class import UserClass
 
 
 class UserEntity(Entity):
-    def __init__(self, name_ref: DictRef[str], base_stats: dict[Stat, int]):
+    def __init__(self, name_ref: DictRef[str]):
         super().__init__({})
-        self._base_dict: dict[Stat, int] = base_stats
+        self._base_dict: dict[Stat, int] = {}
         self._name_ref: DictRef[str] = name_ref
         self._power: int = 0
+
+    def set_class(self, user_class: UserClass):
+        self._base_dict = user_class.get_stats()
+        self.reset()
 
     def reset(self):
         self.clear_modifiers()
@@ -32,7 +37,7 @@ class UserEntity(Entity):
     def update_equipment(self, item_list: list[Item]):
         calc_power: float = 0
         self._stat_dict.clear()
-        self._available_abilities.clear()
+        # self._available_abilities.clear()
         for item in item_list:
             for stat, value in item.get_stats().items():
                 self._stat_dict[stat] = self._stat_dict.get(stat, 0) + value
@@ -47,7 +52,7 @@ class UserEntity(Entity):
         dc: list[str] = []
 
         for stat in Stat:
-            if (stat in self._stat_dict) or (stat in self._base_dict):
+            if (stat in self._stat_dict) or (stat in self._base_dict) or (stat.is_persistent()):
                 dr = self._persistent_stats.get(stat)
                 if dr is None:
                     dc.append(stat.print(self._stat_dict.get(stat, 0), self._base_dict.get(stat, 0)))

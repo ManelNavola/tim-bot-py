@@ -47,7 +47,7 @@ def get_where_info(match_columns: dict, as_name: str = ''):
 class PostgreSQL:
     def __init__(self, *args, **kwargs):
         self._connection = psycopg2.connect(*args, **kwargs, cursor_factory=RealDictCursor)
-        self._cursor = self._connection.cursor()
+        self._cursor: RealDictCursor = self._connection.cursor()
         self._pending_commit = False
 
     def get_row_data(self, table_name: str, match_columns: SQLDict, columns: SQLColumns = None, limit: int = 1) \
@@ -96,6 +96,11 @@ class PostgreSQL:
 
     def get_cursor(self) -> RealDictCursor:
         return self._cursor
+
+    def reset_cursor(self):
+        if not self._cursor.closed:
+            self._cursor.close()
+        self._cursor = self._connection.cursor()
 
     def execute(self, query: str) -> None:
         self._cursor.execute(query)

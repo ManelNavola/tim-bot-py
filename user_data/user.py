@@ -1,6 +1,8 @@
 import typing
 from typing import Optional, Any
 
+from discord import Member
+
 import utils
 from db.database import PostgreSQL
 from helpers.dictref import DictRef
@@ -10,10 +12,10 @@ from entities.user_entity import UserEntity
 from enums.emoji import Emoji
 from item_data import item_utils
 from item_data.item_classes import Item
-from item_data.stat import StatInstance, Stat
+from item_data.stat import StatInstance
 from user_data import upgrades
 from user_data.inventory import Inventory
-from user_data.user_classes import UserClass
+from enums.user_class import UserClass
 from utils import TimeMetric, TimeSlot
 
 if typing.TYPE_CHECKING:
@@ -24,6 +26,8 @@ class User(Row):
     def __init__(self, db: PostgreSQL, user_id: int):
         super().__init__(db, 'users', dict(id=user_id))
         self.id = user_id
+        self.member = None
+        self._tutorial_stage: DictRef[int] = DictRef(self._data, 'tutorial')
         self.upgrades_row = Row(db, 'user_upgrades', dict(user_id=user_id))
         self.upgrades = {
             'bank': upgrades.UpgradeLink(upgrades.BANK_LIMIT,
@@ -48,10 +52,15 @@ class User(Row):
         self._adventure: Optional[Adventure] = None
 
         # User entity
-        self._persistent_stats: dict[StatInstance, int] = {
-            stat: value for stat, value in UserClass.WARRIOR.items() if stat in [Stat.HP, Stat.MP]
-        }
-        self.user_entity: UserEntity = UserEntity(DictRef(self._data, 'last_name'), UserClass.WARRIOR)
+        self.user_entity: UserEntity = UserEntity(DictRef(self._data, 'last_name'))
+        self._user_class: DictRef[int] = DictRef(self._data, 'class')
+        self._persistent_stats: dict[StatInstance, int] = {}
+        if self._user_class.get() != -1:
+            uc: UserClass = UserClass.get_from_id(self._user_class.get())
+            self.user_entity.set_class(uc)
+            self._persistent_stats: dict[StatInstance, int] = {
+                stat: value for stat, value in uc.get_stats().items() if stat.is_persistent()
+            }
 
         # Fill inventory
         slots = self.upgrades['inventory'].get_value()
@@ -69,16 +78,19 @@ class User(Row):
             # Too many item_data... log
             print(f"{user_id} exceeded {slots} items: {len(item_slots)}!")
         self.inventory: Inventory = Inventory(self._db, DictRef(self._data, 'equipment'), slots, inv_items,
-                                              self.user_entity)
+                                              self.user_entity, self.id)
+        self._tutorial_stage.set(0)  # HACK
 
     def load_defaults(self):
         return {
             'bank_time': utils.now(),  # bigint
         }
 
-    def update(self, name: str):
+    def update(self, name: str, member: Optional[Member] = None):
         if self._data['last_name'] != name:
             self._data['last_name'] = name
+        if member:
+            self.member = member
 
     def get_name(self) -> str:
         return self._data['last_name']
@@ -132,6 +144,12 @@ class User(Row):
             return True
         return False
 
+    def get_tutorial_stage(self) -> int:
+        return self._tutorial_stage.get()
+
+    def set_tutorial_stage(self, stage: int) -> None:
+        self._tutorial_stage.set(stage)
+
     @staticmethod
     def get_token_limit() -> int:
         return 5
@@ -172,6 +190,10 @@ class User(Row):
         self._bank.set(bank - need)
         self.add_money(need)
         return need
+
+    def set_class(self, uc: UserClass):
+        self._user_class.set(uc.get_id())
+        self.user_entity.set_class(uc)
 
     @staticmethod
     def can_adventure():
@@ -239,9 +261,6 @@ class User(Row):
 
     def _update_inventory_limit(self) -> None:
         self.inventory.set_limit(self.get_inventory_limit())
-        if len(self.inventory.items) < self.get_inventory_limit():
-            for i in range(self.get_inventory_limit() - len(self.inventory.items)):
-                self.inventory.items.append(None)
 
     def save(self) -> None:
         super().save()

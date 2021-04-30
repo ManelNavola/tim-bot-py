@@ -5,7 +5,6 @@ import utils
 from adventure_classes.generic.chapter import Chapter
 from enums.emoji import Emoji
 from guild_data.shop import Shop
-from item_data import item_utils
 from item_data.item_classes import Item
 from user_data.user import User
 
@@ -39,11 +38,8 @@ class ItemRewardChapter(RewardChapter):
         if len(self.get_adventure().get_users()) == 1:
             user_name = 'You'
 
-        slot = user.inventory.get_empty_slot()
-        if slot is not None:
-            item = item_utils.create_user_item(user.get_db(), user.id, self.item, slot)
-            user.inventory.add_item(item)
-            self.add_log(f'{user_name} found {item.print()}!')
+        if user.inventory.create_item(self.item) is not None:
+            self.add_log(f'{user_name} found {self.item.print()}!')
         else:
             money = Shop.get_sell_price(self.item)
             user.add_money(money)

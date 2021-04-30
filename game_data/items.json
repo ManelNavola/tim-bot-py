@@ -113,9 +113,9 @@
     "Tier": 0,
     "Type": "Helmet",
     "Stats": {
-      "DEF": 2,
       "HP": 2,
-      "SPD": 1
+      "SPD": 1,
+      "DEF": 1
     }
   },
   "12": {
@@ -124,10 +124,10 @@
     "Tier": 0,
     "Type": "Helmet",
     "Stats": {
-      "SPD": 2,
-      "EVA": 2,
       "DEF": 1,
-      "HP": 1
+      "HP": 1,
+      "EVA": 1,
+      "SPD": 1
     }
   },
   "13": {
@@ -136,8 +136,8 @@
     "Tier": 0,
     "Type": "Chest",
     "Stats": {
-      "EVA": 3,
-      "DEF": 3
+      "EVA": 2,
+      "DEF": 2
     }
   },
   "14": {
@@ -146,8 +146,8 @@
     "Tier": 0,
     "Type": "Boot",
     "Stats": {
-      "SPD": 3,
-      "EVA": 3
+      "SPD": 2,
+      "EVA": 2
     }
   }
 }

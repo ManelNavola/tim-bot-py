@@ -310,7 +310,7 @@ class EasyJSONStatsWeights(EasyJSONStats):
         for stat in Stat:
             value = EasyJSON.get_value(self, data).get(stat.get_abv())
             if value:
-                tr.append((f"{stat.value.represent(stat.get_value(value))} {stat.get_abv()}", value))
+                tr.append((f"{value} {stat.get_abv()}", value))
         tr.sort(key=lambda x: -x[1])
         return ', '.join([x[0] for x in tr])
 
@@ -641,7 +641,7 @@ class EasyGridTree(EasyGrid):
             for i in range(len(self.structure)):
                 if self.filtering_by[i]:
                     if self.structure[i].name in data[k]:
-                        if self.filtering_by[i] not in data[k][self.structure[i].name].lower():
+                        if self.filtering_by[i] not in str(data[k][self.structure[i].name]).lower():
                             correct = False
                             break
             if correct:

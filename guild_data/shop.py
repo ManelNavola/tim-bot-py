@@ -25,9 +25,13 @@ class ItemPurchase:
 
 
 class Shop:
-    SHOP_DURATION = TimeSlot(TimeMetric.HOUR, 1)
-    ITEM_AMOUNT = 4
-    SELL_MULTIPLIER = 0.5
+    SHOP_DURATION: TimeSlot = TimeSlot(TimeMetric.HOUR, 1)
+    ITEM_AMOUNT: int = 4
+    SELL_MULTIPLIER: float = 0.4
+    ITEM_BUILDER: RandomItemBuilder = RandomItemBuilder(0).set_location(Location.ANYWHERE).choose_rarity(
+        [ItemRarity.COMMON, ItemRarity.UNCOMMON, ItemRarity.RARE, ItemRarity.EPIC],
+        [ItemRarity.UNCOMMON.get_chance(), ItemRarity.RARE.get_chance(),
+         ItemRarity.EPIC.get_chance(), ItemRarity.LEGENDARY.get_chance()])
 
     def __init__(self, db: PostgreSQL, shop_time: DictRef[int], guild_id: int):
         self._db = db
@@ -90,10 +94,10 @@ class Shop:
             return ip
 
         item = self._shop_items[item_index]
-        if user.inventory.get_free_count() > 0:
+        slot = user.inventory.create_item(item)
+        if slot is not None:
             if user.remove_money(item.get_price()):
                 was_there_before = (user.inventory.get_first(item.get_description().type) is not None)
-                slot = user.inventory.add_item(item)
                 transfer_shop(self._db, self._guild_id, user.id, slot, item)
                 self._shop_items[item_index] = None
                 item.durability = 100
@@ -131,18 +135,13 @@ class Shop:
         restocked = False
         for i in range(0, Shop.ITEM_AMOUNT):
             if self._shop_items[i] is None:
-                rarities: list[ItemRarity] = [ItemRarity.UNCOMMON, ItemRarity.RARE, ItemRarity.EPIC]
-                chances: list[float] = [x.get_chance() for x in rarities]
-                rarities = [ItemRarity.COMMON] + rarities
-                chances = [ItemRarity.COMMON.get_chance() + ItemRarity.LEGENDARY.get_chance()] + chances
-                item: Item = RandomItemBuilder(0).set_location(Location.ANYWHERE)\
-                    .choose_rarity(rarities, chances).build()
+                item: Item = Shop.ITEM_BUILDER.build()
                 create_guild_item(self._db, self._guild_id, item)
                 if random.random() < 0.2:
                     if random.random() < 0.5:
-                        item.price_modifier = 0.75
+                        item.price_modifier = 0.8
                     else:
-                        item.price_modifier = 1.25
+                        item.price_modifier = 1.2
                 self._last_valid_checks[i] = False
                 self._shop_items[i] = item
                 restocked = True

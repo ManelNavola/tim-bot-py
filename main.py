@@ -48,7 +48,7 @@ async def on_ready():
 
 # Reaction catching
 @bot.event
-async def on_reaction_add(reaction: discord.Reaction, discord_user: discord.User):
+async def on_reaction_add(reaction: discord.Reaction, discord_user: discord.Member):
     user: Optional[User] = storage.get_user(db, discord_user.id, create=False)
     if user is not None:
         await messages.on_reaction_add(user, discord_user, reaction.message.id, reaction)
@@ -67,13 +67,15 @@ cmd_handler.register_command(simple.check,
                                      option_type=6,
                                      required=True
                                  )
-                             ], guild_ids=registered_guild_ids)
+                             ], guild_only=True,
+                             guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(simple.inv,
                              name="inv", description="Check your inventory",
                              guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(simple.post_inv, name="post_inv", description="Post your inventory",
+                             guild_only=True,
                              guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(simple.transfer,
@@ -82,11 +84,13 @@ cmd_handler.register_command(simple.transfer,
 
 cmd_handler.register_command(simple.leaderboard,
                              name="leaderboard", description="Check out the top players",
+                             guild_only=True,
                              guild_ids=registered_guild_ids)
 
 # Betting
 cmd_handler.register_command(bet.info,
                              base="bet", name="info", description="Get information about betting",
+                             guild_only=True,
                              guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(bet.add,
@@ -98,10 +102,12 @@ cmd_handler.register_command(bet.add,
                                      option_type=4,
                                      required=True
                                  )
-                             ], guild_ids=registered_guild_ids)
+                             ], guild_only=True,
+                             guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(bet.check,
                              base="bet", name="check", description="Check the current bet",
+                             guild_only=True,
                              guild_ids=registered_guild_ids)
 
 # Upgrades
@@ -132,6 +138,7 @@ cmd_handler.register_command(upgrade.upgrade, 'inventory',
 # Crate
 cmd_handler.register_command(crate.check,
                              base="crate", name="check", description="Check money in the crate",
+                             guild_only=True,
                              guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(crate.place,
@@ -143,14 +150,17 @@ cmd_handler.register_command(crate.place,
                                      option_type=4,
                                      required=True
                                  )
-                             ], guild_ids=registered_guild_ids)
+                             ], guild_only=True,
+                             guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(crate.take,
                              base="crate", name="take", description="Take money from the crate",
+                             guild_only=True,
                              guild_ids=registered_guild_ids)
 
 # Shop
 cmd_handler.register_command(shop.check, base="shop", name="check", description="Check the guild shop",
+                             guild_only=True,
                              guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(shop.buy,
@@ -162,7 +172,7 @@ cmd_handler.register_command(shop.buy,
                                      option_type=4,
                                      required=True
                                  )
-                             ],
+                             ], guild_only=True,
                              guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(shop.sell,
@@ -260,6 +270,18 @@ if utils.is_test():
 
     cmd_handler.register_command(test.test,
                                  name="test", description="Quickly test anything!",
+                                 guild_ids=registered_guild_ids)
+
+    cmd_handler.register_command(test.gimme_all,
+                                 name="gimme_all", description="gimme_all!",
+                                 options=[
+                                     create_option(
+                                         name=x,
+                                         description=x,
+                                         option_type=3,
+                                         required=False
+                                     ) for x in ['tier', 'location', 'rarity']
+                                 ],
                                  guild_ids=registered_guild_ids)
 
 # Run bot based on test

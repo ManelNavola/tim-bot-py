@@ -26,13 +26,13 @@ class MessagePlus:
         self.last_interaction = utils.now()
         await self.message.edit(content=msg)
 
-    async def on_reaction(self, user: 'User', member: discord.User, input_reaction: Reaction) -> None:
+    async def on_reaction(self, user: 'User', member: discord.Member, input_reaction: Reaction) -> None:
         if user.id in self.react_to:
             self.last_interaction = utils.now()
             for reaction, hook in self._reaction_hooks.items():
                 if reaction.compare(input_reaction.emoji):
-                    li = [user, input_reaction.emoji]
-                    user.update(member.display_name)
+                    li = [user, reaction]
+                    user.update(member.display_name, member)
                     await hook(*[li[i] for i in range(len(inspect.getfullargspec(hook).args) - 1)])
                     await input_reaction.remove(member)
                     user.save()  # Save user data (if any changed)
@@ -42,6 +42,9 @@ class MessagePlus:
         self.last_interaction = utils.now()
         self._reaction_hooks[reaction] = hook
         await self.message.add_reaction(reaction.first())
+
+    async def remove_reaction(self, user: 'User', reaction: Emoji):
+        await self.message.remove_reaction(reaction.first(), user.member)
 
     async def remove_reactions(self, reaction: Emoji) -> None:
         self.last_interaction = utils.now()
@@ -79,7 +82,7 @@ def unregister(mp: MessagePlus):
     del _MESSAGE_ID_TO_MESSAGE_PLUS[mp.message.id]
 
 
-async def on_reaction_add(user, member: discord.User, message_id: int, reaction: Reaction) -> None:
+async def on_reaction_add(user, member: discord.Member, message_id: int, reaction: Reaction) -> None:
     mp: Optional[MessagePlus] = _MESSAGE_ID_TO_MESSAGE_PLUS.get(message_id)
     if mp is not None:
         await mp.on_reaction(user, member, reaction)
