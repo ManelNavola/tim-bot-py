@@ -24,9 +24,16 @@ class Guild(Row):
         self._box: Incremental = Incremental(DictRef(self._data, 'table_money'),
                                              DictRef(self._data, 'table_money_time'),
                                              Guild.TABLE_INCREMENT)
+        self._lang: DictRef[str] = DictRef(self._data, 'lang')
         self.bet: Bet = Bet(db, DictRef(self._data, 'ongoing_bet'))
         self.registered_user_ids: set[int] = set(self._data['user_ids'])
         self.shop: Shop = Shop(db, DictRef(self._data, 'shop_time'), self.id)
+
+    def get_lang(self) -> str:
+        return self._lang.get()
+
+    def set_lang(self, lang: str) -> None:
+        self._lang.set(lang)
 
     def register_user_id(self, user_id: int) -> None:
         if user_id not in self.registered_user_ids:

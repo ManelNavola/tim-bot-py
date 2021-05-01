@@ -10,11 +10,15 @@ from user_data.user import User
 
 
 class RewardChapter(Chapter):
-    def __init__(self):
+    def __init__(self, override_str: str = ''):
         super().__init__(Emoji.BOX)
+        self._override_str: str = override_str
 
     async def init(self) -> None:
-        await self.send_log("You find a box beneath your feet")
+        if self._override_str:
+            await self.send_log(self._override_str)
+        else:
+            await self.send_log("You find a box beneath your feet")
         await self.get_adventure().add_reaction(Emoji.BOX, self.reward)
 
     @abstractmethod
@@ -39,12 +43,11 @@ class ItemRewardChapter(RewardChapter):
             user_name = 'You'
 
         if user.inventory.create_item(self.item) is not None:
-            self.add_log(f'{user_name} found {self.item.print()}!')
+            await self.send_log(f'{user_name} found {self.item.print()}!')
         else:
             money = Shop.get_sell_price(self.item)
             user.add_money(money)
-            self.add_log(f'Inventory full! {user_name} sold {self.item.print()} for {utils.print_money(money)}!')
-        await self.pop_log()
+            await self.send_log(f'Inventory full! {user_name} sold {self.item.print()} for {utils.print_money(money)}!')
         await self.end()
 
 

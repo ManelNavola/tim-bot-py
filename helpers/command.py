@@ -29,7 +29,8 @@ class CommandHandler:
                          guild_ids: Optional[list[int]] = None,
                          options: Optional[list[dict]] = None,
                          ignore_battle: bool = False,
-                         guild_only: bool = False):
+                         guild_only: bool = False,
+                         ignore_all: bool = False):
         if options is None:
             options = []
         if guild_only:
@@ -37,14 +38,16 @@ class CommandHandler:
         if base:
             @self.slash.subcommand(base=base, name=name, description=description, options=options, guild_ids=guild_ids)
             async def async_call(ctx: SlashContext, **kwargs):
-                kwargs['ignore_battle'] = ignore_battle
+                kwargs['ignore_battle'] = ignore_battle or ignore_all
                 kwargs['guild_only'] = guild_only
+                kwargs['ignore_all'] = ignore_all
                 await self.call(ctx, cmd_calls, *args, **kwargs)
         else:
             @self.slash.slash(name=name, description=description, options=options, guild_ids=guild_ids)
             async def async_call(ctx: SlashContext, **kwargs):
-                kwargs['ignore_battle'] = ignore_battle
+                kwargs['ignore_battle'] = ignore_battle or ignore_all
                 kwargs['guild_only'] = guild_only
+                kwargs['ignore_all'] = ignore_all
                 await self.call(ctx, cmd_calls, **kwargs)
 
     async def call(self, ctx: SlashContext, func, *args, **kwargs):
@@ -53,7 +56,7 @@ class CommandHandler:
         # PREVIOUS UPDATES
         if cmd.guild:
             cmd.guild.register_user_id(cmd.user.id)
-        cmd.user.update(ctx.author.display_name)
+        cmd.user.update(ctx.author.display_name, ctx.author)
 
         # CALL COMMAND
         if (cmd.user.get_adventure() is not None) and (not kwargs['ignore_battle']):
@@ -63,11 +66,13 @@ class CommandHandler:
             await cmd.error(tr(cmd.lang, 'COMMAND.GUILD_ONLY'))
             return
 
+        ignore_all: bool = kwargs['ignore_all']
         del kwargs['ignore_battle']
+        del kwargs['ignore_all']
         del kwargs['guild_only']
 
         tutorial_stage: int = cmd.user.get_tutorial_stage()
-        if tutorial_stage != -1 and (cmd.user.get_adventure() is None):
+        if tutorial_stage != -1 and (cmd.user.get_adventure() is None) and (not ignore_all):
             await tutorial.play_tutorial(cmd, tutorial_stage)
         else:
             try:
@@ -95,12 +100,18 @@ class Command:
         self.lang: str = 'en'
         if ctx.guild_id is not None:
             self.guild = storage.get_guild(db, ctx.guild_id)
+            self.lang = self.guild.get_lang()
+        else:
+            self.lang = self.user.get_lang()
 
     async def send(self, msg: str):
         return await self.ctx.send(msg)
 
     async def send_hidden(self, msg: str):
-        await self.ctx.send(msg, hidden=True)
+        if self.guild:
+            await self.ctx.send(msg, hidden=True)
+        else:
+            await self.send(msg)
 
     async def error(self, msg: str, hidden: bool = True):
         await self.ctx.send(f"{Emoji.ERROR} {msg}", hidden=hidden)

@@ -1,6 +1,7 @@
 from enum import Enum
 
 from enums.emoji import Emoji
+from helpers.translate import tr
 from item_data.stat import Stat
 
 
@@ -15,14 +16,14 @@ class UserClassInstance:
 # UserClass total should be 10
 class UserClass(Enum):
     _ignore_ = ['_INFO']
-    WARRIOR = UserClassInstance(0, 'Warrior', Emoji.WARRIOR, {
+    WARRIOR = UserClassInstance(0, 'WARRIOR', Emoji.WARRIOR, {
         Stat.HP: 4,
         Stat.AP: 5,
 
         Stat.STR: 3,
         Stat.DEF: 3
     })
-    ROGUE = UserClassInstance(1, 'Rogue', Emoji.ROGUE, {
+    ROGUE = UserClassInstance(1, 'ROGUE', Emoji.ROGUE, {
         Stat.HP: 4,
         Stat.AP: 5,
 
@@ -30,7 +31,7 @@ class UserClass(Enum):
 
         Stat.SPD: 3,
     })
-    MAGE = UserClassInstance(2, 'Mage', Emoji.MAGE, {
+    MAGE = UserClassInstance(2, 'MAGE', Emoji.MAGE, {
         Stat.HP: 5,
         Stat.AP: 8,
 
@@ -46,8 +47,8 @@ class UserClass(Enum):
     def get_icon(self) -> Emoji:
         return self.value.emoji
 
-    def get_name(self) -> str:
-        return self.value.name
+    def get_name(self, lang: str) -> str:
+        return tr(lang, f"CLASS.{self.value.name}")
 
     def get_stats(self) -> dict[Stat, int]:
         return self.value.stats

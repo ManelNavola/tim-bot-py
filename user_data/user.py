@@ -50,6 +50,7 @@ class User(Row):
         self._tokens = Incremental(DictRef(self._data, 'tokens'), DictRef(self._data, 'tokens_time'),
                                    TimeSlot(TimeMetric.DAY, 12))
         self._adventure: Optional[Adventure] = None
+        self._lang: DictRef[str] = DictRef(self._data, 'lang')
 
         # User entity
         self.user_entity: UserEntity = UserEntity(DictRef(self._data, 'last_name'))
@@ -80,6 +81,12 @@ class User(Row):
         self.inventory: Inventory = Inventory(self._db, DictRef(self._data, 'equipment'), slots, inv_items,
                                               self.user_entity, self.id)
         self._tutorial_stage.set(0)  # HACK
+
+    def get_lang(self) -> str:
+        return self._lang.get()
+
+    def set_lang(self, lang: str) -> None:
+        self._lang.set(lang)
 
     def load_defaults(self):
         return {
@@ -208,8 +215,6 @@ class User(Row):
             if self._adventure.has_finished():
                 self._adventure = None
                 return None
-            else:
-                return self._adventure
         return self._adventure
 
     def end_adventure(self):

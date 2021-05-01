@@ -8,11 +8,12 @@ from discord_slash import SlashCommand
 from discord_slash.utils.manage_commands import create_option, create_choice
 
 import utils
-from commands import simple, crate, bet, upgrade, shop, test, adventure
+from commands import simple, crate, bet, upgrade, shop, test, adventure, setup
 from game_data import data_loader
-from helpers import storage, messages
+from helpers import storage, messages, translate
 from db import database
 from helpers.command import CommandHandler
+from helpers.translate import tr
 from user_data.user import User
 
 # Load data
@@ -254,6 +255,27 @@ cmd_handler.register_command(adventure.start_adventure,
                                      ]
                                  )
                              ],
+                             guild_ids=registered_guild_ids)
+
+
+# Administration
+cmd_handler.register_command(setup.language,
+                             base="setup",
+                             name="language", description="Change the bot's language",
+                             options=[
+                                 create_option(
+                                     name="language",
+                                     description="Language to set the bot to",
+                                     option_type=3,
+                                     required=True,
+                                     choices=[
+                                         create_choice(
+                                             name=f"{tr(x, 'LANGUAGE')}",
+                                             value=f"{x}"
+                                         ) for x in translate.get_available()
+                                     ]
+                                 )
+                             ], ignore_all=True,
                              guild_ids=registered_guild_ids)
 
 # Register test command

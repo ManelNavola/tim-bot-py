@@ -15,6 +15,9 @@ class Chapter(ABC):
         self.hidden: bool = False
         self._cleared: bool = True
 
+    def get_lang(self) -> str:
+        return self._adventure.get_lang()
+
     def get_adventure(self) -> Adventure:
         return self._adventure
 
@@ -36,21 +39,24 @@ class Chapter(ABC):
     def _get_log(self) -> list[str]:
         return self._log[len(self._log) - 1]
 
-    def start_log(self, msg: str = '') -> None:
-        ta = []
-        if msg:
-            ta.append(msg)
-        self._log.append(ta)
+    def start_log(self) -> None:
+        self._log.append([])
 
     def clear_log(self):
         self._log.clear()
         self._cleared = True
 
     def add_log(self, msg: str) -> None:
+        if not msg:
+            return
+        if not self._log:
+            self.start_log()
         self._get_log().append(msg)
 
     async def send_log(self, msg: str = '') -> None:
         if msg:
+            if not self._log:
+                self.start_log()
             self.add_log(msg)
         popped_log: str = '\n'.join(self._log.pop(len(self._log) - 1))
         if self._log:

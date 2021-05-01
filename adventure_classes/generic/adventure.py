@@ -21,7 +21,7 @@ if typing.TYPE_CHECKING:
 class Adventure:
     MIN_HEALTH: int = 10
 
-    def __init__(self, name: str, icon: Emoji, tokens: int = 1):
+    def __init__(self, name: str, icon: Emoji, tokens: int = 1, override_str: Optional[str] = None):
         self._lang: str = ''
         self._name: str = name
         self._icon: Emoji = icon
@@ -29,6 +29,7 @@ class Adventure:
         self._started_on: int = -1
         self._message: Optional[MessagePlus] = None
         self._chapters: list['Chapter'] = []
+        self._override_str: Optional[str] = override_str
         self.saved_data: dict = {}
         self._current_chapter: int = 0
         self._tokens: int = tokens
@@ -57,19 +58,24 @@ class Adventure:
 
         if not have_tokens:
             if len(users) == 1:
-                await cmd.error(tr(self._lang, "ADVENTURE.NO_TOKENS", pronoun=tr(self._lang, "PRONOUN.SECOND"),
+                await cmd.error(tr(self._lang, "ADVENTURE.NO_TOKENS_SINGLE",
                                    tokens=self._tokens, EMOJI_TOKEN=Emoji.TOKEN))
             else:
-                await cmd.error(tr(self._lang, "ADVENTURE.NO_TOKENS", pronoun=', '.join([x.get_name() for x in users]),
-                                   tokens=self._tokens, EMOJI_TOKEN=Emoji.TOKEN))
+                await cmd.error(tr(self._lang, "ADVENTURE.NO_TOKENS_MULTIPLE",
+                                   names=', '.join([x.get_name() for x in users]), tokens=self._tokens,
+                                   EMOJI_TOKEN=Emoji.TOKEN))
             return
 
         self._users = {user: UserAdventureData(user) for user in users}
         for user in users:
             user.remove_tokens(self._tokens)
             user.start_adventure(self)
-        message: Message = await cmd.send(tr(self._lang, "ADVENTURE.START", players=self.get_user_names(),
-                                             name=self._name) + "\n" + self.print_progress(None))
+        message: Message
+        if self._override_str is not None:
+            message = await cmd.send(self._override_str.format(self.get_user_names()) + "\n" + self.print_progress(None))
+        else:
+            message = await cmd.send(tr(self._lang, "ADVENTURE.START", players=self.get_user_names(),
+                                        name=self._name) + "\n" + self.print_progress(None))
         self._message = messages.register_message_reactions(message, [user.id for user in self._users])
         await asyncio.sleep(2)
 

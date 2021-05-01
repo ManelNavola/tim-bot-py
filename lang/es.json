@@ -1,0 +1,26 @@
+{
+  "LANGUAGE": "Español (beta)",
+
+  "SETUP.LANG": "Has cambiado el idioma a {lang}",
+  "SETUP.ADMIN": "Solamente los admins pueden ejecutar ese comando!",
+
+  "COMMAND.IN_ADVENTURE": "Este comando no se puede usar durante una aventura!",
+  "COMMAND.GUILD_ONLY": "Este comando solo funciona en una guild!",
+
+  "CLASS.WARRIOR": "Guerrero",
+  "CLASS.ROGUE": "Pícaro",
+  "CLASS.MAGE": "Mago",
+
+  "ADVENTURE.NO_TOKENS_SINGLE": "No tienes suficientes tokens! (Necesitas: {tokens} {EMOJI_TOKEN})",
+  "ADVENTURE.NO_TOKENS_MULTIPLE": "{names} no tienen suficientes tokens! (Necesitan: {tokens} {EMOJI_TOKEN})",
+  "ADVENTURE.START": "{players} ha empezado {name}!",
+  "ADVENTURE.PROGRESS": "{icon} Progreso: {progress}",
+
+  "TUTORIAL.WELCOME": "{name}, bienvenido a {bot_name}!",
+  "TUTORIAL.WAKE": "Despiertas en una barca...",
+  "TUTORIAL.REMEMBER": "Tu mente está en blanco, pero recuerdas que eras...",
+  "TUTORIAL.SEAGULL": "Tal como te acercas a la isla, ves algo descender desde el cielo...",
+  "TUTORIAL.CONGRATULATIONS": "Enhorabuena {name} por completar el tutorial!",
+  "TUTORIAL.TOKENS": "Aquí tienes {tokens} {EMOJI_TOKEN} tokens para empezar, los puedes usar para hacer aventuras",
+  "TUTORIAL.REFERENCE": "La mayoría de las acciones del juego son fáciles de entender: prueba {command} si quieres obtener un breve resumen acerca de comandos útiles!"
+}

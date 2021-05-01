@@ -329,6 +329,7 @@ class BattleChapter(Chapter):
         else:
             self._saved_last_message = ''
 
+        self._finished = True
         await self._print_current()
         await self.append(f"**{self._current_team.name} won the battle!**")
         await self.end()

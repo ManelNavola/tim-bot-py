@@ -13,22 +13,20 @@ if typing.TYPE_CHECKING:
 
 
 class MessagePlus:
-    FINISH_SECONDS: int = utils.TimeSlot(utils.TimeMetric.MINUTE, 30).seconds()
+    FINISH_SECONDS: int = utils.TimeSlot(utils.TimeMetric.MINUTE, 14).seconds()
 
     def __init__(self, message: Message, react_to: Optional[list[int]]):
         self.message: Message = message
         self.react_to: Optional[list[int]] = react_to
         self._reaction_hooks: dict[Emoji, Callable] = {}
-        self.last_interaction: int = utils.now()
+        self._first_interaction: int = utils.now()
         self._finished: bool = False
 
     async def edit(self, msg: str):
-        self.last_interaction = utils.now()
         await self.message.edit(content=msg)
 
     async def on_reaction(self, user: 'User', member: discord.Member, input_reaction: Reaction) -> None:
         if user.id in self.react_to:
-            self.last_interaction = utils.now()
             for reaction, hook in self._reaction_hooks.items():
                 if reaction.compare(input_reaction.emoji):
                     li = [user, reaction]
@@ -39,7 +37,6 @@ class MessagePlus:
                     return
 
     async def add_reaction(self, reaction: Emoji, hook: Callable) -> None:
-        self.last_interaction = utils.now()
         self._reaction_hooks[reaction] = hook
         await self.message.add_reaction(reaction.first())
 
@@ -47,17 +44,15 @@ class MessagePlus:
         await self.message.remove_reaction(reaction.first(), user.member)
 
     async def remove_reactions(self, reaction: Emoji) -> None:
-        self.last_interaction = utils.now()
         del self._reaction_hooks[reaction]
         await self.message.clear_reaction(reaction)
 
     async def clear_reactions(self):
-        self.last_interaction = utils.now()
         self._reaction_hooks.clear()
         await self.message.clear_reactions()
 
     def has_finished(self) -> bool:
-        if utils.now() - self.last_interaction > MessagePlus.FINISH_SECONDS:
+        if utils.now() - self._first_interaction > MessagePlus.FINISH_SECONDS:
             self._finished = True
         return self._finished
 

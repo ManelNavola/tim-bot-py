@@ -1,10 +1,26 @@
 {
-  "PRONOUN.SECOND": "You",
+  "LANGUAGE": "English",
+
+  "SETUP.LANG": "You set language to {lang}",
+  "SETUP.ADMIN": "Only admins can perform that command!",
 
   "COMMAND.IN_ADVENTURE": "This command cannot be issued during an adventure!",
   "COMMAND.GUILD_ONLY": "This command an only be called in a guild!",
 
-  "ADVENTURE.NO_TOKENS": "{pronoun} don't have enough tokens! (Required: {tokens}{EMOJI_TOKEN})",
+  "CLASS.WARRIOR": "Warrior",
+  "CLASS.ROGUE": "Rogue",
+  "CLASS.MAGE": "Mage",
+
+  "ADVENTURE.NO_TOKENS_SINGLE": "You don't have enough tokens! (Required: {tokens} {EMOJI_TOKEN})",
+  "ADVENTURE.NO_TOKENS_MULTIPLE": "{names} don't have enough tokens! (Required: {tokens} {EMOJI_TOKEN})",
   "ADVENTURE.START": "{players} started {name}!",
-  "ADVENTURE.PROGRESS": "{icon} Progress: {progress}"
+  "ADVENTURE.PROGRESS": "{icon} Progress: {progress}",
+
+  "TUTORIAL.WELCOME": "{name}, welcome to {bot_name}!",
+  "TUTORIAL.WAKE": "You wake up in a boat...",
+  "TUTORIAL.REMEMBER": "Your mind is empty, but you remember you were a...",
+  "TUTORIAL.SEAGULL": "As you get closer to the shore, you see something fly down from the sky...",
+  "TUTORIAL.CONGRATULATIONS": "Congratulations on beating the tutorial {name}!",
+  "TUTORIAL.TOKENS": "Here are {tokens} {EMOJI_TOKEN} tokens get you started, you can use them to go on adventures",
+  "TUTORIAL.REFERENCE": "Most of the game actions are easy to understand: try {command} if you want to get a quick debriefing on useful commands!"
 }
