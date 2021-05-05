@@ -12,6 +12,7 @@ from entities.entity import Entity
 from enums.emoji import Emoji
 from enums.location import Location
 from helpers.timer import DelayTask
+from helpers.translate import tr
 from item_data.stat import Stat
 from user_data.user import User
 
@@ -170,8 +171,8 @@ class BattleChapter(Chapter):
     def _print_round(self) -> str:
         mult: int = (self._round // self.INCREASE_EVERY) + 1
         if mult == 1:
-            return f"{Emoji.BATTLE} Round {self._round}"
-        return f"{Emoji.BATTLE} Round {self._round} (x{mult} dmg)"
+            return tr(self.get_lang(), 'BATTLE.ROUND', EMOJI_BATTLE=Emoji.Battle, round=self._round)
+        return tr(self.get_lang(), 'BATTLE.ROUND_DMG', EMOJI_BATTLE=Emoji.Battle, round=self._round, multiplier=mult)
 
     def _print_current_prefix(self):
         self.clear_log()
@@ -180,7 +181,7 @@ class BattleChapter(Chapter):
     async def _print_current(self):
         self._print_current_prefix()
         if self._round < 2:
-            self.add_log("**BATTLE START!**")
+            self.add_log(f"**{tr(self.get_lang(), 'BATTLE.START')}**")
         self.add_log(self._print_round())
         for be in self._current_team.entities:
             if be.is_dead():
@@ -331,7 +332,7 @@ class BattleChapter(Chapter):
 
         self._finished = True
         await self._print_current()
-        await self.append(f"**{self._current_team.name} won the battle!**")
+        await self.append(f"**{tr(self.get_lang(), 'BATTLE.WIN', name=self._current_team.name)}**")
         await self.end()
 
     async def end(self, lost: bool = False, skip: bool = False) -> None:

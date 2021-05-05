@@ -23,10 +23,10 @@ class TutorialBattleChapter(BattleChapterWithText):
     def _print_current_prefix(self):
         super()._print_current_prefix()
         if not self._finished:
-            self.add_log(f'Press the {Emoji.BATTLE} reaction to attack!')
+            self.add_log(tr(self.get_lang(), 'TUTORIAL.ATTACK', EMOJI_BATTLE=Emoji.BATTLE))
 
     async def end(self, lost: bool = False, skip: bool = False) -> None:
-        await self.append(f'Nice battle! Press the {Emoji.OK} reaction to continue!')
+        await self.append(tr(self.get_lang(), 'TUTORIAL.BATTLE_END', EMOJI_OK=Emoji.OK))
         await super().end(lost, skip)
 
 
@@ -39,6 +39,7 @@ class TutorialClassChapter(ChoiceChapter):
         def a(adventure: Adventure):
             user: User = adventure.get_user()
             user.set_class(uc)
+
         return a
 
     async def init(self) -> None:
@@ -65,9 +66,10 @@ class TutorialEndChapter(Chapter):
 
 
 async def start(cmd: 'Command', user: User):
-    adventure: Adventure = Adventure("Tutorial", Emoji.TUTORIAL, override_str=tr(cmd.lang, "TUTORIAL.WELCOME",
-                                                                                 name=user.get_name(),
-                                                                                 bot_name="Tim Bot"))
+    adventure: Adventure = Adventure(tr(cmd.lang, 'TUTORIAL'), Emoji.TUTORIAL,
+                                     override_str=tr(cmd.lang, "TUTORIAL.WELCOME",
+                                                     name=user.get_name(),
+                                                     bot_name="Tim Bot"))
     adventure.add_chapter(TutorialClassChapter())
     tbc = TutorialBattleChapter([tr(cmd.lang, "TUTORIAL.SEAGULL")])
     adventure.add_chapter(battle.q1v1(user.user_entity, battle.rnd(adventure, Location.TUTORIAL), tbc))

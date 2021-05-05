@@ -10,7 +10,9 @@ from entities.entity import Entity
 # from enums.item_type import ItemType
 # from item_data.abilities import AbilityInstance
 from enums.emoji import Emoji
+from helpers.translate import tr
 from item_data.stat import Stat
+
 if typing.TYPE_CHECKING:
     from adventure_classes.generic.battle import BattleChapter
 
@@ -25,8 +27,9 @@ class AttackResult(Slots):
 
 
 class BattleEntity:
-    def __init__(self, entity: Entity):
+    def __init__(self, entity: Entity, lang: str):
         self.entity = entity
+        self._lang: str = lang
         # self._available_abilities: list[tuple[AbilityInstance, Optional[ItemType]]] = entity.get_abilities()
         self._turn_modifiers: list[StatModifier] = []
         for modifier in entity.get_modifiers():
@@ -50,33 +53,40 @@ class BattleEntity:
 
         if action == Emoji.BATTLE:
             if target:
+                temp: str
                 ar: AttackResult = self.attack(target)
                 # Return message
                 msg = []
                 if ar.eva:
-                    msg.append(f"> {target.entity.get_name()} evaded {self.entity.get_name()}'s attack!")
+                    temp = tr(self._lang, 'BATTLE_ATTACK.EVADE', source=self.entity.get_name(),
+                              target=target.entity.get_name())
+                    msg.append(f"> {temp}")
                 else:
                     if ar.vamp:
                         if ar.crit:
-                            msg.append(f"> {self.entity.get_name()} **critically** stole {ar.damage} "
-                                       f"health from {target.entity.get_name()}!")
+                            temp = tr(self._lang, 'BATTLE_ATTACK.CRITICAL_VAMP', source=self.entity.get_name(),
+                                      target=target.entity.get_name(), damage=ar.damage)
+                            msg.append(f"> {temp}")
                         else:
-                            msg.append(f"> {self.entity.get_name()} stole {ar.damage} "
-                                       f"health from {target.entity.get_name()}!")
+                            temp = tr(self._lang, 'BATTLE_ATTACK.VAMP', source=self.entity.get_name(),
+                                      target=target.entity.get_name(), damage=ar.damage)
+                            msg.append(f"> {temp}")
                     else:
                         if ar.crit:
-                            msg.append(f"> {self.entity.get_name()} dealt a **critical** attack to "
-                                       f"{target.entity.get_name()} for {ar.damage} damage!")
+                            temp = tr(self._lang, 'BATTLE_ATTACK.CRIT', source=self.entity.get_name(),
+                                      target=target.entity.get_name(), damage=ar.damage)
+                            msg.append(f"> {temp}")
                         else:
-                            msg.append(f"> {self.entity.get_name()} attacked {target.entity.get_name()} "
-                                       f"for {ar.damage} damage!")
+                            temp = tr(self._lang, 'BATTLE_ATTACK.ATTACK', source=self.entity.get_name(),
+                                      target=target.entity.get_name(), damage=ar.damage)
+                            msg.append(f"> {temp}")
                 return '\n'.join(msg)
             else:
                 return None
 
     @staticmethod
-    def calculate_damage(atk: int, deff: int):
-        return (float(atk) * 4.0 + 8.0) / (float(deff) * 1.5 + 6.0)
+    def calculate_damage(atk: int, defense: int):
+        return (float(atk) * 4.0 + 8.0) / (float(defense) * 1.5 + 6.0)
 
     def attack(self, target: 'BattleEntity', ignore_cont: bool = False) -> AttackResult:
         ar: AttackResult = AttackResult()

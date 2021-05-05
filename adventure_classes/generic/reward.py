@@ -5,6 +5,7 @@ import utils
 from adventure_classes.generic.chapter import Chapter
 from enums.emoji import Emoji
 from guild_data.shop import Shop
+from helpers.translate import tr
 from item_data.item_classes import Item
 from user_data.user import User
 
@@ -18,7 +19,7 @@ class RewardChapter(Chapter):
         if self._override_str:
             await self.send_log(self._override_str)
         else:
-            await self.send_log("You find a box beneath your feet")
+            await self.send_log(tr(self.get_lang(), 'REWARD.BOX'))
         await self.get_adventure().add_reaction(Emoji.BOX, self.reward)
 
     @abstractmethod
@@ -38,16 +39,22 @@ class ItemRewardChapter(RewardChapter):
             users = list(self.get_adventure().get_users().keys())
 
         user: User = random.choice(users)
-        user_name: str = user.get_name()
-        if len(self.get_adventure().get_users()) == 1:
-            user_name = 'You'
 
         if user.inventory.create_item(self.item) is not None:
-            await self.send_log(f'{user_name} found {self.item.print()}!')
+            if len(self.get_adventure().get_users()) == 1:
+                await self.send_log(tr(self.get_lang(), 'REWARD.ITEM_YOU', item=self.item.print()))
+            else:
+                await self.send_log(tr(self.get_lang(), 'REWARD.ITEM_SOMEONE', item=self.item.print(),
+                                       name=user.get_name()))
         else:
             money = Shop.get_sell_price(self.item)
             user.add_money(money)
-            await self.send_log(f'Inventory full! {user_name} sold {self.item.print()} for {utils.print_money(money)}!')
+            if len(self.get_adventure().get_users()) == 1:
+                await self.send_log(tr(self.get_lang(), 'REWARD.ITEM_SOLD_YOU', item=self.item.print(),
+                                       money=utils.print_money(money)))
+            else:
+                await self.send_log(tr(self.get_lang(), 'REWARD.ITEM_SOLD_SOMEONE', item=self.item.print(),
+                                       name=user.get_name(), money=utils.print_money(money)))
         await self.end()
 
 
@@ -60,10 +67,12 @@ class MoneyRewardChapter(RewardChapter):
         users: list[User] = list(self.get_adventure().get_users().keys())
 
         user: User = random.choice(users)
-        user_name: str = user.get_name()
+
         if len(self.get_adventure().get_users()) == 1:
-            user_name = 'You'
+            await self.send_log(tr(self.get_lang(), 'REWARD.MONEY_YOU', money=utils.print_money(self.money)))
+        else:
+            await self.send_log(tr(self.get_lang(), 'REWARD.MONEY_SOMEONE', money=utils.print_money(self.money),
+                                   name=user.get_name()))
 
         user.add_money(self.money)
-        await self.send_log(f'{user_name} found {utils.print_money(self.money)}!')
         await self.end()
