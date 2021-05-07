@@ -25,7 +25,7 @@ class Guild(Row):
                                              DictRef(self._data, 'table_money_time'),
                                              Guild.TABLE_INCREMENT)
         self._lang: DictRef[str] = DictRef(self._data, 'lang')
-        self.bet: Bet = Bet(db, DictRef(self._data, 'ongoing_bet'))
+        self.bet: Bet = Bet(db, DictRef(self._data, 'ongoing_bet'), self._lang)
         self.registered_user_ids: set[int] = set(self._data['user_ids'])
         self.shop: Shop = Shop(db, DictRef(self._data, 'shop_time'), self.id)
 

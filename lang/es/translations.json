@@ -1,0 +1,107 @@
+{
+  "ADVENTURE": {
+    "NO_TOKENS_MULTIPLE": "{names} no tienen suficientes tokens! (Necesitan: {tokens} {EMOJI_TOKEN})",
+    "NO_TOKENS_SINGLE": "No tienes suficientes tokens! (Necesitas: {tokens} {EMOJI_TOKEN})",
+    "PROGRESS": "{icon} Progreso: {progress}",
+    "START": "{players} ha empezado {name}!"
+  },
+  "BATTLE": {
+    "ROUND": "{EMOJI_BATTLE} Ronda {round}",
+    "ROUND_DMG": "{EMOJI_BATTLE} Ronda {round} (x{multiplier} daño)",
+    "START": "EMPIEZA LA BATALLA!",
+    "WIN": "{name} ha ganado!"
+  },
+  "BATTLE_ATTACK": {
+    "ATTACK": "{source} ha atacado {target} con {damage} de daño!",
+    "CRIT": "{source} ha realizado un **crítico** a {target} por {damage} de daño!",
+    "CRITICAL_VAMP": "{source} ha robado {damage} vida de {target} de forma **crtítica**!",
+    "EVADE": "{target} evadió el ataque de {source}!",
+    "VAMP": "{source} ha robado {damage} vida de {target}!"
+  },
+  "BET": {
+    "BOT_WON": "{name} ha ganado el bote ({money}), mala suerte!",
+    "CREATE": "{name} ha empezado una apuesta con {money}! {EMOJI_MONEY_FLY}",
+    "FINISH": "Fin de la apuesta!",
+    "INCREASE": "{name} has subido su apuesta a {money} {EMOJI_INCREASE}",
+    "INFO1": "Apuesta dinero con otros usuarios contra el bot para ganar el Bote!",
+    "INFO2": "Cada bote tiene un comportamiento distinto, puedes superar su estrategia de apuesta?",
+    "JACKPOT": "{EMOJI_SPARKLE} **Bote** {money} {EMOJI_SPARKLE}",
+    "LACK": "No tienes {money}!",
+    "MAX": "Tu apuesta no puede superar {money}!",
+    "MAX_BET": "(Apuesta max. {money})",
+    "MIN_BET": "La apuesta inicial debe ser como mínimo {money}",
+    "MIN_INCREASE": "El mínimo incremento de apuesta es {money}!",
+    "NO_BET": "No hay ninguna apuesta en curso",
+    "START": "{name} ha apostado {money} {Emoji.MONEY_FLY}",
+    "TIME": "La apuesta finaliza en {time}",
+    "WON": "{name} ha ganado el bote! ({money})"
+  },
+  "CLASS": {
+    "MAGE": "Mago",
+    "ROGUE": "Pícaro",
+    "WARRIOR": "Guerrero"
+  },
+  "COMMAND": {
+    "ADVENTURE": {
+      "UNKNOWN": "Ubicación desconocida: {location}"
+    },
+    "GUILD_ONLY": "Este comando solo funciona en una guild!",
+    "IN_ADVENTURE": "Este comando no se puede usar durante una aventura!"
+  },
+  "CRATE": {
+    "EMPTY": "{EMOJI_BOX} No hay dinero en la caja",
+    "LACK": "No tienes {money}!",
+    "MAX": "No puedes recibir más dinero!",
+    "MIN": "Debes poner un mínimo de {money}!",
+    "PLACE": "{EMOJI_BOX} {name} ha puesto {money} en la caja ({rate} {Emoji.CLOCK})",
+    "SHOW": "{EMOJI_BOX} Hay {money} en la caja",
+    "SHOW_RATE": "{EMOJI_BOX} Hay {money} en la caja ({rate} {EMOJI_CLOCK})",
+    "TAKE": "{EMOJI_BOX} {name} ha tomado {money} de la caja!"
+  },
+  "EQUIPMENT": {
+    "EMPTY": "No tienes equipamiento",
+    "EQUIP": "Equipado {item}",
+    "INVALID_INDEX": "Índice de ítem inválido!",
+    "NO_EQUIPPED": "No tienes nada equipado!",
+    "UNEQUIP": "Desequipado {item}",
+    "UNEQUIP_ALL": "Desequipado todos los ítems"
+  },
+  "LANGUAGE": "Español (beta)",
+  "REWARD": {
+    "BOX": "Encuentras una caja a tus pies",
+    "ITEM_SOLD_SOMEONE": "El inventario de {name} está lleno! Vendido {item} por {money}",
+    "ITEM_SOLD_YOU": "Inventario lleno! Has vendido {item} por {money}",
+    "ITEM_SOMEONE": "{name} encontró {item}!",
+    "ITEM_YOU": "Has encontrado {item}!",
+    "MONEY_SOMEONE": "{name} encontró {money}!",
+    "MONEY_YOU": "Has encontrado {money}!"
+  },
+  "SETUP": {
+    "ADMIN": "Solamente los admins pueden ejecutar ese comando!",
+    "LANG": "Has cambiado el idioma a {lang}"
+  },
+  "SHOP": {
+    "AUTO_EQUIP": "Equipado automáticamente",
+    "CHANGE": "La tienda ha cambiado desde la última vez, mostrando tienda...",
+    "INVALID": "Índice de ítem inválido!",
+    "INVENTORY_FULL": "Tu inventario está lleno!",
+    "LACK": "No tienes {money}!",
+    "MUST_UNEQUIP": "Debes desequipar el item primero!",
+    "NO_ITEMS": "No tienes items para vender!",
+    "PURCHASE": "{EMOJI_PURCHASE} {name} ha comprado {item}!",
+    "SOLD": "{EMOJI_PURCHASE} Has vendido {item} por {money}",
+    "SOLD_MANY": "{EMOJI_PURCHASE} Vendido {total} items por {utils.print_money(money)}"
+  },
+  "TUTORIAL": {
+    "ATTACK": "Pulsa la reacción {EMOJI_BATTLE} para atacar!",
+    "BATTLE_END": "Buena batalla! Pulsa {EMOJI_OK} para continuar!",
+    "CONGRATULATIONS": "Enhorabuena {name} por completar el tutorial!",
+    "NAME": "Tutorial",
+    "REFERENCE": "La mayoría de las acciones del juego son fáciles de entender: prueba {command} si quieres obtener un breve resumen acerca de comandos útiles!",
+    "REMEMBER": "Tu mente está en blanco, pero recuerdas que eras...",
+    "SEAGULL": "Tal como te acercas a la isla, ves algo descender desde el cielo...",
+    "TOKENS": "Aquí tienes {tokens} {EMOJI_TOKEN} tokens para empezar, los puedes usar para hacer aventuras",
+    "WAKE": "Despiertas en una barca...",
+    "WELCOME": "{name}, bienvenido a {bot_name}!"
+  }
+}

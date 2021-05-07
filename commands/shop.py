@@ -2,6 +2,7 @@ import utils
 from helpers.command import Command
 from enums.emoji import Emoji
 from guild_data.shop import Shop, ItemPurchase
+from helpers.translate import tr
 from item_data.item_classes import Item
 
 
@@ -11,23 +12,24 @@ async def check(cmd: Command):
 
 async def buy(cmd: Command, number: int):
     if number < 1 or number > Shop.ITEM_AMOUNT:
-        await cmd.error("Invalid item index!")
+        await cmd.error(tr(cmd.lang, 'SHOP.INVALID'))
         return
     ip: ItemPurchase = cmd.guild.shop.purchase_item(cmd.user, number - 1)
     if ip.item is not None:
-        ts: list[str] = [f"{Emoji.PURCHASE} {cmd.user.get_name()} purchased {ip.item.print()}!"]
+        ts: list[str] = [tr(cmd.lang, 'SHOP.PURCHASE', EMOJI_PURCHASE=Emoji.PURCHASE, name=cmd.user.get_name(),
+                            item=ip.item.print())]
         if ip.must_equip is not None:
-            ts.append("> Equipped automatically")
+            ts.append(f"> {tr(cmd.lang, 'SHOP.AUTO_EQUIP')}")
             cmd.user.inventory.equip(ip.must_equip)
         await cmd.send('\n'.join(ts))
     else:
         if ip.reload_shop:
-            ts = ["The shop has changed since the last time, showing shop...", cmd.guild.shop.print()]
+            ts = [tr(cmd.lang, 'SHOP.CHANGE'), cmd.guild.shop.print()]
             await cmd.send('\n'.join(ts))
         elif ip.price is not None:
-            await cmd.error(f"You don't have {utils.print_money(ip.price)}!")
+            await cmd.error(tr(cmd.lang, 'SHOP.LACK', money=utils.print_money(ip.price)))
         else:
-            await cmd.error("Your inventory is full!")
+            await cmd.error(tr(cmd.lang, 'SHOP.INVENTORY_FULL'))
 
 
 async def sell(cmd: Command, number: int):
@@ -36,19 +38,20 @@ async def sell(cmd: Command, number: int):
         item: Item = result
         price = Shop.get_sell_price(item)
         cmd.user.add_money(price)
-        await cmd.send_hidden(f"{Emoji.PURCHASE} Sold {item.print()} for {utils.print_money(price)}")
+        await cmd.send_hidden(tr(cmd.lang, 'SHOP.SOLD', EMOJI_PURCHASE=Emoji.PURCHASE, item=item.print(),
+                                 money=utils.print_money(price)))
     else:
         if result:
-            await cmd.error("Invalid item index!")
+            await cmd.error(tr(cmd.lang, 'SHOP.INVALID'))
         else:
-            await cmd.error("You must unequip the item first!")
+            await cmd.error(tr(cmd.lang, 'SHOP.MUST_UNEQUIP'))
 
 
 async def sell_all(cmd: Command):
     total_items, total_price = cmd.user.inventory.sell_all()
     if total_items == 0:
-        await cmd.error("You don't have any items to sell!")
+        await cmd.error(tr(cmd.lang, 'SHOP.NO_SELL'))
     else:
         cmd.user.add_money(total_price)
-        await cmd.send_hidden(f"{Emoji.PURCHASE} Sold {total_items} item{'s' if total_items > 0 else ''} "
-                              f"for {utils.print_money(total_price)}")
+        await cmd.send_hidden(tr(cmd.lang, 'SHOP.SOLD_MANY', EMOJI_PURCHASE=Emoji.PURCHASE, total=total_items,
+                                 money=total_price))

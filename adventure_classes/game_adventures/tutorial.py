@@ -66,13 +66,13 @@ class TutorialEndChapter(Chapter):
 
 
 async def start(cmd: 'Command', user: User):
-    adventure: Adventure = Adventure(tr(cmd.lang, 'TUTORIAL'), Emoji.TUTORIAL,
+    adventure: Adventure = Adventure(tr(cmd.lang, 'TUTORIAL.NAME'), Emoji.TUTORIAL,
                                      override_str=tr(cmd.lang, "TUTORIAL.WELCOME",
                                                      name=user.get_name(),
                                                      bot_name="Tim Bot"))
     adventure.add_chapter(TutorialClassChapter())
     tbc = TutorialBattleChapter([tr(cmd.lang, "TUTORIAL.SEAGULL")])
-    adventure.add_chapter(battle.q1v1(user.user_entity, battle.rnd(adventure, Location.TUTORIAL), tbc))
+    adventure.add_chapter(battle.q1v1(cmd.lang, user.user_entity, battle.rnd(adventure, Location.TUTORIAL), tbc))
     adventure.add_chapter(TutorialEndChapter())
     adventure.add_chapter(ItemRewardChapter(RandomItemBuilder(0).set_rarity(ItemRarity.COMMON).build()))
 

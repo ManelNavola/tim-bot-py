@@ -8,7 +8,7 @@ from discord_slash import SlashCommand
 from discord_slash.utils.manage_commands import create_option, create_choice
 
 import utils
-from commands import simple, crate, bet, upgrade, shop, test, adventure, setup
+from commands import simple, crate, bet, upgrade, shop, test, adventure, setup, equipment
 from game_data import data_loader
 from helpers import storage, messages, translate
 from db import database
@@ -201,7 +201,7 @@ cmd_handler.register_command(simple.stats,
 #                              name="abilities", description="Check your abilities",
 #                              guild_ids=registered_guild_ids)
 
-cmd_handler.register_command(simple.equip,
+cmd_handler.register_command(equipment.equip,
                              name="equip", description="Equip an item",
                              options=[
                                  create_option(
@@ -213,11 +213,11 @@ cmd_handler.register_command(simple.equip,
                              ],
                              guild_ids=registered_guild_ids)
 
-cmd_handler.register_command(simple.equip_best,
+cmd_handler.register_command(equipment.equip_best,
                              name="equip_best", description="Equips the best items you have according to their price",
                              guild_ids=registered_guild_ids)
 
-cmd_handler.register_command(simple.unequip,
+cmd_handler.register_command(equipment.unequip,
                              name="unequip", description="Unequip an item",
                              options=[
                                  create_option(
@@ -229,7 +229,7 @@ cmd_handler.register_command(simple.unequip,
                              ],
                              guild_ids=registered_guild_ids)
 
-cmd_handler.register_command(simple.unequip_all,
+cmd_handler.register_command(equipment.unequip_all,
                              name="unequip_all", description="Unequip all items",
                              guild_ids=registered_guild_ids)
 

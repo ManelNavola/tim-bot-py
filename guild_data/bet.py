@@ -34,9 +34,9 @@ class Bet:
         (999999999999, ['robot', 'sunglasses', 'cowboy'])
     ]
 
-    def __init__(self, db: PostgreSQL, bet_ref: DictRef[dict], lang: str):
+    def __init__(self, db: PostgreSQL, bet_ref: DictRef[dict], lang: DictRef[str]):
         self._db = db
-        self._lang: str = lang
+        self._lang: DictRef[str] = lang
         self._bet_ref: DictRef[dict] = bet_ref
         self._info_changed: bool = False
         self._stored_info = None
@@ -98,13 +98,13 @@ class Bet:
         user_ids.append('BOT')
         weights.append(self._bot.get_bet())
         winner_id = random.choices(user_ids, weights=weights, k=1)[0]
-        result = ['~ ' + tr(self._lang, 'BET.FINISH') + ' ~']
+        result = ['~ ' + tr(self._lang.get(), 'BET.FINISH') + ' ~']
         total_bet = self.get_bet_sum() + self._bot.get_bet()
         money_str = utils.print_money(total_bet)
         if winner_id == 'BOT':
-            result.append(tr(self._lang, 'BET.BOT_WON', name=self._bot.icon, money=money_str))
+            result.append(tr(self._lang.get(), 'BET.BOT_WON', name=self._bot.icon, money=money_str))
         else:
-            result.append(tr(self._lang, 'BET.WON', name=self._bet_ref['bets'][winner_id][0], money=money_str))
+            result.append(tr(self._lang.get(), 'BET.WON', name=self._bet_ref['bets'][winner_id][0], money=money_str))
             user = storage.get_user(self._db, winner_id)
             user.add_money(total_bet)
         await ctx.send('\n'.join(result))
@@ -114,7 +114,7 @@ class Bet:
     def print(self) -> str:
         s = max(self._bet_ref['finish_time'] - utils.now(), 0)
         time_remaining_str = utils.print_time(s)
-        lines = [tr(self._lang, 'BET.TIME', time=time_remaining_str)]
+        lines = [tr(self._lang.get(), 'BET.TIME', time=time_remaining_str)]
         if self._info_changed:
             self._stored_info = []
             # Sort bet data
@@ -123,8 +123,9 @@ class Bet:
             bets.append((self._bot.icon, self._bot.get_bet()))
             bets.sort(key=lambda x: x[1], reverse=True)
             # Jackpot
-            a: str = tr(self._lang, 'BET.JACKPOT', EMOJI_SPARKLE=Emoji.SPARKLE, money=utils.print_money(total_bet))
-            b: str = tr(self._lang, 'BET.MAX_BET', money=utils.print_money(self._limit))
+            a: str = tr(self._lang.get(), 'BET.JACKPOT', EMOJI_SPARKLE=Emoji.SPARKLE,
+                        money=utils.print_money(total_bet))
+            b: str = tr(self._lang.get(), 'BET.MAX_BET', money=utils.print_money(self._limit))
             self._stored_info.append(f"{a}\n{b}")
             # Player+bot bets
             for single_bet in bets:

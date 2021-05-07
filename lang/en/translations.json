@@ -1,0 +1,107 @@
+{
+  "ADVENTURE": {
+    "NO_TOKENS_MULTIPLE": "{names} don't have enough tokens! (Required: {tokens} {EMOJI_TOKEN})",
+    "NO_TOKENS_SINGLE": "You don't have enough tokens! (Required: {tokens} {EMOJI_TOKEN})",
+    "PROGRESS": "{icon} Progress: {progress}",
+    "START": "{players} started {name}!"
+  },
+  "BATTLE": {
+    "ROUND": "{EMOJI_BATTLE} Round {round}",
+    "ROUND_DMG": "{EMOJI_BATTLE} Round {round} (x{multiplier} dmg)",
+    "START": "BATTLE START!",
+    "WIN": "{name} won the battle!"
+  },
+  "BATTLE_ATTACK": {
+    "ATTACK": "{source} attacked {target} for {damage} damage!",
+    "CRIT": "{source} dealt a **critical** attack to {target} for {damage} damage!",
+    "CRITICAL_VAMP": "{source} **critically** stole {damage} health from {target}!",
+    "EVADE": "{target} evaded {source}'s attack!",
+    "VAMP": "{source} stole {damage} health from {target}!"
+  },
+  "BET": {
+    "BOT_WON": "{name} won the jackpot ({money}), bad luck!",
+    "CREATE": "{name} started a bet with {money}! {EMOJI_MONEY_FLY}",
+    "FINISH": "Bet finished!",
+    "INCREASE": "{name} has increased their bet to {money} {EMOJI_INCREASE}",
+    "INFO1": "Bet money with other users against the bot to win the Jackpot!",
+    "INFO2": "Each bot has a different behaviour, can you overcome their betting strategy?",
+    "JACKPOT": "{EMOJI_SPARKLE} **Jackpot** {money} {EMOJI_SPARKLE}",
+    "LACK": "You don't have {money}!",
+    "MAX": "Your bet cannot increase {money}!",
+    "MAX_BET": "(Max. bet {money})",
+    "MIN_BET": "Starting bet must be at least {money}!",
+    "MIN_INCREASE": "The minimum bet increase is of {money}!",
+    "NO_BET": "No ongoing bet at the moment",
+    "START": "{name} has bet {money} {Emoji.MONEY_FLY}",
+    "TIME": "Bet finishes in {time}",
+    "WON": "{name} won the jackpot! ({money})"
+  },
+  "CLASS": {
+    "MAGE": "Mage",
+    "ROGUE": "Rogue",
+    "WARRIOR": "Warrior"
+  },
+  "COMMAND": {
+    "ADVENTURE": {
+      "UNKNOWN": "Unknown location: {location}"
+    },
+    "GUILD_ONLY": "This command an only be called in a guild!",
+    "IN_ADVENTURE": "This command cannot be issued during an adventure!"
+  },
+  "CRATE": {
+    "EMPTY": "{EMOJI_BOX} There is no money in the crate",
+    "LACK": "You don't have {money}!",
+    "MAX": "You cannot hold more money!",
+    "MIN": "You must place a minimum of {money}!",
+    "PLACE": "{EMOJI_BOX} {name} placed {money} in the crate ({rate} {Emoji.CLOCK})",
+    "SHOW": "{EMOJI_BOX} There is {money} in the crate",
+    "SHOW_RATE": "{EMOJI_BOX} There is {money} in the crate ({rate} {EMOJI_CLOCK})",
+    "TAKE": "{EMOJI_BOX} {name} took {money} from the crate!"
+  },
+  "EQUIPMENT": {
+    "EMPTY": "You have no equipment",
+    "EQUIP": "Equipped {item}",
+    "INVALID_INDEX": "Invalid item index!",
+    "NO_EQUIPPED": "You don't have anything equipped!",
+    "UNEQUIP": "Unequipped {item}",
+    "UNEQUIP_ALL": "Unequipped all items"
+  },
+  "LANGUAGE": "English",
+  "REWARD": {
+    "BOX": "You find a box beneath your feet",
+    "ITEM_SOLD_SOMEONE": "{name}'s inventory is full! Sold {item} for {money}",
+    "ITEM_SOLD_YOU": "Inventory full! You sold {item} for {money}",
+    "ITEM_SOMEONE": "{name} found {item}!",
+    "ITEM_YOU": "You found {item}!",
+    "MONEY_SOMEONE": "{name} found {money}!",
+    "MONEY_YOU": "You found {money}!"
+  },
+  "SETUP": {
+    "ADMIN": "Only admins can perform that command!",
+    "LANG": "You set language to {lang}"
+  },
+  "SHOP": {
+    "AUTO_EQUIP": "Equipped automatically",
+    "CHANGE": "The shop has changed since the last time, showing shop...",
+    "INVALID": "Invalid item index!",
+    "INVENTORY_FULL": "Your inventory is full!",
+    "LACK": "You don't have {money}!",
+    "MUST_UNEQUIP": "You must unequip the item first!",
+    "NO_ITEMS": "You don't have any items to sell!",
+    "PURCHASE": "{EMOJI_PURCHASE} {name} purchased {item}!",
+    "SOLD": "{EMOJI_PURCHASE} Sold {item} for {money}",
+    "SOLD_MANY": "{EMOJI_PURCHASE} Sold {total} items for {utils.print_money(money)}"
+  },
+  "TUTORIAL": {
+    "ATTACK": "Press the {EMOJI_BATTLE} reaction to attack!",
+    "BATTLE_END": "Nice battle! Press the {EMOJI_OK} reaction to continue!",
+    "CONGRATULATIONS": "Congratulations on beating the tutorial {name}!",
+    "NAME": "Tutorial",
+    "REFERENCE": "Most of the game actions are easy to understand: try {command} if you want to get a quick debriefing on useful commands!",
+    "REMEMBER": "Your mind is empty, but you remember you were a...",
+    "SEAGULL": "As you get closer to the shore, you see something fly down from the sky...",
+    "TOKENS": "Here are {tokens} {EMOJI_TOKEN} tokens get you started, you can use them to go on adventures",
+    "WAKE": "You wake up in a boat...",
+    "WELCOME": "{name}, welcome to {bot_name}!"
+  }
+}

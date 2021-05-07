@@ -1,5 +1,6 @@
 import json
-from os import walk
+import os
+from typing import Union
 
 TRANSLATIONS = {}
 FALLBACK = None
@@ -8,10 +9,11 @@ FALLBACK = None
 def load():
     global FALLBACK
     trans_path = 'lang'
-    _, _, filenames = next(walk(trans_path))
-    for filename in filenames:
-        with open(f"{trans_path}/{filename}", 'r', encoding='utf-8') as f:
-            TRANSLATIONS[filename[:filename.find('.json')]] = json.load(f)
+    sub_folders = [f.name for f in os.scandir(trans_path) if f.is_dir()]
+    for folder in sub_folders:
+        with open(f"{trans_path}/{folder}/translations.json", 'r', encoding='utf-8') as f:
+            TRANSLATIONS[folder] = json.load(f)
+            print(folder)
     FALLBACK = TRANSLATIONS['en']
     print(f"Loaded {len(TRANSLATIONS)} languages")
 
@@ -22,4 +24,8 @@ def get_available() -> list[str]:
 
 def tr(lang_lang_lang: str, text_id: str, **kwargs) -> str:
     language_json: dict[str, str] = TRANSLATIONS.get(lang_lang_lang, FALLBACK)
-    return language_json[text_id].format(**kwargs)
+    paths: list[str] = text_id.split('.')
+    access: Union[dict, str] = language_json[paths[0]]
+    for i in range(1, len(paths)):
+        access = access[paths[i]]
+    return access.format(**kwargs)

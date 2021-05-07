@@ -18,8 +18,8 @@ from user_data.user import User
 
 
 class BattleTeam:
-    def __init__(self, name: str, entities: list[Entity], affiliation: Optional[int] = None):
-        self.entities: list[BattleEntity] = [BattleEntity(entity) for entity in entities]
+    def __init__(self, lang: str, name: str, entities: list[Entity], affiliation: Optional[int] = None):
+        self.entities: list[BattleEntity] = [BattleEntity(entity, lang) for entity in entities]
         self.users: list[BattleEntity] = [be for be in self.entities if be.is_user()]
         self.entity_dict: dict[Entity, BattleEntity] = {be.entity: be for be in self.entities}
         self.user_acted: set[BattleEntity] = set()
@@ -357,11 +357,11 @@ class BattleChapterWithText(BattleChapter):
             self.add_log('\n'.join([f"_{line}_" for line in self._text]))
 
 
-def q1v1(a: Entity, b: Entity, battle: Optional[BattleChapter] = None) -> BattleChapter:
+def q1v1(lang: str, a: Entity, b: Entity, battle: Optional[BattleChapter] = None) -> BattleChapter:
     if not battle:
         battle = BattleChapter()
-    battle.add_team(BattleTeam(a.get_name(), [a]))
-    battle.add_team(BattleTeam(b.get_name(), [b]))
+    battle.add_team(BattleTeam(lang, a.get_name(), [a]))
+    battle.add_team(BattleTeam(lang, b.get_name(), [b]))
     return battle
 
 
