@@ -1,20 +1,35 @@
 import typing
 from abc import ABC, abstractmethod
 
-# from typing import Optional
-
-# from autoslot import Slots
-
-# import utils
+from typing import Optional
 from autoslot import Slots
+from enums.emoji import Emoji
+from item_data.stat import Stat
 
 if typing.TYPE_CHECKING:
-    from adventure_classes.generic.battle_entity_old import BattleEntity
+    from adventure_classes.generic.battle import BattleEntity
 
 
 class Ability(ABC):
-    def init(self, targets: list['BattleEntity']) -> None:
+    def __init__(self, icon: Emoji):
+        self.icon = icon
+
+    @staticmethod
+    @abstractmethod
+    def use(source: 'BattleEntity', tier: int) -> str:
         pass
+
+    @staticmethod
+    def init(target: 'BattleEntity', tier: int) -> Optional[str]:
+        return None
+
+    @staticmethod
+    def turn(target: 'BattleEntity', tier: int) -> Optional[str]:
+        return None
+
+    @staticmethod
+    def end(target: 'BattleEntity', tier: int) -> Optional[str]:
+        return None
 
     @staticmethod
     def get_duration() -> int:
@@ -29,30 +44,40 @@ class Ability(ABC):
     def get_cost() -> int:
         pass
 
-    def turn(self, targets: list['BattleEntity']):
-        pass
-
-    def end(self, targets: list['BattleEntity']):
-        pass
-
 
 class AbilityInstance(Slots):
     def __init__(self, ability: Ability, targets: list[BattleEntity]):
         self.duration_remaining = ability.get_duration()
         self.ability = ability
         self.targets = targets
+        self.tier = 1
 
 
-class Summon(Ability):
-    def get_cost(self) -> int:
+class Burn(Ability):
+    def __init__(self):
+        super().__init__(Emoji.BURN)
+
+    @staticmethod
+    def use(source: 'BattleEntity', tier: int) -> str:
+        return f"{source.get_name()} user burn!"
+
+    @staticmethod
+    def get_duration() -> int:
+        return 4
+
+    @staticmethod
+    def get_cost() -> int:
         return 6
 
-    def init(self, targets: list['BattleEntity']) -> None:
-        pass
+    @staticmethod
+    def turn(target: 'BattleEntity', tier: int) -> Optional[str]:
+        damage: int = tier * 3
+        target.change_persistent_value(Stat.HP, damage)
+        return f"{target.get_name()} was burnt for {damage} damage!"
 
 
 ABILITIES: dict[int, Ability] = {
-    0: Summon()
+    0: Burn()
 }
 
 

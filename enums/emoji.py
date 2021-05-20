@@ -66,7 +66,7 @@ class Emoji(Enum):
     LEFT = r'\⬅'
     RIGHT = r'\➡'
     OK = r'\✅'
-    SKULL = r'\💀'
+    DEAD = r'\💀'
 
     # Tutorial
     TUTORIAL = r'\⛵'
@@ -108,6 +108,9 @@ class Emoji(Enum):
     EIGHT = r'\8️⃣'
     NINE = r'\9️⃣'
     TEN = r'\🔟'
+
+    # Abilities
+    BURN = r'\🔥'
 
     def __str__(self) -> str:
         return self.value

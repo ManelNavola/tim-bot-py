@@ -1,3 +1,5 @@
+from typing import Optional
+
 from entities.entity import Entity
 from helpers.dictref import DictRef
 from item_data.item_classes import Item
@@ -12,27 +14,29 @@ class UserEntity(Entity):
         self._name_ref: DictRef[str] = name_ref
         self._power: int = 0
 
-    def set_class(self, user_class: UserClass):
+    def get_name(self) -> str:
+        return self._name_ref.get()
+
+    def set_class(self, user_class: UserClass) -> None:
         self._base_dict = user_class.get_stats()
         self.reset()
-
-    def reset(self):
-        self.clear_modifiers()
-        self._persistent_stats.clear()
-        for stat in Stat:
-            if stat.is_persistent():
-                sv = self._stat_dict.get(stat, 0) + self._base_dict.get(stat, 0)
-                if sv > 0:
-                    self._persistent_stats[stat] = stat.get_value(sv)
 
     def get_power(self) -> int:
         return self._power
 
-    def get_name(self) -> str:
-        return self._name_ref.get()
-
-    def get_stat_value(self, stat: Stat) -> int:
-        return self._stat_dict.get(stat, 0) + self._base_dict.get(stat, 0)
+    def get_stat(self, stat: Stat, default: Optional[int] = 0) -> Optional[int]:
+        if default is None:
+            fs: Optional[int] = self._stat_dict.get(stat, default)
+            if fs is None:
+                return None
+            else:
+                ss: Optional[int] = self._base_dict.get(stat, default)
+                if ss is None:
+                    return None
+                else:
+                    return fs + ss
+        else:
+            return self._stat_dict.get(stat, default) + self._base_dict.get(stat, default)
 
     def update_equipment(self, item_list: list[Item]):
         calc_power: float = 0
