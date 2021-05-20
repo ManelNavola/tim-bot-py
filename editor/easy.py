@@ -8,7 +8,7 @@ from tkinter import *
 
 from jsonpath_ng import parse
 
-from adventure_classes.generic.battle_entity import BattleEntity
+from adventure_classes.generic.battle_entity_old import BattleEntity
 from entities.bot_entity import BotEntity
 from tk_utils import center
 from item_data.stat import Stat
@@ -318,7 +318,7 @@ class EasyJSONStatsWeights(EasyJSONStats):
 class EasyJSONBattleStats(EasyJSONStats):
     def show(self, data: dict[str, Any], key) -> str:
         stat_data = {Stat.get_by_abv(x): v for x, v in data['Stats'].items()}
-        return BattleEntity(BotEntity('', stat_data)).print() + f' [{sum(stat_data.values())}]'
+        return BattleEntity(BotEntity('', stat_data), 'en').print() + f' [{sum(stat_data.values())}]'
 
 
 class EasyGridTree(EasyGrid):
@@ -492,9 +492,10 @@ class EasyGridTree(EasyGrid):
         self.frame.grid_columnconfigure(0, weight=1)
         self.frame.grid_columnconfigure(1, weight=0)
 
-        self.frame.grid(row=2, column=0, columnspan=2, sticky='news')
+        self.frame.grid(row=2, column=0, columnspan=2, sticky='nswe')
 
         self.frame.rowconfigure(0, weight=0)
+        self.frame.rowconfigure(1, weight=1)
 
         # Window
 

@@ -51,10 +51,10 @@ class ItemRewardChapter(RewardChapter):
             user.add_money(money)
             if len(self.get_adventure().get_users()) == 1:
                 await self.send_log(tr(self.get_lang(), 'REWARD.ITEM_SOLD_YOU', item=self.item.print(),
-                                       money=utils.print_money(money)))
+                                       money=utils.print_money(self.get_lang(), money)))
             else:
                 await self.send_log(tr(self.get_lang(), 'REWARD.ITEM_SOLD_SOMEONE', item=self.item.print(),
-                                       name=user.get_name(), money=utils.print_money(money)))
+                                       name=user.get_name(), money=utils.print_money(self.get_lang(), money)))
         await self.end()
 
 
@@ -69,9 +69,11 @@ class MoneyRewardChapter(RewardChapter):
         user: User = random.choice(users)
 
         if len(self.get_adventure().get_users()) == 1:
-            await self.send_log(tr(self.get_lang(), 'REWARD.MONEY_YOU', money=utils.print_money(self.money)))
+            await self.send_log(tr(self.get_lang(), 'REWARD.MONEY_YOU', money=utils.print_money(self.get_lang(),
+                                                                                                self.money)))
         else:
-            await self.send_log(tr(self.get_lang(), 'REWARD.MONEY_SOMEONE', money=utils.print_money(self.money),
+            await self.send_log(tr(self.get_lang(), 'REWARD.MONEY_SOMEONE', money=utils.print_money(self.get_lang(),
+                                                                                                    self.money),
                                    name=user.get_name()))
 
         user.add_money(self.money)

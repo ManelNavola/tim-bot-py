@@ -45,15 +45,23 @@
     "ADVENTURE": {
       "UNKNOWN": "Unknown location: {location}"
     },
+    "CHECK": {
+      "NO_INTERACTION": "This user hasn't interacted with me yet!"
+    },
     "GUILD_ONLY": "This command an only be called in a guild!",
-    "IN_ADVENTURE": "This command cannot be issued during an adventure!"
+    "IN_ADVENTURE": "This command cannot be issued during an adventure!",
+    "TRANSFER": {
+      "EMPTY": "Your bank is empty!",
+      "EXECUTE": "{EMOJI_BANK} Transferred {money} from the bank (you now have {total})",
+      "FULL": "You cannot hold more money!"
+    }
   },
   "CRATE": {
     "EMPTY": "{EMOJI_BOX} There is no money in the crate",
     "LACK": "You don't have {money}!",
     "MAX": "You cannot hold more money!",
     "MIN": "You must place a minimum of {money}!",
-    "PLACE": "{EMOJI_BOX} {name} placed {money} in the crate ({rate} {Emoji.CLOCK})",
+    "PLACE": "{EMOJI_BOX} {name} placed {money} in the crate ({rate} {EMOJI_CLOCK})",
     "SHOW": "{EMOJI_BOX} There is {money} in the crate",
     "SHOW_RATE": "{EMOJI_BOX} There is {money} in the crate ({rate} {EMOJI_CLOCK})",
     "TAKE": "{EMOJI_BOX} {name} took {money} from the crate!"
@@ -67,6 +75,22 @@
     "UNEQUIP_ALL": "Unequipped all items"
   },
   "LANGUAGE": "English",
+  "MISC": {
+    "DECIMAL_SEP": ".",
+    "MONEY": "${number}",
+    "RATE": "{amount}/{time}",
+    "THOUSAND_SEP": ",",
+    "TIME": {
+      "DAY": "day",
+      "HOUR": "hour",
+      "HOUR_SHORT": "h",
+      "MIN": "min",
+      "MIN_SHORT": "m",
+      "PRINT": "{number}{abv}",
+      "SEC": "sec",
+      "SEC_SHORT": "s"
+    }
+  },
   "REWARD": {
     "BOX": "You find a box beneath your feet",
     "ITEM_SOLD_SOMEONE": "{name}'s inventory is full! Sold {item} for {money}",
@@ -103,5 +127,22 @@
     "TOKENS": "Here are {tokens} {EMOJI_TOKEN} tokens get you started, you can use them to go on adventures",
     "WAKE": "You wake up in a boat...",
     "WELCOME": "{name}, welcome to {bot_name}!"
+  },
+  "UPGRADE": {
+    "AVAILABLE": "Available upgrades:",
+    "CURRENT": "Current",
+    "EXECUTE": "{EMOJI_ICON} Upgraded {name} to Level {level}! {EMOJI_ICON}",
+    "LACK": "You need {money} for the upgrade!",
+    "LEVEL": "Level",
+    "MAX": "MAX",
+    "MAX_LEVEL": "You are already at max level!",
+    "NEXT_VALUE": "Next Value",
+    "SHORT": "{ICON_UPGRADE} {name} Lvl. {level} [{value}] {EMOJI_ARROW_RIGHT} [{next_value}], Cost: {money}",
+    "SHORT_MAX": "{EMOJI_ICON} {name} Lvl. {level} ({max_word})",
+    "UPGRADE_COST": "Upgrade Cost",
+    "UPGRADE_NAME": "Upgrade Name"
+  },
+  "USER": {
+    "PROFILE": "{name}'s User Profile:"
   }
 }

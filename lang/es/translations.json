@@ -22,7 +22,7 @@
     "BOT_WON": "{name} ha ganado el bote ({money}), mala suerte!",
     "CREATE": "{name} ha empezado una apuesta con {money}! {EMOJI_MONEY_FLY}",
     "FINISH": "Fin de la apuesta!",
-    "INCREASE": "{name} has subido su apuesta a {money} {EMOJI_INCREASE}",
+    "INCREASE": "{name} ha subido su apuesta a {money} {EMOJI_INCREASE}",
     "INFO1": "Apuesta dinero con otros usuarios contra el bot para ganar el Bote!",
     "INFO2": "Cada bote tiene un comportamiento distinto, puedes superar su estrategia de apuesta?",
     "JACKPOT": "{EMOJI_SPARKLE} **Bote** {money} {EMOJI_SPARKLE}",
@@ -45,15 +45,23 @@
     "ADVENTURE": {
       "UNKNOWN": "Ubicación desconocida: {location}"
     },
+    "CHECK": {
+      "NO_INTERACTION": "Este usuario no ha interactuado conmigo aún!"
+    },
     "GUILD_ONLY": "Este comando solo funciona en una guild!",
-    "IN_ADVENTURE": "Este comando no se puede usar durante una aventura!"
+    "IN_ADVENTURE": "Este comando no se puede usar durante una aventura!",
+    "TRANSFER": {
+      "EMPTY": "Tu banco está vacío!",
+      "EXECUTE": "{EMOJI_BANK} Transferido {money} del banco (ahora tienes {total})",
+      "FULL": "No puedes obtener más dinero!"
+    }
   },
   "CRATE": {
     "EMPTY": "{EMOJI_BOX} No hay dinero en la caja",
     "LACK": "No tienes {money}!",
     "MAX": "No puedes recibir más dinero!",
     "MIN": "Debes poner un mínimo de {money}!",
-    "PLACE": "{EMOJI_BOX} {name} ha puesto {money} en la caja ({rate} {Emoji.CLOCK})",
+    "PLACE": "{EMOJI_BOX} {name} ha puesto {money} en la caja ({rate} {EMOJI_CLOCK})",
     "SHOW": "{EMOJI_BOX} Hay {money} en la caja",
     "SHOW_RATE": "{EMOJI_BOX} Hay {money} en la caja ({rate} {EMOJI_CLOCK})",
     "TAKE": "{EMOJI_BOX} {name} ha tomado {money} de la caja!"
@@ -67,6 +75,22 @@
     "UNEQUIP_ALL": "Desequipado todos los ítems"
   },
   "LANGUAGE": "Español (beta)",
+  "MISC": {
+    "DECIMAL_SEP": ",",
+    "MONEY": "{number}€",
+    "RATE": "{amount}/{time}",
+    "THOUSAND_SEP": ".",
+    "TIME": {
+      "DAY": "día",
+      "HOUR": "hora",
+      "HOUR_SHORT": "h",
+      "MIN": "min",
+      "MIN_SHORT": "m",
+      "PRINT": "{number}{abv}",
+      "SEC": "seg",
+      "SEC_SHORT": "s"
+    }
+  },
   "REWARD": {
     "BOX": "Encuentras una caja a tus pies",
     "ITEM_SOLD_SOMEONE": "El inventario de {name} está lleno! Vendido {item} por {money}",
@@ -103,5 +127,22 @@
     "TOKENS": "Aquí tienes {tokens} {EMOJI_TOKEN} tokens para empezar, los puedes usar para hacer aventuras",
     "WAKE": "Despiertas en una barca...",
     "WELCOME": "{name}, bienvenido a {bot_name}!"
+  },
+  "UPGRADE": {
+    "AVAILABLE": "Mejoras disponibles:",
+    "CURRENT": "Actual",
+    "EXECUTE": "{EMOJI_ICON} Mejorado {name} al Nivel {level}! {EMOJI_ICON}",
+    "LACK": "Necesitas {money} para la mejora!",
+    "LEVEL": "Nivel",
+    "MAX": "MÁX",
+    "MAX_LEVEL": "Ya estás en el nivel máximo!",
+    "NEXT_VALUE": "Próximo",
+    "SHORT": "{ICON_UPGRADE} {name} Niv. {level} [{value}] {EMOJI_ARROW_RIGHT} [{next_value}], Coste: {money}",
+    "SHORT_MAX": "{EMOJI_ICON} {name} Niv. {level} ({max_word})",
+    "UPGRADE_COST": "Coste Mejora",
+    "UPGRADE_NAME": "Nombre Mejora"
+  },
+  "USER": {
+    "PROFILE": "Perfil de Usuario de {name}:"
   }
 }

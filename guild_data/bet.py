@@ -100,7 +100,7 @@ class Bet:
         winner_id = random.choices(user_ids, weights=weights, k=1)[0]
         result = ['~ ' + tr(self._lang.get(), 'BET.FINISH') + ' ~']
         total_bet = self.get_bet_sum() + self._bot.get_bet()
-        money_str = utils.print_money(total_bet)
+        money_str = utils.print_money(self._lang.get(), total_bet)
         if winner_id == 'BOT':
             result.append(tr(self._lang.get(), 'BET.BOT_WON', name=self._bot.icon, money=money_str))
         else:
@@ -113,7 +113,7 @@ class Bet:
 
     def print(self) -> str:
         s = max(self._bet_ref['finish_time'] - utils.now(), 0)
-        time_remaining_str = utils.print_time(s)
+        time_remaining_str = utils.print_time(self._lang.get(), s)
         lines = [tr(self._lang.get(), 'BET.TIME', time=time_remaining_str)]
         if self._info_changed:
             self._stored_info = []
@@ -124,12 +124,12 @@ class Bet:
             bets.sort(key=lambda x: x[1], reverse=True)
             # Jackpot
             a: str = tr(self._lang.get(), 'BET.JACKPOT', EMOJI_SPARKLE=Emoji.SPARKLE,
-                        money=utils.print_money(total_bet))
-            b: str = tr(self._lang.get(), 'BET.MAX_BET', money=utils.print_money(self._limit))
+                        money=utils.print_money(self._lang.get(), total_bet))
+            b: str = tr(self._lang.get(), 'BET.MAX_BET', money=utils.print_money(self._lang.get(), self._limit))
             self._stored_info.append(f"{a}\n{b}")
             # Player+bot bets
             for single_bet in bets:
-                money_str = utils.print_money(single_bet[1])
+                money_str = utils.print_money(self._lang.get(), single_bet[1])
                 pct = single_bet[1] / total_bet
                 self._stored_info.append(f"{single_bet[0]}: {money_str} ({pct:.0%})")
 

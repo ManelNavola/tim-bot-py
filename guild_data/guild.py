@@ -27,7 +27,7 @@ class Guild(Row):
         self._lang: DictRef[str] = DictRef(self._data, 'lang')
         self.bet: Bet = Bet(db, DictRef(self._data, 'ongoing_bet'), self._lang)
         self.registered_user_ids: set[int] = set(self._data['user_ids'])
-        self.shop: Shop = Shop(db, DictRef(self._data, 'shop_time'), self.id)
+        self.shop: Shop = Shop(db, self._lang, DictRef(self._data, 'shop_time'), self.id)
 
     def get_lang(self) -> str:
         return self._lang.get()
@@ -51,15 +51,16 @@ class Guild(Row):
         for i in range(len(users)):
             if i == 0:
                 ld.append(f"{Emoji.FIRST_PLACE} #{i + 1}: "
-                          f"{users[i]['last_name']} - {utils.print_money(users[i]['money'])}")
+                          f"{users[i]['last_name']} - {utils.print_money(self._lang.get(), users[i]['money'])}")
             elif i == 1:
                 ld.append(f"{Emoji.SECOND_PLACE} #{i + 1}: "
-                          f"{users[i]['last_name']} - {utils.print_money(users[i]['money'])}")
+                          f"{users[i]['last_name']} - {utils.print_money(self._lang.get(), users[i]['money'])}")
             elif i == 2:
                 ld.append(f"{Emoji.THIRD_PLACE} #{i + 1}: "
-                          f"{users[i]['last_name']} - {utils.print_money(users[i]['money'])}")
+                          f"{users[i]['last_name']} - {utils.print_money(self._lang.get(), users[i]['money'])}")
             else:
-                ld.append(f"#{i + 1}: {users[i]['last_name']} - {utils.print_money(users[i]['money'])}")
+                ld.append(f"#{i + 1}: {users[i]['last_name']} - "
+                          f"{utils.print_money(self._lang.get(), users[i]['money'])}")
         return '\n'.join(ld)
 
     def _get_box_end(self) -> int:
@@ -92,7 +93,7 @@ class Guild(Row):
         if diff < 0:
             return ""
         else:
-            return f"{self._box.print_rate()} for {utils.print_time(diff)}"
+            return f"{self._box.print_rate(self._lang.get())} for {utils.print_time(self._lang.get(), diff)}"
 
     # async def start_battle(self, ctx: SlashContext, user: User,
     #                        opponent_bot: Optional[BotEntity] = None, opponent_user: Optional[User] = None) -> None:

@@ -27,7 +27,7 @@ async def buy(cmd: Command, number: int):
             ts = [tr(cmd.lang, 'SHOP.CHANGE'), cmd.guild.shop.print()]
             await cmd.send('\n'.join(ts))
         elif ip.price is not None:
-            await cmd.error(tr(cmd.lang, 'SHOP.LACK', money=utils.print_money(ip.price)))
+            await cmd.error(tr(cmd.lang, 'SHOP.LACK', money=utils.print_money(cmd.lang, ip.price)))
         else:
             await cmd.error(tr(cmd.lang, 'SHOP.INVENTORY_FULL'))
 
@@ -39,7 +39,7 @@ async def sell(cmd: Command, number: int):
         price = Shop.get_sell_price(item)
         cmd.user.add_money(price)
         await cmd.send_hidden(tr(cmd.lang, 'SHOP.SOLD', EMOJI_PURCHASE=Emoji.PURCHASE, item=item.print(),
-                                 money=utils.print_money(price)))
+                                 money=utils.print_money(cmd.lang, price)))
     else:
         if result:
             await cmd.error(tr(cmd.lang, 'SHOP.INVALID'))

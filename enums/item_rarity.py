@@ -4,20 +4,21 @@ from autoslot import Slots
 
 
 class RarityInstance(Slots):
-    def __init__(self, rarity_id: int, name: str, chance: int):
+    def __init__(self, rarity_id: int, name: str):
         self.id: int = rarity_id
         self.name: str = name
-        self.chance: int = chance
 
 
 @unique
 class ItemRarity(Enum):
     _ignore_ = ['_INFO']
-    COMMON = RarityInstance(0, "Common", 100)
-    UNCOMMON = RarityInstance(1, "Uncommon", 60)
-    RARE = RarityInstance(2, "Rare", 25)
-    EPIC = RarityInstance(3, "Epic", 5)
-    LEGENDARY = RarityInstance(4, "Legendary", 1)
+    COMMON = RarityInstance(0, "Common")
+    UNCOMMON = RarityInstance(1, "Uncommon")
+    RARE = RarityInstance(2, "Rare")
+    EPIC = RarityInstance(3, "Epic")
+    LEGENDARY = RarityInstance(4, "Legendary")
+    RED_LEGENDARY = RarityInstance(5, "Red Legendary")
+    BLUE_LEGENDARY = RarityInstance(6, "Blue Legendary")
     _INFO = {}
 
     @staticmethod
@@ -33,9 +34,6 @@ class ItemRarity(Enum):
 
     def get_name(self) -> str:
         return self.value.name
-
-    def get_chance(self) -> float:
-        return self.value.chance
 
     @staticmethod
     def get_max_stat_rarity(rarity: 'ItemRarity') -> 'ItemRarity':

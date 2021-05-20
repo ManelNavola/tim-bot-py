@@ -160,5 +160,5 @@ class Inventory:
             equipped: str = ''
             if self._items[i].id in self._equipped_ref.get():
                 equipped = f' {Emoji.EQUIPPED}'
-            tr.append(f"{index}: {item_str}{equipped}")  # TODO: durability broken stuff
+            tr.append(f"{index}: {item_str}{equipped}")
         return '\n'.join(tr)

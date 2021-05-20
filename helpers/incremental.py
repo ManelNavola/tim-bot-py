@@ -3,6 +3,7 @@ from autoslot import Slots
 
 import utils
 from helpers.dictref import DictRef
+from helpers.translate import tr
 from utils import TimeSlot
 
 
@@ -66,7 +67,7 @@ class Incremental(Slots):
         self.set(self.get(override_now), override_now)
         self._time_slot.amount = increment
 
-    def print_rate(self) -> str:
+    def print_rate(self, lang: str) -> str:
         self.check()
-        increment_str = utils.print_money(self._time_slot.amount)
-        return f"+{increment_str}/{self._time_slot.metric_abbreviation()}"
+        increment_str = utils.print_money(lang, self._time_slot.amount)
+        return f"+{tr(lang, 'MISC.RATE', amount=increment_str, time=self._time_slot.metric_abbreviation(lang))}"

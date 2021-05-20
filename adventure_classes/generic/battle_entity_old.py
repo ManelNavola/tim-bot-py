@@ -7,14 +7,13 @@ from autoslot import Slots
 from adventure_classes.generic.stat_modifier import StatModifier
 from entities.bot_entity import BotEntity
 from entities.entity import Entity
-# from enums.item_type import ItemType
-# from item_data.abilities import AbilityInstance
 from enums.emoji import Emoji
 from helpers.translate import tr
+from item_data.abilities import Ability
 from item_data.stat import Stat
 
 if typing.TYPE_CHECKING:
-    from adventure_classes.generic.battle import BattleChapter
+    from adventure_classes.generic.battle_old import BattleChapter, BattleEmoji
 
 
 class AttackResult(Slots):
@@ -30,12 +29,11 @@ class BattleEntity:
     def __init__(self, entity: Entity, lang: str):
         self.entity = entity
         self._lang: str = lang
-        # self._available_abilities: list[tuple[AbilityInstance, Optional[ItemType]]] = entity.get_abilities()
         self._turn_modifiers: list[StatModifier] = []
         for modifier in entity.get_modifiers():
             self._turn_modifiers.append(modifier.clone(-1))
         self._is_user: bool = not isinstance(entity, BotEntity)
-        self._actions: set[Emoji] = {Emoji.BATTLE}
+        self._actions: set[BattleEmoji] = {BattleEmoji.ATTACK} | set(BattleEmoji.get_spells(len(self.entity.get_abilities())))
         self._battle_chapter: Optional['BattleChapter'] = None
 
     def set_battle_instance(self, battle_chapter: 'BattleChapter'):
@@ -44,45 +42,54 @@ class BattleEntity:
     def is_dead(self):
         return self.entity.get_persistent(Stat.HP) == 0
 
-    def get_actions(self) -> set[Emoji]:
+    def get_actions(self) -> set[BattleEmoji]:
         return self._actions
 
-    def try_action(self, action: Emoji, target: Optional['BattleEntity']) -> Optional[str]:
+    def try_action(self, action: BattleEmoji, targets: list['BattleEntity']) -> Optional[str]:
         if action not in self._actions:
             return None
 
-        if action == Emoji.BATTLE:
-            if target:
+        if action == BattleEmoji.ATTACK:
+            if targets:
                 temp: str
-                ar: AttackResult = self.attack(target)
+                ar: AttackResult = self.attack(targets[0])
                 # Return message
                 msg = []
                 if ar.eva:
                     temp = tr(self._lang, 'BATTLE_ATTACK.EVADE', source=self.entity.get_name(),
-                              target=target.entity.get_name())
+                              target=targets[0].entity.get_name())
                     msg.append(f"> {temp}")
                 else:
                     if ar.vamp:
                         if ar.crit:
                             temp = tr(self._lang, 'BATTLE_ATTACK.CRITICAL_VAMP', source=self.entity.get_name(),
-                                      target=target.entity.get_name(), damage=ar.damage)
+                                      target=targets.entity.get_name(), damage=ar.damage)
                             msg.append(f"> {temp}")
                         else:
                             temp = tr(self._lang, 'BATTLE_ATTACK.VAMP', source=self.entity.get_name(),
-                                      target=target.entity.get_name(), damage=ar.damage)
+                                      target=targets.entity.get_name(), damage=ar.damage)
                             msg.append(f"> {temp}")
                     else:
                         if ar.crit:
                             temp = tr(self._lang, 'BATTLE_ATTACK.CRIT', source=self.entity.get_name(),
-                                      target=target.entity.get_name(), damage=ar.damage)
+                                      target=targets.entity.get_name(), damage=ar.damage)
                             msg.append(f"> {temp}")
                         else:
                             temp = tr(self._lang, 'BATTLE_ATTACK.ATTACK', source=self.entity.get_name(),
-                                      target=target.entity.get_name(), damage=ar.damage)
+                                      target=targets.entity.get_name(), damage=ar.damage)
                             msg.append(f"> {temp}")
                 return '\n'.join(msg)
-            else:
-                return None
+        else:
+            spell_index = action.get_spell_index()
+            if -1 < spell_index < len(self.entity.get_abilities()):
+                ability: Ability = self.entity.get_abilities()[spell_index]
+                if ability.get_cost() <= self.entity.get_persistent(Stat.AP):
+                    if (targets is not None) or ability.allow_self():
+                        self.entity.change_persistent(Stat.AP, -ability.get_cost())
+                        targets.
+
+        return None
+
 
     @staticmethod
     def calculate_damage(atk: int, defense: int):

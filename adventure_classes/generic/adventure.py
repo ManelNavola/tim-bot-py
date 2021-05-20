@@ -7,6 +7,7 @@ from discord import Message
 
 import utils
 from helpers.translate import tr
+from item_data.stat import Stat
 from user_data.user import User
 from adventure_classes.generic.user_adventure_data import UserAdventureData
 from helpers import messages
@@ -16,23 +17,19 @@ from enums.emoji import Emoji
 if typing.TYPE_CHECKING:
     from adventure_classes.generic.chapter import Chapter
     from helpers.command import Command
+    from adventure_classes.game_adventures.adventure_provider import AdventureInstance
 
 
 class Adventure:
-    MIN_HEALTH: int = 10
-
-    def __init__(self, name: str, icon: Emoji, tokens: int = 1, override_str: Optional[str] = None):
+    def __init__(self, instance: 'AdventureInstance'):
         self._lang: str = ''
-        self._name: str = name
-        self._icon: Emoji = icon
+        self._instance: 'AdventureInstance' = instance
         self._users: dict[User, UserAdventureData] = {}
         self._started_on: int = -1
         self._message: Optional[MessagePlus] = None
         self._chapters: list['Chapter'] = []
-        self._override_str: Optional[str] = override_str
         self.saved_data: dict = {}
         self._current_chapter: int = 0
-        self._tokens: int = tokens
         self._event: Event = Event()
         self.lost: bool = False
 
@@ -52,30 +49,31 @@ class Adventure:
 
         have_tokens: bool = True
         for user in users:
-            if user.get_tokens() < self._tokens:
+            if user.get_tokens() < self._instance.tokens:
                 have_tokens = False
                 break
 
         if not have_tokens:
             if len(users) == 1:
                 await cmd.error(tr(self._lang, "ADVENTURE.NO_TOKENS_SINGLE",
-                                   tokens=self._tokens, EMOJI_TOKEN=Emoji.TOKEN))
+                                   tokens=self._instance.tokens, EMOJI_TOKEN=Emoji.TOKEN))
             else:
                 await cmd.error(tr(self._lang, "ADVENTURE.NO_TOKENS_MULTIPLE",
-                                   names=', '.join([x.get_name() for x in users]), tokens=self._tokens,
+                                   names=', '.join([x.get_name() for x in users]), tokens=self._instance.tokens,
                                    EMOJI_TOKEN=Emoji.TOKEN))
             return
 
         self._users = {user: UserAdventureData(user) for user in users}
         for user in users:
-            user.remove_tokens(self._tokens)
+            user.remove_tokens(self._instance.tokens)
             user.start_adventure(self)
         message: Message
-        if self._override_str is not None:
-            message = await cmd.send(self._override_str.format(self.get_user_names()) + "\n" + self.print_progress(None))
+        if self._instance.override_str is not None:
+            message = await cmd.send(self._instance.override_str.format(self.get_user_names()) + "\n"
+                                     + self.print_progress(None))
         else:
             message = await cmd.send(tr(self._lang, "ADVENTURE.START", players=self.get_user_names(),
-                                        name=self._name) + "\n" + self.print_progress(None))
+                                        name=tr(self._lang, self._instance.name)) + "\n" + self.print_progress(None))
         self._message = messages.register_message_reactions(message, [user.id for user in self._users])
         await asyncio.sleep(2)
 
@@ -85,14 +83,21 @@ class Adventure:
             await chapter.init()
             await self._event.wait()
             if self.lost:
-                await self._message.edit(f"{self.get_user_names()} died on {self._name}...")
+                await self._message.edit(f"{self.get_user_names()} died on {tr(self._lang, self._instance.name)}...")
                 for user in self._users:
                     user.end_adventure()
                 messages.unregister(self._message)
                 return
+            else:
+                for luser in self._users:
+                    user: User = luser
+                    ten_percent: int = max(1, round(Stat.HP.get_value(user.user_entity.get_stat_value(Stat.HP))))
+                    if user.user_entity.get_persistent(Stat.HP) < ten_percent:
+                        user.user_entity.set_persistent(Stat.HP, ten_percent)
+
             self._event.clear()
 
-        await self._message.edit(f"{self.get_user_names()} finished {self._name}.")
+        await self._message.edit(f"{self.get_user_names()} finished {tr(self._lang, self._instance.name)}.")
         for user in self._users:
             user.end_adventure()
         messages.unregister(self._message)
@@ -125,7 +130,7 @@ class Adventure:
         for chapter in self._chapters:
             if not chapter.hidden:
                 path.append(chapter.icon.value)
-        return tr(self._lang, "ADVENTURE.PROGRESS", icon=self._icon, progress=' ⎯ '.join(path))
+        return tr(self._lang, "ADVENTURE.PROGRESS", icon=self._instance.icon, progress=' ⎯ '.join(path))
 
     async def add_reaction(self, reaction: Emoji, hook: typing.Callable):
         await self._message.add_reaction(reaction, hook)

@@ -1,12 +1,8 @@
-from adventure_classes.generic.adventure import Adventure
-from adventure_classes.generic.battle import BattleChapter, BattleTeam
 from adventure_classes.generic.stat_modifier import StatModifierAdd
 from enums.item_rarity import ItemRarity
 from enums.item_type import ItemType
 from enums.location import Location
 from helpers.command import Command
-from entities.bot_entity import BotEntityBuilder
-from enums.emoji import Emoji
 from item_data import item_utils
 from item_data.stat import Stat
 
@@ -43,30 +39,5 @@ async def gimme_all(cmd: Command, tier: str = '0', location: str = 'Anywhere', r
     await cmd.send_hidden("epic")
 
 
-async def test(cmd: Command):
-    if FIGHT_BOT:
-        potato = BotEntityBuilder('Potato', {
-            Stat.HP: 50,
-            Stat.STR: 1,
-        })
-        potate = BotEntityBuilder('Potate', {
-            Stat.HP: 50,
-            Stat.STR: 1,
-        })
-        hapi = BotEntityBuilder(':)', {
-            Stat.HP: 200,
-            Stat.STR: 4,
-        })
-        adventure: Adventure = Adventure("Test Adventure", Emoji.BANK)
-        adventure.add_chapter(BattleChapter([
-            BattleTeam(potato.name, [potato.instance(), potate.instance()]),
-            BattleTeam(cmd.user.get_name(), [cmd.user.user_entity, hapi.instance()])
-        ]))
-        await adventure.start(cmd, [cmd.user])
-    else:
-        pass
-        # if saved is None:
-        #    saved = cmd.user
-        # else:
-        #    pass
-        #    await cmd.guild.start_battle(cmd.ctx, cmd.user, opponent_user=saved)
+async def test(_: Command):
+    pass

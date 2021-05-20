@@ -1,29 +1,63 @@
 import typing
-from abc import ABC
-from typing import Optional
+from abc import ABC, abstractmethod
 
+# from typing import Optional
+
+# from autoslot import Slots
+
+# import utils
 from autoslot import Slots
 
-import utils
 if typing.TYPE_CHECKING:
-    from adventure_classes.generic.battle_entity import BattleEntity
+    from adventure_classes.generic.battle_entity_old import BattleEntity
 
 
 class Ability(ABC):
-    def init(self, be: 'BattleEntity') -> None:
+    def init(self, targets: list['BattleEntity']) -> None:
         pass
 
-    def turn(self):
+    @staticmethod
+    def get_duration() -> int:
+        return 0
+
+    @staticmethod
+    def allow_self() -> bool:
+        return False
+
+    @staticmethod
+    @abstractmethod
+    def get_cost() -> int:
         pass
 
-    def end(self):
+    def turn(self, targets: list['BattleEntity']):
+        pass
+
+    def end(self, targets: list['BattleEntity']):
         pass
 
 
-class Burn(Ability):
-    def turn(self):
+class AbilityInstance(Slots):
+    def __init__(self, ability: Ability, targets: list[BattleEntity]):
+        self.duration_remaining = ability.get_duration()
+        self.ability = ability
+        self.targets = targets
+
+
+class Summon(Ability):
+    def get_cost(self) -> int:
+        return 6
+
+    def init(self, targets: list['BattleEntity']) -> None:
         pass
 
+
+ABILITIES: dict[int, Ability] = {
+    0: Summon()
+}
+
+
+def get_ability(ability_id: int) -> Ability:
+    return ABILITIES[ability_id]
 
 # class AbilityTier(Slots):
 #     def __init__(self, stat: Stat, duration: int, multiplier: float = 1, adder: int = 0, other: bool = False):
@@ -69,7 +103,8 @@ class Burn(Ability):
 #     def get_effect(self) -> str:
 #         if self.get().multiplier != 1:
 #             if self.get().other:
-#                 return f"x{self.get().multiplier:.2f} {self.get().stat.abv} on opponent for {self.get().duration} turns"
+#                 return f"x{self.get().multiplier:.2f} {self.get().stat.abv}
+#                 on opponent for {self.get().duration} turns"
 #             else:
 #                 return f"x{self.get().multiplier:.2f} {self.get().stat.abv} for {self.get().duration} turns"
 #         elif self.get().adder != 0:

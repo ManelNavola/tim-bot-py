@@ -8,6 +8,7 @@ from discord_slash import SlashCommand
 from discord_slash.utils.manage_commands import create_option, create_choice
 
 import utils
+from adventure_classes.game_adventures import adventure_provider
 from commands import simple, crate, bet, upgrade, shop, test, adventure, setup, equipment
 from game_data import data_loader
 from helpers import storage, messages, translate
@@ -249,9 +250,11 @@ cmd_handler.register_command(adventure.start_adventure,
                                      required=True,
                                      choices=[
                                          create_choice(
-                                             name="Forest",
-                                             value="Forest"
+                                             name=name,
+                                             value=name
                                          )
+                                         for name, instance in adventure_provider.name_to_adventure.items()
+                                         if not name.startswith('_')
                                      ]
                                  )
                              ],
@@ -259,7 +262,7 @@ cmd_handler.register_command(adventure.start_adventure,
 
 
 # Administration
-cmd_handler.register_command(setup.language,
+cmd_handler.register_command(setup.set_language,
                              base="setup",
                              name="language", description="Change the bot's language",
                              options=[

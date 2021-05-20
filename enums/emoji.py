@@ -85,6 +85,12 @@ class Emoji(Enum):
     ROGUE = r'\🗡️'
     MAGE = r'\⚗️'
 
+    # Spells
+    BLUE_BOOK = r'\📘'
+    RED_BOOK = r'\📕'
+    GREEN_BOOK = r'\📗'
+    ORANGE_BOOK = r'\📙'
+
     # Colors
     RED = r'\🟥'
     BLUE = r'\🟦'

@@ -1,7 +1,10 @@
 from typing import Optional
 
+from entities.ai.base_ai import BotAI, BaseBotAI
 from entities.entity import Entity
 # from item_data.abilities import AbilityInstance
+from enums.item_type import ItemType
+from item_data.abilities import Ability
 from item_data.stat import Stat
 
 
@@ -21,15 +24,15 @@ class BotEntityBuilder:
 
 
 class BotEntity(Entity):
-    def __init__(self, name: str, stat_dict: dict[Stat, int]):
-        # abilities: Optional[list[AbilityInstance]] = None):
+    def __init__(self, name: str, stat_dict: dict[Stat, int], abilities: list[Ability] = None, ai: BotAI = BaseBotAI()):
         super().__init__(stat_dict)
+        if abilities:
+            self._available_abilities = abilities
         self._name: str = name
+        self._ai: BotAI = ai
         self._persistent_stats = {stat: stat.get_value(stat_dict[stat])
                                   for stat in Stat
                                   if stat.is_persistent() and stat in stat_dict}
-        # if abilities is not None:
-        #    self._available_abilities = abilities
 
     def get_name(self) -> str:
         return self._name

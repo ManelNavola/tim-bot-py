@@ -2,7 +2,7 @@ from helpers.command import Command
 from helpers.translate import tr
 
 
-async def language(cmd: Command, language: str):
+async def set_language(cmd: Command, language: str):
     if cmd.guild:
         if cmd.user.member.guild_permissions.administrator:
             cmd.guild.set_lang(language)

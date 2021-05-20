@@ -1,6 +1,6 @@
 import typing
 
-from adventure_classes.game_adventures import tutorial
+from adventure_classes.game_adventures import adventure_provider
 
 if typing.TYPE_CHECKING:
     from helpers.command import Command
@@ -8,5 +8,5 @@ if typing.TYPE_CHECKING:
 
 async def play_tutorial(cmd: 'Command', stage: int):
     if stage == 0:  # 0: class not chosen
-        await tutorial.start(cmd, cmd.user)
+        await adventure_provider.name_to_adventure['_tutorial'].start(cmd)
         return

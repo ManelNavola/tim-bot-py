@@ -10,6 +10,7 @@ from helpers.incremental import Incremental
 from db.row import Row
 from entities.user_entity import UserEntity
 from enums.emoji import Emoji
+from helpers.translate import tr
 from item_data import item_utils
 from item_data.item_classes import Item
 from item_data.stat import StatInstance
@@ -80,13 +81,15 @@ class User(Row):
             print(f"{user_id} exceeded {slots} items: {len(item_slots)}!")
         self.inventory: Inventory = Inventory(self._db, DictRef(self._data, 'equipment'), slots, inv_items,
                                               self.user_entity, self.id)
-        self._tutorial_stage.set(0)  # HACK
 
     def get_lang(self) -> str:
         return self._lang.get()
 
     def set_lang(self, lang: str) -> None:
         self._lang.set(lang)
+
+    def get_class_index(self) -> int:
+        return self._user_class.get()
 
     def load_defaults(self):
         return {
@@ -226,7 +229,7 @@ class User(Row):
         return self.upgrades['inventory'].get_value()
 
     def print_garden_rate(self) -> str:
-        return self._bank.print_rate()
+        return self._bank.print_rate(self.get_lang())
 
     def get_total_money_space(self) -> int:
         return self.get_money_space() + self.get_bank_space()
@@ -234,26 +237,27 @@ class User(Row):
     def get_average_level(self) -> int:
         return round(sum([x.get_level() + 1 for x in self.upgrades.values()]) / len(self.upgrades.values()))
 
-    def print(self, private=True, checking=False) -> str:
+    def print(self, lang: str, private=True, checking=False) -> str:
         to_print = []
         if checking:
-            to_print.append(f"{self.get_name()} User Profile:")
+            to_print.append(tr(lang, 'USER.PROFILE', name=self.get_name()))
         if private:
-            to_print.append(f"{Emoji.MONEY} Money: {utils.print_money(self.get_money())} "
-                            f"/ {utils.print_money(self.get_money_limit())}")
-            to_print.append(f"{Emoji.BANK} Bank: {utils.print_money(self.get_bank())} "
-                            f"/ {utils.print_money(self.get_bank_limit())} "
+            to_print.append(f"{Emoji.MONEY} Money: {utils.print_money(lang, self.get_money())} "
+                            f"/ {utils.print_money(lang, self.get_money_limit())}")
+            to_print.append(f"{Emoji.BANK} Bank: {utils.print_money(lang, self.get_bank())} "
+                            f"/ {utils.print_money(lang, self.get_bank_limit())} "
                             f"({self.print_garden_rate()} {Emoji.GARDEN})")
             if self.get_tokens() >= self.get_token_limit():
                 to_print.append(f"{Emoji.TOKEN} Tokens: {self.get_tokens()} / {self.get_token_limit()}")
             else:
                 to_print.append(f"{Emoji.TOKEN} Tokens: {self.get_tokens()} / {self.get_token_limit()} "
-                                f"(Next in {utils.print_time(self._tokens.get_until(self.get_tokens() + 1))})")
+                                f"(Next in "
+                                f"{utils.print_time(self.get_lang(), self._tokens.get_until(self.get_tokens() + 1))})")
             if checking:
                 to_print.append(f"{Emoji.STATS} Equipment Power: {self.user_entity.get_power()}")
             to_print.append(self.inventory.print())
         else:
-            to_print.append(f"{Emoji.MONEY} Money: {utils.print_money(self.get_money())}")
+            to_print.append(f"{Emoji.MONEY} Money: {utils.print_money(lang, self.get_money())}")
             to_print.append(f"{Emoji.SCROLL} Average Level: {self.get_average_level()}")
             to_print.append(f"{Emoji.STATS} Equipment Power: {self.user_entity.get_power()}")
         return '\n'.join(to_print)

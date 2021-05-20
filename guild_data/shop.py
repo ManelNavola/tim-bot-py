@@ -30,15 +30,18 @@ class Shop:
     SELL_MULTIPLIER: float = 0.4
     ITEM_BUILDER: RandomItemBuilder = RandomItemBuilder(0).set_location(Location.ANYWHERE).choose_rarity(
         [ItemRarity.COMMON, ItemRarity.UNCOMMON, ItemRarity.RARE, ItemRarity.EPIC],
-        [ItemRarity.UNCOMMON.get_chance(), ItemRarity.RARE.get_chance(),
-         ItemRarity.EPIC.get_chance(), ItemRarity.LEGENDARY.get_chance()])
+        [60, 30, 8, 2])
 
-    def __init__(self, db: PostgreSQL, shop_time: DictRef[int], guild_id: int):
+    def __init__(self, db: PostgreSQL, lang: DictRef[str], shop_time: DictRef[int], guild_id: int):
         self._db = db
+        self._lang = lang
         self._guild_id: int = guild_id
         self._shop_time: DictRef[int] = shop_time
         self._shop_items: list[Optional[Item]] = [None] * Shop.ITEM_AMOUNT
         self._last_valid_checks: list[Optional[bool]] = [False] * Shop.ITEM_AMOUNT
+
+    def get_lang(self) -> str:
+        return self._lang.get()
 
     @staticmethod
     def get_sell_price(item: Item):
@@ -69,20 +72,20 @@ class Shop:
         for i in range(Shop.ITEM_AMOUNT):
             self._last_valid_checks[i] = True
         to_ret = [f"{Emoji.SHOP} Shop (Restocks in "
-                  f"{utils.print_time(Shop.SHOP_DURATION.seconds() - diff)}"
+                  f"{utils.print_time(self.get_lang(), Shop.SHOP_DURATION.seconds() - diff)}"
                   f"{Emoji.CLOCK})"]
         for i in range(len(self._shop_items)):
             item = self._shop_items[i]
             if item.price_modifier is None:
                 to_ret.append(f"{i + 1}: {item.print()}"
-                              f" - {utils.print_money(item.get_price())}")
+                              f" - {utils.print_money(self.get_lang(), item.get_price())}")
             else:
                 if item.price_modifier > 1:
                     to_ret.append(f"{i + 1}: {item.print()}"
-                                  f" - {utils.print_money(item.get_price())} {Emoji.INCREASE}")
+                                  f" - {utils.print_money(self.get_lang(), item.get_price())} {Emoji.INCREASE}")
                 else:
                     to_ret.append(f"{i + 1}: {item.print()}"
-                                  f" - {utils.print_money(item.get_price())} {Emoji.DECREASE}")
+                                  f" - {utils.print_money(self.get_lang(), item.get_price())} {Emoji.DECREASE}")
         return '\n'.join(to_ret)
 
     def purchase_item(self, user: 'User', item_index: int) -> ItemPurchase:
@@ -100,7 +103,6 @@ class Shop:
                 was_there_before = (user.inventory.get_first(item.get_description().type) is not None)
                 transfer_shop(self._db, self._guild_id, user.id, slot, item)
                 self._shop_items[item_index] = None
-                item.durability = 100
                 self._last_valid_checks[item_index] = False
                 self._restock_shop()
                 ip.item = item

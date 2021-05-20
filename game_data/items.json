@@ -149,5 +149,14 @@
       "SPD": 2,
       "EVA": 2
     }
+  },
+  "15": {
+    "Name": "Old Tome",
+    "Location": "Anywhere",
+    "Tier": 0,
+    "Type": "Secondary",
+    "Stats": {
+      "HP": 2
+    }
   }
 }

@@ -228,5 +228,15 @@
       "DEF": 1
     },
     "Pool": ""
+  },
+  "22": {
+    "Name": "Entling",
+    "Location": "Forest",
+    "Stats": {
+      "HP": 4,
+      "STR": 3,
+      "DEF": 3
+    },
+    "Pool": "BOSS_SPAWN"
   }
 }

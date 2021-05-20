@@ -40,13 +40,13 @@ def get_stat_bonus(desc: ItemDescription, rarity: ItemRarity) -> dict[Stat, int]
     if rarity == ItemRarity.COMMON:  # =
         pass
 
-    elif rarity == ItemRarity.UNCOMMON:  # +1
+    elif rarity == ItemRarity.UNCOMMON:  # +0/1
         if chance_main:
             sb[random.choice(chance_main)] = 1
         else:
             sb[random.choice(Stat.get_type_list(StatType.CHANCE))] = 1
 
-    elif rarity == ItemRarity.RARE:  # +2
+    elif rarity == ItemRarity.RARE:  # +1/1
         if chance_main:
             sb[random.choice(chance_main)] = 1
         else:
@@ -61,7 +61,7 @@ def get_stat_bonus(desc: ItemDescription, rarity: ItemRarity) -> dict[Stat, int]
                 rc = random.choice(Stat.get_type_list(StatType.CHANCE))
                 sb[rc] = sb.get(rc, 0) + 1
 
-    elif rarity == ItemRarity.EPIC:  # +3
+    elif rarity == ItemRarity.EPIC:  # +1/2
         first_one = random.randint(1, 2)
         if base_main:
             sb[random.choice(base_main)] = first_one
@@ -72,7 +72,7 @@ def get_stat_bonus(desc: ItemDescription, rarity: ItemRarity) -> dict[Stat, int]
         else:
             sb[random.choice(Stat.get_type_list(StatType.CHANCE))] = 3 - first_one
 
-    elif rarity == ItemRarity.LEGENDARY:  # +4
+    elif rarity == ItemRarity.LEGENDARY:  # +2/2
         if base_main:
             sb[random.choice(base_main)] = 2
         else:
@@ -81,6 +81,26 @@ def get_stat_bonus(desc: ItemDescription, rarity: ItemRarity) -> dict[Stat, int]
             sb[random.choice(chance_main)] = 2
         else:
             sb[random.choice(Stat.get_type_list(StatType.CHANCE))] = 2
+
+    elif rarity == ItemRarity.RED_LEGENDARY:  # +3/1
+        if base_main:
+            sb[random.choice(base_main)] = 3
+        else:
+            sb[random.choice(Stat.get_type_list(StatType.MAIN))] = 3
+        if chance_main:
+            sb[random.choice(chance_main)] = 1
+        else:
+            sb[random.choice(Stat.get_type_list(StatType.CHANCE))] = 1
+
+    elif rarity == ItemRarity.BLUE_LEGENDARY:  # +1/3
+        if base_main:
+            sb[random.choice(base_main)] = 1
+        else:
+            sb[random.choice(Stat.get_type_list(StatType.MAIN))] = 1
+        if chance_main:
+            sb[random.choice(chance_main)] = 3
+        else:
+            sb[random.choice(Stat.get_type_list(StatType.CHANCE))] = 3
 
     return sb
 
@@ -130,6 +150,12 @@ class RandomItemBuilder:
     def build(self):
         item_type: ItemType = random.choices(self.item_type, weights=self.item_type_weights, k=1)[0]
         item_rarity: ItemRarity = random.choices(self.item_rarity, weights=self.item_rarity_weights, k=1)[0]
+        if item_rarity == ItemRarity.LEGENDARY:
+            r: float = random.random()
+            if 0.1 < r < 0.2:
+                item_rarity = ItemRarity.RED_LEGENDARY
+            elif r < 0.1:
+                item_rarity = ItemRarity.BLUE_LEGENDARY
         desc: ItemDescription = random.choice(_ITEMS[self.tier][self.location][item_type])
         return Item(desc, item_rarity, get_stat_bonus(desc, item_rarity))
 
@@ -172,4 +198,4 @@ def from_dict(item_dict: dict[str, Any]):
     desc: ItemDescription = _INDEX_TO_ITEM[item_dict['desc_id']]
     rarity: ItemRarity = ItemRarity.get_from_id(item_dict['rarity'])
     stat_bonus: dict[Stat, int] = stat_utils.unpack_stat_dict(item_dict['stat_bonus'])
-    return Item(desc, rarity, stat_bonus, item_dict['durability'])
+    return Item(desc, rarity, stat_bonus)
