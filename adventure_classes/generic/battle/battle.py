@@ -85,8 +85,10 @@ class BattleGroup:
 
 
 class BattleGroupUsers(BattleGroup):
-    def __init__(self, users: list['User'] = None):
-        super().__init__([])
+    def __init__(self, users: list['User'] = None, entities: list['Entity'] = None):
+        if entities is None:
+            entities = []
+        super().__init__(entities)
         if users is None:
             users = []
         self._users_to_load: list['User'] = users
@@ -99,7 +101,7 @@ class BattleGroupUsers(BattleGroup):
 
 
 class BattleChapter(Chapter):
-    INCREASE_EVERY: typing.Final[int] = 8
+    INCREASE_EVERY: typing.Final[int] = 6
     SINGLE_PLAYER_DELAY: int = 300
     MULTI_PLAYER_DELAY: int = 20
 
@@ -120,6 +122,7 @@ class BattleChapter(Chapter):
         self._pass_turn: Optional[WaitUntil] = None
         self._acted: set[User] = set()
         self._pre_text: list[str] = pre_text
+        self._late_clear: bool = False
 
     def _get_mulitplier(self) -> int:
         return (self._round // self.INCREASE_EVERY) + 1
@@ -127,7 +130,9 @@ class BattleChapter(Chapter):
     def _print_round(self) -> str:
         mult: int = self._get_mulitplier()
         ret_txt: str
-        if mult == 1:
+        if self._round == 0:
+            ret_txt = f"{Emoji.BATTLE} Loading..."
+        elif mult == 1:
             ret_txt = tr(self.get_lang(), 'BATTLE.ROUND', EMOJI_BATTLE=Emoji.BATTLE, round=self._round)
         else:
             ret_txt = tr(self.get_lang(), 'BATTLE.ROUND_DMG', EMOJI_BATTLE=Emoji.BATTLE, round=self._round,
@@ -158,21 +163,25 @@ class BattleChapter(Chapter):
         for battle_entity in current_team.get_battle_entities():
             self.add_log(battle_entity.print())
 
-        if len(self._available_targets) == 1:
-            battle_entity: BattleEntity = other_team.get_battle_entities()[0]
-            self.add_log(f"{battle_entity.print()}")
+        if self._get_current_team().get_alive_user_count() > 0:
+            if len(self._available_targets) == 1:
+                battle_entity: BattleEntity = other_team.get_battle_entities()[0]
+                self.add_log(f"{battle_entity.print()}")
+            else:
+                td: dict[BattleEntity, list[str]] = {}
+                for be1, be2 in self._chosen_targets.items():
+                    if be2 is not None:
+                        td[be2] = td.get(be2, []) + [be1.get_name()]
+                for i in range(len(self._available_targets)):
+                    battle_entity: BattleEntity = self._available_targets[i]
+                    sl: list[str] = td.get(battle_entity, [])
+                    if sl and (not battle_entity.is_dead()):
+                        self.add_log(f"{i + 1} | {battle_entity.print()} <- {', '.join(sl)}")
+                    else:
+                        self.add_log(f"{i + 1} | {battle_entity.print()}")
         else:
-            td: dict[BattleEntity, list[str]] = {}
-            for be1, be2 in self._chosen_targets.items():
-                if be2 is not None:
-                    td[be2] = td.get(be2, []) + [be1.get_name()]
-            for i in range(len(self._available_targets)):
-                battle_entity: BattleEntity = self._available_targets[i]
-                sl: list[str] = td.get(battle_entity, [])
-                if sl and (not battle_entity.is_dead()):
-                    self.add_log(f"{i + 1} | {battle_entity.print()} <- {', '.join(sl)}")
-                else:
-                    self.add_log(f"{i + 1} | {battle_entity.print()}")
+            for battle_entity in other_team.get_battle_entities():
+                self.add_log(f"{battle_entity.print()}")
 
         self.add_log('\n'.join(self._battle_log))
 
@@ -209,7 +218,7 @@ class BattleChapter(Chapter):
         self._acted.clear()
         self._chosen_targets.clear()
 
-        if not current_team.has_users():
+        if current_team.get_alive_user_count() == 0:
             return await self.execute_turn_bot()
 
         # User turn
@@ -221,7 +230,7 @@ class BattleChapter(Chapter):
                 battle_entity.set_last_target(None)
 
         await self.update()
-        self._battle_log.clear()
+        self._late_clear = True
 
         if len(self._available_targets) == 1:
             for battle_entity in current_team.get_battle_entities():
@@ -234,7 +243,26 @@ class BattleChapter(Chapter):
             self._pass_turn = WaitUntil(BattleChapter.SINGLE_PLAYER_DELAY)
 
         await self._pass_turn.wait()
+        if self._late_clear:
+            self._battle_log.clear()
+            self._late_clear = False
         return await self.execute_turn_bot()
+
+    async def choose_target(self, user: 'User', emoji: Emoji) -> None:
+        if (self._pass_turn is None) or (not self._pass_turn.is_running()):
+            return
+
+        current_team: BattleGroup = self._get_current_team()
+        battle_entity: Optional[BattleEntity] = current_team.find_user(user)
+        if battle_entity is not None:
+            if (battle_entity not in self._acted) and (not battle_entity.is_dead()):
+                num: int = emoji.get_number_value() - 1
+                if num < len(self._available_targets):
+                    self._chosen_targets[battle_entity] = self._available_targets[num]
+                    battle_entity.set_last_target(self._available_targets[num])
+                    await self.update()
+
+        await self.get_adventure().remove_reaction(user, emoji)
 
     async def execute_action(self, user: 'User', emoji: Emoji) -> None:
         if (self._pass_turn is None) or (not self._pass_turn.is_running()):
@@ -243,7 +271,7 @@ class BattleChapter(Chapter):
         current_team: BattleGroup = self._get_current_team()
         battle_entity: Optional[BattleEntity] = current_team.find_user(user)
         if battle_entity is not None:
-            if battle_entity not in self._acted:
+            if (battle_entity not in self._acted) and (not battle_entity.is_dead()):
                 target_battle_entity = self._chosen_targets.get(battle_entity)
                 if (target_battle_entity is not None) and (target_battle_entity.is_dead()):
                     return
@@ -252,6 +280,9 @@ class BattleChapter(Chapter):
                     BattleActionData(self.get_lang(), self._get_mulitplier(), target_battle_entity))
                 if msg is not None:
                     self._acted.add(user)
+                    if self._late_clear:
+                        self._battle_log.clear()
+                        self._late_clear = False
                     self._battle_log.append(msg)
                     if self._is_finished() or len(self._acted) == current_team.get_alive_user_count():
                         # Finished
@@ -262,6 +293,9 @@ class BattleChapter(Chapter):
         await self.get_adventure().remove_reaction(user, emoji)
 
     async def execute_turn_bot(self) -> None:
+        if self._late_clear:
+            self._battle_log.clear()
+            self._late_clear = False
         if self._is_finished():
             return
         current_team: BattleGroup = self._get_current_team()
@@ -281,9 +315,6 @@ class BattleChapter(Chapter):
                 msg: Optional[str] = battle_entity.try_perform_action(emoji, bad)
                 if msg is not None:
                     self._battle_log.append(msg)
-                    if self._is_finished() or len(self._acted) == current_team.get_alive_user_count():
-                        # Finished
-                        return
             if self._is_finished():
                 return
 
@@ -304,6 +335,17 @@ class BattleChapter(Chapter):
         for battle_entity in self._group_a.get_battle_entities() + self._group_b.get_battle_entities():
             if battle_entity.is_user():
                 abilities = max(abilities, len(battle_entity.get_abilities()))
+        max_targets: int = 0
+        if self._group_a.has_users() and self._group_b.has_users():
+            max_targets = max(len(self._group_a.get_battle_entities()), len(self._group_b.get_battle_entities()))
+        elif self._group_a.has_users() or self._group_b.has_users():
+            if self._group_a.has_users():
+                max_targets = len(self._group_b.get_battle_entities())
+            elif self._group_b.has_users():
+                max_targets = len(self._group_a.get_battle_entities())
+        if max_targets > 1:
+            for num in range(max_targets):
+                await self.get_adventure().add_reaction(Emoji.get_number(num + 1), self.choose_target)
         await self.get_adventure().add_reaction(BattleEmoji.ATTACK.value, self.execute_action)
         for battle_emoji in BattleEmoji.get_spells(abilities):
             await self.get_adventure().add_reaction(battle_emoji.value, self.execute_action)
@@ -311,7 +353,8 @@ class BattleChapter(Chapter):
         # Loop
         self._round = 1
         while True:
-            if self._battle_log and (not self._group_a.has_users()) and (not self._group_b.has_users()):
+            if (not self._round_offbeat) and self._battle_log and \
+                    (self._group_a.get_alive_user_count() + self._group_b.get_alive_user_count() == 0):
                 await self.update()
                 await asyncio.sleep(3)
                 self._battle_log.clear()
@@ -325,7 +368,8 @@ class BattleChapter(Chapter):
             else:
                 self._round_offbeat = True
         # End
-        self._battle_log.append(f"**{Emoji.TROPHY} {tr(self.get_lang(), 'BATTLE.WIN', name=self._get_current_team().get_name())}**")
+        self._battle_log.append(f"**{Emoji.TROPHY} "
+                                f"{tr(self.get_lang(), 'BATTLE.WIN', name=self._get_current_team().get_name())}**")
         await self.update()
         await self.end()
 

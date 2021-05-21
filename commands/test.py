@@ -1,4 +1,9 @@
+from adventure_classes.game_adventures.adventure_provider import AdventureInstance
+from adventure_classes.generic.adventure import Adventure
+from adventure_classes.generic.battle.battle import BattleChapter, BattleGroupUsers, BattleGroup
 from adventure_classes.generic.stat_modifier import StatModifierAdd
+from entities.bot_entity import BotEntity
+from enums.emoji import Emoji
 from enums.item_rarity import ItemRarity
 from enums.item_type import ItemType
 from enums.location import Location
@@ -39,5 +44,25 @@ async def gimme_all(cmd: Command, tier: str = '0', location: str = 'Anywhere', r
     await cmd.send_hidden("epic")
 
 
-async def test(_: Command):
-    pass
+async def setup(_: 'Command', adventure: Adventure):
+    be: BotEntity = BotEntity('potato bad 1', {
+        Stat.HP: 40,
+        Stat.STR: 2,
+        Stat.DEF: 2,
+    })
+    be2: BotEntity = BotEntity('potato bad 2', {
+        Stat.HP: 40,
+        Stat.STR: 2,
+        Stat.DEF: 2,
+    })
+    be3: BotEntity = BotEntity('potato good', {
+        Stat.HP: 40,
+        Stat.STR: 2,
+        Stat.DEF: 2,
+    })
+    adventure.add_chapter(BattleChapter(BattleGroupUsers(entities=[be3]), BattleGroup([be, be2])))
+
+
+async def test(cmd: Command):
+    adv = AdventureInstance(setup, 'TEST', Emoji.SPARKLE, tokens=0)
+    await adv.start(cmd)

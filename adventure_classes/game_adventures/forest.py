@@ -34,7 +34,7 @@ class BonusChapter(Chapter):
 
     async def init(self):
         self.add_log(self._text)
-        users: list[User] = list(self.get_adventure().get_users().keys())
+        users: set[User] = self.get_adventure().get_users()
         for bonus in self._bonus:
             if bonus.duration < 0:
                 self.add_log(f"{bonus.print()} {bonus.stat.get_abv()} for the whole adventure")

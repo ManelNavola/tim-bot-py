@@ -2,7 +2,7 @@ from abc import abstractmethod, ABC
 from typing import Optional
 
 from adventure_classes.generic.stat_modifier import StatModifier
-from item_data.abilities import AbilityEnum, AbilityContainer
+from item_data.abilities import AbilityContainer
 from item_data.stat import Stat
 
 
@@ -34,7 +34,6 @@ class Entity(ABC):
         return self._stat_dict.get(stat, default)
 
     def reset(self) -> None:
-        self.set_abilities([AbilityContainer(AbilityEnum.BURN, 0)])  # HACK
         self.clear_battle_modifiers()
         self._persistent_stats.clear()
         for stat in Stat:

@@ -88,12 +88,6 @@ class Adventure:
                     user.end_adventure()
                 messages.unregister(self._message)
                 return
-            else:
-                for luser in self._users:
-                    user: User = luser
-                    ten_percent: int = max(1, round(Stat.HP.get_value(user.user_entity.get_stat(Stat.HP))))
-                    if user.user_entity.get_persistent_value(Stat.HP) < ten_percent:
-                        user.user_entity.set_persistent_value(Stat.HP, ten_percent)
 
             self._event.clear()
 
