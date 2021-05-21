@@ -19,8 +19,8 @@ async def rich(cmd: Command):
 
 
 async def heal(cmd: Command):
-    cmd.user.user_entity.add_modifier(StatModifierAdd(Stat.EVA, 9999))
-    cmd.user.user_entity.add_modifier(StatModifierAdd(Stat.STR, 9999))
+    cmd.user.user_entity.add_battle_modifier(StatModifierAdd(Stat.EVA, 9999))
+    cmd.user.user_entity.add_battle_modifier(StatModifierAdd(Stat.STR, 9999))
     await cmd.send_hidden("cheater...")
 
 

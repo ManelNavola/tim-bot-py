@@ -9,7 +9,7 @@ import utils
 from helpers.translate import tr
 from item_data.stat import Stat
 from user_data.user import User
-from adventure_classes.generic.user_adventure_data import UserAdventureData
+# from adventure_classes.generic.user_adventure_data import UserAdventureData
 from helpers import messages
 from helpers.messages import MessagePlus
 from enums.emoji import Emoji
@@ -24,7 +24,7 @@ class Adventure:
     def __init__(self, instance: 'AdventureInstance'):
         self._lang: str = ''
         self._instance: 'AdventureInstance' = instance
-        self._users: dict[User, UserAdventureData] = {}
+        self._users: set[User] = set()
         self._started_on: int = -1
         self._message: Optional[MessagePlus] = None
         self._chapters: list['Chapter'] = []
@@ -37,7 +37,7 @@ class Adventure:
         return self._lang
 
     def get_user_names(self) -> str:
-        return ', '.join([user.get_name() for user in self._users.keys()])
+        return ', '.join([user.get_name() for user in self._users])
 
     async def start(self, cmd: 'Command', users: list[User]):
         assert len(self._chapters) > 0, "Tried starting adventure without chapters"
@@ -63,7 +63,7 @@ class Adventure:
                                    EMOJI_TOKEN=Emoji.TOKEN))
             return
 
-        self._users = {user: UserAdventureData(user) for user in users}
+        self._users = users
         for user in users:
             user.remove_tokens(self._instance.tokens)
             user.start_adventure(self)
@@ -91,9 +91,9 @@ class Adventure:
             else:
                 for luser in self._users:
                     user: User = luser
-                    ten_percent: int = max(1, round(Stat.HP.get_value(user.user_entity.get_stat_value(Stat.HP))))
-                    if user.user_entity.get_persistent(Stat.HP) < ten_percent:
-                        user.user_entity.set_persistent(Stat.HP, ten_percent)
+                    ten_percent: int = max(1, round(Stat.HP.get_value(user.user_entity.get_stat(Stat.HP))))
+                    if user.user_entity.get_persistent_value(Stat.HP) < ten_percent:
+                        user.user_entity.set_persistent_value(Stat.HP, ten_percent)
 
             self._event.clear()
 

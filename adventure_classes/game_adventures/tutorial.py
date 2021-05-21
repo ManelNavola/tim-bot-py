@@ -1,9 +1,8 @@
 import typing
 from collections import Callable
 
-from adventure_classes.generic import battle_old
 from adventure_classes.generic.adventure import Adventure
-from adventure_classes.generic.battle_old import BattleChapterWithText
+from adventure_classes.generic.battle import battle
 from adventure_classes.generic.chapter import Chapter
 from adventure_classes.generic.choice import ChoiceChapter
 from adventure_classes.generic.reward import ItemRewardChapter
@@ -17,17 +16,6 @@ from user_data.user import User
 
 if typing.TYPE_CHECKING:
     from helpers.command import Command
-
-
-class TutorialBattleChapter(BattleChapterWithText):
-    def _print_current_prefix(self):
-        super()._print_current_prefix()
-        if not self._finished:
-            self.add_log(tr(self.get_lang(), 'TUTORIAL.ATTACK', EMOJI_BATTLE=Emoji.BATTLE))
-
-    async def end(self, lost: bool = False, skip: bool = False) -> None:
-        await self.append(tr(self.get_lang(), 'TUTORIAL.BATTLE_END', EMOJI_OK=Emoji.OK))
-        await super().end(lost, skip)
 
 
 class TutorialClassChapter(ChoiceChapter):
@@ -70,7 +58,6 @@ class TutorialEndChapter(Chapter):
 
 async def setup(cmd: 'Command', adventure: Adventure):
     adventure.add_chapter(TutorialClassChapter())
-    tbc = TutorialBattleChapter([tr(cmd.lang, "TUTORIAL.SEAGULL")])
-    adventure.add_chapter(battle_old.q1vp(cmd.lang, battle_old.rnd(adventure, Location.TUTORIAL), tbc))
+    battle.qsab(adventure, Location.TUTORIAL, pre_text=[tr(cmd.lang, "TUTORIAL.SEAGULL")])
     adventure.add_chapter(TutorialEndChapter())
     adventure.add_chapter(ItemRewardChapter(RandomItemBuilder(0).set_rarity(ItemRarity.COMMON).build()))

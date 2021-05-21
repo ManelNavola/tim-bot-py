@@ -3,7 +3,7 @@ from typing import Optional
 from entities.ai.base_ai import BotAI, BaseBotAI
 from entities.entity import Entity
 # from item_data.abilities import AbilityInstance
-from item_data.abilities import Ability
+from item_data.abilities import AbilityEnum
 from item_data.stat import Stat
 
 
@@ -23,7 +23,8 @@ class BotEntityBuilder:
 
 
 class BotEntity(Entity):
-    def __init__(self, name: str, stat_dict: dict[Stat, int], abilities: list[Ability] = None, ai: BotAI = BaseBotAI()):
+    def __init__(self, name: str, stat_dict: dict[Stat, int], abilities: list[AbilityEnum] = None,
+                 ai: BotAI = BaseBotAI()):
         super().__init__(stat_dict)
         self._name: str = name
         if abilities:
@@ -32,6 +33,9 @@ class BotEntity(Entity):
         self._persistent_stats = {stat: stat.get_value(stat_dict[stat])
                                   for stat in Stat
                                   if stat.is_persistent() and stat in stat_dict}
+
+    def get_ai(self) -> BotAI:
+        return self._ai
 
     def get_name(self) -> str:
         return self._name

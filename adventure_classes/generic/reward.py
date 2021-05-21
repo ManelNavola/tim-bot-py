@@ -33,8 +33,7 @@ class ItemRewardChapter(RewardChapter):
         self.item = item
 
     async def reward(self):
-        users: list[User] = list(self.get_adventure().get_users().keys())
-        users = [user for user in users if user.inventory.get_empty_slot() is not None]
+        users: list[User] = [user for user in self.get_adventure().get_users() if user.inventory.get_empty_slot() is not None]
         if not users:
             users = list(self.get_adventure().get_users().keys())
 

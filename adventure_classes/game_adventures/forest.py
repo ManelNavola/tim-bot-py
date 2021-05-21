@@ -1,9 +1,8 @@
 import random
 import typing
 
-from adventure_classes.generic import battle_old
+from adventure_classes.generic.battle import battle
 from adventure_classes.generic.adventure import Adventure
-from adventure_classes.generic.battle_old import BattleChapterWithText
 from adventure_classes.generic.chapter import Chapter
 from adventure_classes.generic.choice import ChoiceChapter
 from adventure_classes.generic.reward import MoneyRewardChapter, ItemRewardChapter
@@ -44,15 +43,15 @@ class BonusChapter(Chapter):
             else:
                 self.add_log(f"{bonus.print()} {bonus.stat.get_abv()} for the next {bonus.duration} battles")
             for user in users:
-                user.user_entity.add_modifier(bonus)
+                user.user_entity.add_battle_modifier(bonus)
         for bonus in self._persistent_bonus:
             stat: Stat = bonus[0]
             amount: int = bonus[1]
             for user in users:
-                old_value = user.user_entity.get_persistent(stat)
+                old_value = user.user_entity.get_persistent_value(stat)
                 if old_value:
-                    new_value = min(old_value + amount, stat.get_value(user.user_entity.get_stat_value(stat)))
-                    user.user_entity.change_persistent(stat, new_value)
+                    new_value = min(old_value + amount, stat.get_value(user.user_entity.get_stat(stat)))
+                    user.user_entity.change_persistent_value(stat, new_value)
                     self.add_log(f"+{amount} {stat.get_abv()} ({old_value} {Emoji.ARROW_RIGHT} {new_value})")
         await self.send_log()
         await self.end()
@@ -73,14 +72,14 @@ def eat_mushroom(color: int):
 
 
 def aa_deeper(adventure: Adventure):
-    adventure.add_chapter(battle_old.q1vp(adventure.get_lang(), battle_old.rnd(adventure, Location.FOREST, 'C')))
+    battle.qsab(adventure, Location.FOREST, 'C')
     bc = BonusChapter('As you venture deeper into the forest, you gather some courage...')
     if random.random() < 0.5:
         bc.add_modifier(StatModifierAdd(Stat.EVA, 3))
     else:
         bc.add_modifier(StatModifierAdd(Stat.SPD, 3))
     adventure.add_chapter(bc)
-    adventure.add_chapter(battle_old.q1vp(adventure.get_lang(), battle_old.rnd(adventure, Location.FOREST, 'C')))
+    battle.qsab(adventure, Location.FOREST, 'C')
 
     cc = ChoiceChapter(Emoji.MUSHROOM, 'Under a tree you find three mushrooms...')
     cc.add_choice(Emoji.RED, 'Eat the red mushroom', eat_mushroom(0))
@@ -88,11 +87,12 @@ def aa_deeper(adventure: Adventure):
     cc.add_choice(Emoji.GREEN, 'Eat the green mushroom', eat_mushroom(2))
     adventure.add_chapter(cc)
 
-    adventure.add_chapter(battle_old.q1vp(adventure.get_lang(), battle_old.rnd(adventure, Location.FOREST, 'B')))
-    bct = BattleChapterWithText(['You feel the forest watching you...', 'Suddenly you see something move!',
-                                 'But it is not a wild animal...'])
-    adventure.add_chapter(battle_old.q1vp(adventure.get_lang(), battle_old.rnd(adventure, Location.FOREST, 'BOSS'), bct))
-    bc.icon = Emoji.FOREST
+    battle.qsab(adventure, Location.FOREST, 'B')
+    battle.qsab(adventure, Location.FOREST, 'BOSS',
+                icon=Emoji.FOREST,
+                pre_text=['You feel the forest watching you...',
+                          'Suddenly you see something move!',
+                          'But it is not a wild animal...'])
 
     item: Item = RandomItemBuilder(0).set_location(Location.FOREST).build()
     adventure.add_chapter(ItemRewardChapter(item))
@@ -107,8 +107,8 @@ def ab_continue_path(adventure):
         bc = BonusChapter('You find healing herbs near a tree')
         bc.add_persistent(Stat.HP, Stat.HP.get_value(3))
         adventure.add_chapter(bc)
-    adventure.add_chapter(battle_old.q1vp(adventure.get_lang(), battle_old.rnd(adventure, Location.FOREST, 'A')))
-    adventure.add_chapter(battle_old.q1vp(adventure.get_lang(), battle_old.rnd(adventure, Location.FOREST, 'C')))
+    battle.qsab(adventure, Location.FOREST, 'A')
+    battle.qsab(adventure, Location.FOREST, 'C')
     if random.random() < 0.5:
         adventure.add_chapter(MoneyRewardChapter(random.randint(300, 400)))
     else:
@@ -118,8 +118,8 @@ def ab_continue_path(adventure):
 
 
 def a_deep(adventure):
-    adventure.add_chapter(battle_old.q1vp(adventure.get_lang(), battle_old.rnd(adventure, Location.FOREST, 'B')))
-    adventure.add_chapter(battle_old.q1vp(adventure.get_lang(), battle_old.rnd(adventure, Location.FOREST, 'B')))
+    battle.qsab(adventure, Location.FOREST, 'B')
+    battle.qsab(adventure, Location.FOREST, 'B')
     adventure.add_chapter(ChoiceChapter(Emoji.FOREST, 'You find a path without any light:')
                           .add_choice(Emoji.UP, 'Venture into the darkest, deepest part of the forest', aa_deeper)
                           .add_choice(Emoji.RIGHT, 'Continue your journey', ab_continue_path))
@@ -136,17 +136,15 @@ def b_reward(adventure):
 
 def ba_bear(adventure):
     if random.random() < 0.4:
-        bct = BattleChapterWithText(['The bear woke up!'])
-        bct.icon = Emoji.BEAR
-        adventure.add_chapter(battle_old.q1vp(adventure.get_lang(), battle_old.rnd(adventure, Location.FOREST, 'D'), bct))
+        battle.qsab(adventure, Location.FOREST, 'D', icon=Emoji.BEAR, pre_text=['The bear woke up...'])
     else:
-        adventure.add_chapter(battle_old.q1vp(adventure.get_lang(), battle_old.rnd(adventure, Location.FOREST, 'A')))
+        battle.qsab(adventure, Location.FOREST, 'A')
     b_reward(adventure)
 
 
 def bb_around_bear(adventure):
-    adventure.add_chapter(battle_old.q1vp(adventure.get_lang(), battle_old.rnd(adventure, Location.FOREST, 'A')))
-    adventure.add_chapter(battle_old.q1vp(adventure.get_lang(), battle_old.rnd(adventure, Location.FOREST, 'B')))
+    battle.qsab(adventure, Location.FOREST, 'A')
+    battle.qsab(adventure, Location.FOREST, 'B')
     b_reward(adventure)
 
 
@@ -154,15 +152,15 @@ def b_around(adventure):
     bc = BonusChapter('You find some healing roots...')
     bc.add_persistent(Stat.HP, Stat.HP.get_value(3))
     adventure.add_chapter(bc)
-    adventure.add_chapter(battle_old.q1vp(adventure.get_lang(), battle_old.rnd(adventure, Location.FOREST, 'B')))
+    battle.qsab(adventure, Location.FOREST, 'B')
     adventure.add_chapter(ChoiceChapter(Emoji.BEAR, 'You find a sleeping bear blocking your path:')
                           .add_choice(Emoji.UP, 'Try to sneak past the bear', ba_bear)
                           .add_choice(Emoji.RIGHT, 'Find another path', bb_around_bear))
 
 
 async def setup(_: 'Command', adventure: Adventure):
-    adventure.add_chapter(battle_old.q1vp(adventure.get_lang(), battle_old.rnd(adventure, Location.FOREST, 'A')))
-    adventure.add_chapter(battle_old.q1vp(adventure.get_lang(), battle_old.rnd(adventure, Location.FOREST, 'A')))
+    battle.qsab(adventure, Location.FOREST, 'A')
+    battle.qsab(adventure, Location.FOREST, 'A')
     adventure.add_chapter(ChoiceChapter(Emoji.GARDEN, 'You find yourself at an intersection:')
                           .add_choice(Emoji.UP, 'Go deep into the forest', a_deep)
                           .add_choice(Emoji.RIGHT, 'Go around the forest', b_around))
