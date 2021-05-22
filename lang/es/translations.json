@@ -1,22 +1,34 @@
 {
+  "ABILITIES": {
+    "CLAW_USE": "{source} paralizó a {target} con sus pinzas!",
+    "SUMMON": "{source} convocó un {summon}!"
+  },
   "ADVENTURE": {
+    "DIED": "{EMOJI_SKULL} {name} murió en {location}...",
+    "FINISH": "{EMOJI_LOCATION} {name} finalizó {location}.",
     "NO_TOKENS_MULTIPLE": "{names} no tienen suficientes tokens! (Necesitan: {tokens} {EMOJI_TOKEN})",
     "NO_TOKENS_SINGLE": "No tienes suficientes tokens! (Necesitas: {tokens} {EMOJI_TOKEN})",
     "PROGRESS": "{icon} Progreso: {progress}",
     "START": "{players} ha empezado {name}!"
   },
   "BATTLE": {
+    "BOSS_START": "BATALLA CONTRA EL JEFE!",
+    "LOADING": "{EMOJI_BATTLE} Cargando...",
+    "NO_SPEED_BONUS": "{EMOJI_SPD} Sin bonus de velocidad",
     "ROUND": "{EMOJI_BATTLE} Ronda {round}",
     "ROUND_DMG": "{EMOJI_BATTLE} Ronda {round} (x{multiplier} daño)",
+    "SPEED_BONUS": "{EMOJI_SPD} Bonus velocidad: {name} ({value})",
     "START": "EMPIEZA LA BATALLA!",
     "WIN": "{name} ha ganado!"
   },
   "BATTLE_ATTACK": {
     "ATTACK": "{source} ha atacado {target} con {damage} de daño!",
+    "COUNTER": "{target} ha devuelto {damage} de daño!",
     "CRIT": "{source} ha realizado un **crítico** a {target} por {damage} de daño!",
     "CRITICAL_VAMP": "{source} ha robado {damage} vida de {target} de forma **crtítica**!",
     "EVADE": "{target} evadió el ataque de {source}!",
-    "VAMP": "{source} ha robado {damage} vida de {target}!"
+    "VAMP": "{source} ha robado {damage} vida de {target}!",
+    "WAIT": "{source} espera..."
   },
   "BET": {
     "BOT_WON": "{name} ha ganado el bote ({money}), mala suerte!",
@@ -36,7 +48,12 @@
     "TIME": "La apuesta finaliza en {time}",
     "WON": "{name} ha ganado el bote! ({money})"
   },
+  "BONUS": {
+    "NEXT": "{bonus} para las próximas {duration} batallas",
+    "WHOLE": "{value} para toda la aventura"
+  },
   "CLASS": {
+    "BARBARIAN": "Bárbaro",
     "MAGE": "Mago",
     "ROGUE": "Pícaro",
     "WARRIOR": "Guerrero"
@@ -73,6 +90,50 @@
     "NO_EQUIPPED": "No tienes nada equipado!",
     "UNEQUIP": "Desequipado {item}",
     "UNEQUIP_ALL": "Desequipado todos los ítems"
+  },
+  "FOREST": {
+    "BOSS1": "Sientes el bosque observándote...",
+    "BOSS2": "De repente ves algo moverse!",
+    "BOSS3": "Pero no es un animal salvaje...",
+    "DECISION1_OPTION1": "Ir a las profundidades del bosque",
+    "DECISION1_OPTION2": "Ir alrededor del bosque",
+    "DECISION1_TEXT": "Te encuentras en una intersección:",
+    "DECISION2_OPTION1": "Intenta birlar el oso",
+    "DECISION2_OPTION2": "Busca otro camino",
+    "DECISION2_TEXT": "Encuentras un oso durmiendo bloqueando tu camino:",
+    "DECISION3_OPTION1": "Adentrarse en la parte más oscura y profunda del bosque",
+    "DECISION3_OPTION2": "Continuar tu camino",
+    "DECISION3_TEXT": "Encuentras un camino sin luz:",
+    "DECISION4_OPTION1": "Comer la seta roja",
+    "DECISION4_OPTION2": "Comer la seta azul",
+    "DECISION4_OPTION3": "Comer la seta verde",
+    "DECISION4_TEXT": "Encuentras tres setas debajo de un árbol...",
+    "EVENT1": "Encuentras hierbas curativas...",
+    "EVENT2": "El oso se despertó...",
+    "EVENT3": "Encuentras áloe detrás de un arbusto",
+    "EVENT4": "Encuentras hierbas curativas cerca de un árbol",
+    "EVENT5": "Tal como te adentras en el bosque, reúnes algo de coraje...",
+    "EVENT6": "Sientes el efecto de la seta...",
+    "NAME": "Bosque"
+  },
+  "LAKE": {
+    "BOSS1": "Tal como te acercas al centro, el brillo desaparece...",
+    "BOSS2": "Algo atrapa tu pierna y no te deja moverte!",
+    "BOSS3": "De repente la criatura emerge del agua...",
+    "DECISION1_OPTION1": "Ir al lago",
+    "DECISION1_OPTION2": "Bordear el lago",
+    "DECISION1_TEXT": "Encuentras delante tuya un cartel advirtiendo del lago peligroso.",
+    "DECISION2_OPTION1": "Recorgerlo",
+    "DECISION2_OPTION2": "Ignorarlo",
+    "DECISION2_RESULT1": "Encuentras hierbas en el suelo",
+    "DECISION2_RESULT2": "En el suelo encuentras un enemigo...",
+    "DECISION2_TEXT": "Encuentras algo raro en el suelo.",
+    "DECISION3_OPTION1": "Nadar hacia el centro del lago",
+    "DECISION3_OPTION2": "Continuar tu camino",
+    "DECISION3_TEXT": "En el centro del lago ojeas algo que brilla...",
+    "EVENT1": "Un pescador amistoso te dá un pez pequeño",
+    "EVENT2": "Un pescador amistoso te dá un pez sabroso",
+    "NAME": "Lago"
   },
   "LANGUAGE": "Español (beta)",
   "MISC": {

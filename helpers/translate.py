@@ -30,4 +30,5 @@ def tr(lang_lang_lang: str, text_id: str, **kwargs) -> str:
             access = access[paths[i]]
         return access.format(**kwargs)
     except Exception as e:  # noqa shhh
+        print('Translation error:', lang_lang_lang, text_id, e)
         return text_id

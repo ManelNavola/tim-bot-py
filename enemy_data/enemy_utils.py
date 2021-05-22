@@ -66,6 +66,6 @@ def get_random_enemy(location: Location, pool: str = '', last_chosen_id: Optiona
                 return possible_enemies[i]
     for i in range(50):
         chosen = random.choice(possible_enemies)
-        if chosen != last_chosen_id:
+        if chosen.enemy_id != last_chosen_id:
             return chosen
     return random.choice(possible_enemies)

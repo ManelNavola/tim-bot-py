@@ -31,14 +31,23 @@ class UserClass(Enum):
 
         Stat.SPD: 3,
     })
-    MAGE = UserClassInstance(2, 'MAGE', Emoji.MAGE, {
-        Stat.HP: 5,
-        Stat.AP: 8,
+    BARBARIAN = UserClassInstance(2, 'BARBARIAN', Emoji.BARBARIAN, {
+        Stat.HP: 4,
+        Stat.AP: 4,
 
-        Stat.STR: 3,
+        Stat.STR: 5,
+        Stat.DEF: 1,
 
-        Stat.EVA: 2,
+        Stat.CONT: 2,
     })
+    # MAGE = UserClassInstance(3, 'MAGE', Emoji.MAGE, {
+    #     Stat.HP: 5,
+    #     Stat.AP: 8,
+    #
+    #     Stat.STR: 3,
+    #
+    #     Stat.EVA: 2,
+    # })
     _INFO = {}
 
     def get_id(self) -> int:

@@ -19,8 +19,8 @@ if typing.TYPE_CHECKING:
 
 
 class Adventure:
-    def __init__(self, instance: 'AdventureInstance'):
-        self._lang: str = ''
+    def __init__(self, lang: str, instance: 'AdventureInstance'):
+        self._lang: str = lang
         self._instance: 'AdventureInstance' = instance
         self._users: set[User] = set()
         self._started_on: int = -1
@@ -81,7 +81,8 @@ class Adventure:
             await chapter.init()
             await self._event.wait()
             if self.lost:
-                await self._message.edit(f"{self.get_user_names()} died on {tr(self._lang, self._instance.name)}...")
+                await self._message.edit(tr(self._lang, 'ADVENTURE.DIED', EMOJI_SKULL=Emoji.DEAD,
+                                            name=self.get_user_names(), location=tr(self._lang, self._instance.name)))
                 for user in self._users:
                     user.end_adventure()
                 messages.unregister(self._message)
@@ -89,7 +90,8 @@ class Adventure:
 
             self._event.clear()
 
-        await self._message.edit(f"{self.get_user_names()} finished {tr(self._lang, self._instance.name)}.")
+        await self._message.edit(tr(self._lang, 'ADVENTURE.FINISH', EMOJI_LOCATION=self._instance.icon,
+                                    name=self.get_user_names(), location=tr(self._lang, self._instance.name)))
         for user in self._users:
             user.end_adventure()
         messages.unregister(self._message)

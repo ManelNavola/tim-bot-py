@@ -9,6 +9,7 @@ from enums.emoji import Emoji
 class StatType(Enum):
     MAIN = 0
     CHANCE = 1
+    SECONDARY = 2
 
 
 class StatInstance(Slots):
@@ -95,7 +96,7 @@ class HP(StatInstance):
 class AP(StatInstance):
     def __init__(self):
         super().__init__('AP', "Action Points", Emoji.AP, 10,
-                         is_persistent=True)
+                         is_persistent=True, stat_type=StatType.SECONDARY)
 
 
 class STR(StatInstance):
@@ -111,7 +112,7 @@ class DEF(StatInstance):
 class SPD(StatInstanceDecimals):
     def __init__(self):
         super().__init__('SPD', "Attack speed", Emoji.SPD, 10,
-                         multiplier=0.05)
+                         multiplier=0.05, stat_type=StatType.SECONDARY)
 
     @staticmethod
     def represent(value: Any) -> str:
@@ -171,6 +172,9 @@ class Stat(Enum):
 
     def get_type(self) -> StatType:
         return self.value.type
+
+    def get_cost(self) -> int:
+        return self.value.cost
 
     @staticmethod
     def get_type_list(st: StatType) -> list['Stat']:

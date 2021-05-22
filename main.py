@@ -293,6 +293,10 @@ if utils.is_test():
                                  name="invincible", description="Hax", guild_ids=registered_guild_ids,
                                  ignore_battle=True)
 
+    cmd_handler.register_command(test.tokenize,
+                                 name="tokenize", description="Gimme tokens!",
+                                 guild_ids=registered_guild_ids)
+
     cmd_handler.register_command(test.test,
                                  name="test", description="Quickly test anything!",
                                  guild_ids=registered_guild_ids)

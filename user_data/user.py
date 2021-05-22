@@ -82,6 +82,9 @@ class User(Row):
         self.inventory: Inventory = Inventory(self._db, DictRef(self._data, 'equipment'), slots, inv_items,
                                               self.user_entity, self.id)
 
+    def set_tokens(self, amount: int) -> None:
+        self._tokens.set(amount)
+
     def get_lang(self) -> str:
         return self._lang.get()
 

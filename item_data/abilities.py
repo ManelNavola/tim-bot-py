@@ -5,8 +5,11 @@ from enum import Enum, unique
 from typing import Optional
 from autoslot import Slots
 
+from adventure_classes.generic.stat_modifier import StatModifierAdd
 from enemy_data import enemy_utils
 from enums.emoji import Emoji
+from helpers.translate import tr
+from item_data.stat import Stat
 
 if typing.TYPE_CHECKING:
     from adventure_classes.generic.battle.battle import BattleEntity
@@ -19,19 +22,19 @@ class Ability(ABC):
 
     @staticmethod
     @abstractmethod
-    def use(source: 'BattleEntity', target_entity: 'BattleEntity', tier: int) -> str:  # noqa
+    def use(lang: str, source: 'BattleEntity', target_entity: 'BattleEntity', tier: int) -> str:  # noqa
         pass
 
     @staticmethod
-    def start(target: 'BattleEntity', tier: int) -> Optional[str]:  # noqa
+    def start(lang: str, target: 'BattleEntity', tier: int) -> Optional[str]:  # noqa
         return None
 
     @staticmethod
-    def turn(target: 'BattleEntity', tier: int) -> Optional[str]:  # noqa
+    def turn(lang: str, target: 'BattleEntity', tier: int) -> Optional[str]:  # noqa
         return None
 
     @staticmethod
-    def end(target: 'BattleEntity', tier: int) -> Optional[str]:  # noqa
+    def end(lang: str, target: 'BattleEntity', tier: int) -> Optional[str]:  # noqa
         return None
 
     @staticmethod
@@ -53,7 +56,7 @@ class Burn(Ability):
         super().__init__(Emoji.BURN)
 
     @staticmethod
-    def use(source: 'BattleEntity', target_entity: 'BattleEntity', tier: int) -> str:
+    def use(lang: str, source: 'BattleEntity', target_entity: 'BattleEntity', tier: int) -> str:
         return f"{source.get_name()} used Burn on {target_entity.get_name()}!"
 
     @staticmethod
@@ -65,10 +68,29 @@ class Burn(Ability):
         return 6
 
     @staticmethod
-    def turn(target: 'BattleEntity', tier: int) -> Optional[str]:
+    def turn(lang: str, target: 'BattleEntity', tier: int) -> Optional[str]:
         damage: int = (tier + 1) * 3
         target.damage(damage)
         return f"{target.get_name()} was burnt for {damage} damage!"
+
+
+class Claw(Ability):
+    def __init__(self):
+        super().__init__(Emoji.LOBSTER)
+
+    @staticmethod
+    def use(lang: str, source: 'BattleEntity', target_entity: 'BattleEntity', tier: int) -> str:
+        target_entity.add_turn_modifier(StatModifierAdd(Stat.DEF, -3, 3))
+        target_entity.add_turn_modifier(StatModifierAdd(Stat.STR, -3, 3))
+        return tr(lang, 'ABILITIES.CLAW_USE', source=source.get_name(), target=target_entity.get_name())
+
+    @staticmethod
+    def get_duration(tier: int) -> int:
+        return 3
+
+    @staticmethod
+    def get_cost(tier: int) -> int:
+        return 4
 
 
 SUMMON_TYPES_TIER: dict[int, tuple[int, int]] = {
@@ -81,10 +103,10 @@ class Summon(Ability):
         super().__init__(Emoji.SPARKLE)
 
     @staticmethod
-    def use(source: 'BattleEntity', target_entity: 'BattleEntity', tier: int) -> str:
+    def use(lang: str, source: 'BattleEntity', target_entity: 'BattleEntity', tier: int) -> str:
         bot_entity: 'BotEntity' = enemy_utils.get_enemy(SUMMON_TYPES_TIER[tier][0]).instance()
         source.get_group().add_entity(bot_entity)
-        return f"{source.get_name()} summoned a {bot_entity.get_name()}!"
+        return tr(lang, 'ABILITIES.SUMMON', source=source.get_name(), summon=bot_entity.get_name())
 
     @staticmethod
     def get_duration(tier: int) -> int:
@@ -99,6 +121,7 @@ class Summon(Ability):
 class AbilityEnum(Enum):
     BURN = Burn()
     SUMMON = Summon()
+    CLAW = Claw()
 
     def get(self) -> Ability:
         return self.value
@@ -115,17 +138,17 @@ class AbilityContainer(Slots):
     def get_duration(self) -> int:
         return self.ability.get().get_duration(self.tier)
 
-    def use(self, source: 'BattleEntity', target_entity: 'BattleEntity') -> str:
-        return self.ability.get().use(source, target_entity, self.tier)
+    def use(self, lang: str, source: 'BattleEntity', target_entity: 'BattleEntity') -> str:
+        return self.ability.get().use(lang, source, target_entity, self.tier)
 
-    def start(self, target_entity: 'BattleEntity') -> str:
-        return self.ability.get().start(target_entity, self.tier)
+    def start(self, lang: str, target_entity: 'BattleEntity') -> str:
+        return self.ability.get().start(lang, target_entity, self.tier)
 
-    def turn(self, target_entity: 'BattleEntity') -> str:
-        return self.ability.get().turn(target_entity, self.tier)
+    def turn(self, lang: str, target_entity: 'BattleEntity') -> str:
+        return self.ability.get().turn(lang, target_entity, self.tier)
 
-    def end(self, target_entity: 'BattleEntity') -> str:
-        return self.ability.get().end(target_entity, self.tier)
+    def end(self, lang: str, target_entity: 'BattleEntity') -> str:
+        return self.ability.get().end(lang, target_entity, self.tier)
 
     def get_cost(self) -> int:
         return self.ability.get().get_cost(self.tier)

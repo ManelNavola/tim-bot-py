@@ -65,9 +65,7 @@ class MoneyRewardChapter(RewardChapter):
         self.money = money
 
     async def reward(self):
-        users: list[User] = list(self.get_adventure().get_users().keys())
-
-        user: User = random.choice(users)
+        user: User = random.choice(self.get_adventure().get_users())
 
         if len(self.get_adventure().get_users()) == 1:
             await self.send_log(tr(self.get_lang(), 'REWARD.MONEY_YOU', money=utils.print_money(self.get_lang(),

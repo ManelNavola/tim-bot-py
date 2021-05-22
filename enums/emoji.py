@@ -80,10 +80,16 @@ class Emoji(Enum):
     BEAR = r'\🐻'
     MUSHROOM = r'\🍄'
 
+    # Lake
+    LAKE = r'\🏕️'
+    SEED = r'\🌱'
+    LOBSTER = r'\🦞'
+
     # Classes
     WARRIOR = r'\🛡️'
     ROGUE = r'\🗡️'
     MAGE = r'\⚗️'
+    BARBARIAN = r'\🪓'
 
     # Spells
     BLUE_BOOK = r'\📘'

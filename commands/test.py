@@ -45,6 +45,11 @@ async def gimme_all(cmd: Command, tier: str = '0', location: str = 'Anywhere', r
     await cmd.send_hidden("epic")
 
 
+async def tokenize(cmd: Command):
+    cmd.user.set_tokens(5)
+    await cmd.send_hidden(f"{Emoji.TOKEN}")
+
+
 async def setup(_: 'Command', adventure: Adventure):
     ability_ai: AbilityAI = AbilityAI([
         AbilityDecision(0, 0.5, AbilityContainer(AbilityEnum.SUMMON, 100), max_uses=1)

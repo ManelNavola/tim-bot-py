@@ -12,7 +12,7 @@ from adventure_classes.generic.battle.battle import BattleEntity, BattleGroup
 from entities.ai.no_ai import NoAI
 from entities.bot_entity import BotEntity
 from tk_utils import center
-from item_data.stat import Stat
+from item_data.stat import Stat, StatType
 
 
 class EasyData:
@@ -319,7 +319,16 @@ class EasyJSONStatsWeights(EasyJSONStats):
 class EasyJSONBattleStats(EasyJSONStats):
     def show(self, data: dict[str, Any], key) -> str:
         stat_data = {Stat.get_by_abv(x): v for x, v in data['Stats'].items()}
-        return BattleEntity(BotEntity('', stat_data, NoAI()), BattleGroup()).print() + f' [{sum(stat_data.values())}]'
+        weighted_sum: float = 0
+        for stat, value in stat_data.items():
+            if stat.get_type() == StatType.MAIN:
+                weighted_sum += value
+            elif stat.get_type() == StatType.SECONDARY:
+                if stat != Stat.AP:
+                    weighted_sum += value * 0.5
+            elif stat.get_type() == StatType.CHANCE:
+                weighted_sum += value * 0.3
+        return BattleEntity(BotEntity('', stat_data, NoAI()), BattleGroup()).print() + f' [{weighted_sum:.1f}]'
 
 
 class EasyGridTree(EasyGrid):

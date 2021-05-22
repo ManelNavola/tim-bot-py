@@ -44,6 +44,20 @@ class BattleEntity:
     def get_group(self) -> 'BattleGroup':
         return self._group
 
+    def add_turn_modifier(self, modifier: StatModifier) -> None:
+        self._turn_modifiers.append(modifier)
+
+    def step_turn_modifiers(self) -> None:
+        modifiers: list[StatModifier] = []
+        for modifier in self._turn_modifiers:
+            if modifier.duration == -1:
+                modifiers.append(modifier)
+            else:
+                modifier.duration -= 1
+                if modifier.duration > 0:
+                    modifiers.append(modifier)
+        self._turn_modifiers = modifiers
+
     def step_battle_modifiers(self) -> None:
         self._entity.step_battle_modifiers()
 
@@ -127,12 +141,17 @@ class BattleEntity:
     def change_ap(self, value: int) -> None:
         self._change_persistent_value(Stat.AP, value)
 
+    def get_money_value(self) -> int:
+        stat_dict: dict[Stat, int] = self._entity.get_stat_dict()
+        money: int = round(sum(stat.get_cost() * count for stat, count in stat_dict.items()) * 0.035)
+        return money
+
     def get_stat(self, stat: Stat) -> int:
         number: float = self._entity.get_stat(stat)
         for modifier in self._turn_modifiers:
             if modifier.stat == stat:
                 number = modifier.apply(number)
-        return round(number)
+        return max(0, round(number))
 
     def _print_battle_stat(self, stat: Stat) -> str:
         stuff: list[str] = []
@@ -170,10 +189,6 @@ class BattleEntity:
         if random.random() < target.get_stat_value(Stat.EVA):
             ar.eva = True
             return ar
-        # Counter
-        if (not ignore_cont) and random.random() < target.get_stat_value(Stat.CONT):
-            ar.counter = target.attack(BattleActionData(data.lang, data.damage_multiplier, self), True).damage
-
         # Damage
         dealt: float = battle_utils.calculate_damage(self.get_stat_value(Stat.STR), target.get_stat_value(Stat.DEF))
         # Crit
@@ -187,6 +202,10 @@ class BattleEntity:
             ar.vamp = True
             self.heal(min(self.get_stat_value(Stat.HP), int_dealt))
         target.damage(int_dealt)
+        if not target.is_dead():
+            # Counter
+            if (not ignore_cont) and random.random() < target.get_stat_value(Stat.CONT):
+                ar.counter = target.attack(BattleActionData(data.lang, data.damage_multiplier, self), True).damage
         ar.damage = int_dealt
 
         return ar
@@ -202,29 +221,32 @@ class BattleEntity:
                 if ar.eva:
                     temp = tr(data.lang, 'BATTLE_ATTACK.EVADE', source=self.get_name(),
                               target=target_entity.get_name())
-                    msg.append(f"> {battle_emoji} {temp}")
+                    msg.append(f"> {Emoji.EVA} {temp}")
                 else:
                     if ar.vamp:
                         if ar.crit:
                             temp = tr(data.lang, 'BATTLE_ATTACK.CRITICAL_VAMP', source=self.get_name(),
                                       target=target_entity.get_name(), damage=ar.damage)
-                            msg.append(f"> {battle_emoji} {temp}")
+                            msg.append(f"> {Emoji.CRIT}{Emoji.VAMP} {temp}")
                         else:
                             temp = tr(data.lang, 'BATTLE_ATTACK.VAMP', source=self.get_name(),
                                       target=target_entity.get_name(), damage=ar.damage)
-                            msg.append(f"> {battle_emoji} {temp}")
+                            msg.append(f"> {Emoji.VAMP} {temp}")
                     else:
                         if ar.crit:
                             temp = tr(data.lang, 'BATTLE_ATTACK.CRIT', source=self.get_name(),
                                       target=target_entity.get_name(), damage=ar.damage)
-                            msg.append(f"> {battle_emoji} {temp}")
+                            msg.append(f"> {Emoji.CRIT} {temp}")
                         else:
                             temp = tr(data.lang, 'BATTLE_ATTACK.ATTACK', source=self.get_name(),
                                       target=target_entity.get_name(), damage=ar.damage)
-                            msg.append(f"> {battle_emoji} {temp}")
+                            msg.append(f"> {Emoji.BATTLE} {temp}")
+                if ar.counter is not None:
+                    temp = tr(data.lang, 'BATTLE_ATTACK.COUNTER', target=target_entity.get_name(), damage=ar.damage)
+                    msg.append(f"> {Emoji.CONT} {temp}")
                 return '\n'.join(msg)
         if battle_emoji == BattleEmoji.WAIT:
-            return f"> {battle_emoji} {self.get_name()} waits..."
+            return f"> {battle_emoji} {tr(data.lang, 'BATTLE_ATTACK.WAIT', source=self.get_name())}"
         spell_index: int = battle_emoji.get_spell_index()
         if 0 <= spell_index < len(self.get_abilities()) or (data.override_ability is not None):
             ability_holder: AbilityContainer
@@ -238,10 +260,10 @@ class BattleEntity:
                 return None
             if not self.use_ap(ability_holder.get_cost()):
                 return None
-            ret: str = f"> {battle_emoji} {ability_holder.use(self, target_entity)}"
+            ret: str = f"> {battle_emoji} {ability_holder.use(data.lang, self, target_entity)}"
             if ability_holder.get_duration() > 0:
                 target_entity.add_ability_instance(AbilityInstance(ability_holder))
-            start: str = ability_holder.start(target_entity)
+            start: str = ability_holder.start(data.lang, target_entity)
             if start:
                 ret += f"\n> {ability_holder.get_icon()} {start}"
             return ret

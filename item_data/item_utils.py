@@ -14,6 +14,10 @@ _ITEMS: dict[int, dict[Location, dict[ItemType, list[ItemDescription]]]] = {
     tier: {location: {itemType: [] for itemType in ItemType} for location in Location} for tier in range(5)
 }
 
+_ITEM_TYPES_IN_LOCATION: dict[int, dict[Location, set[ItemType]]] = {
+    tier: {location: set() for location in Location} for tier in range(5)
+}
+
 _INDEX_TO_ITEM: dict[int, ItemDescription] = {}
 
 
@@ -28,6 +32,7 @@ def load():
             desc: ItemDescription = ItemDescription(int(id_k), id_v)
             _ITEMS[tier][location][item_type].append(desc)
             _INDEX_TO_ITEM[int(id_k)] = desc
+            _ITEM_TYPES_IN_LOCATION[tier][location].add(item_type)
             item_count += 1
     print(f"Loaded {item_count} items")
 
@@ -109,10 +114,12 @@ class RandomItemBuilder:
     def __init__(self, tier: int):
         self.tier: int = tier
         self.location: Location = Location.ANYWHERE
-        self.item_type: list[ItemType] = [x for x in ItemType]
-        self.item_type_weights: list[int] = [1 for _ in ItemType]
-        self.item_rarity: list[ItemRarity] = [x for x in ItemRarity]
-        self.item_rarity_weights: list[int] = [1 for _ in ItemRarity]
+        self.item_type: list[ItemType] = []
+        self.item_type_weights: list[int] = []
+        self.item_rarity: list[ItemRarity] = \
+            [ItemRarity.COMMON, ItemRarity.UNCOMMON, ItemRarity.RARE, ItemRarity.EPIC, ItemRarity.LEGENDARY]
+        self.item_rarity_weights: list[int] = \
+            [100, 60, 25, 5, 1]
 
     def set_location(self, location: Location) -> 'RandomItemBuilder':
         self.location = location
@@ -148,6 +155,9 @@ class RandomItemBuilder:
         return self
 
     def build(self):
+        if not self.item_type:
+            self.item_type = list(_ITEM_TYPES_IN_LOCATION[self.tier][self.location])
+            self.item_type_weights = [1 for _ in self.item_type]
         item_type: ItemType = random.choices(self.item_type, weights=self.item_type_weights, k=1)[0]
         item_rarity: ItemRarity = random.choices(self.item_rarity, weights=self.item_rarity_weights, k=1)[0]
         if item_rarity == ItemRarity.LEGENDARY:

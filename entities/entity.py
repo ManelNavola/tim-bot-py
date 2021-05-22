@@ -51,6 +51,9 @@ class Entity(ABC):
     def get_name(self) -> str:
         pass
 
+    def get_stat_dict(self) -> dict[Stat, int]:
+        return self._stat_dict
+
     def set_persistent_value(self, stat: Stat, new_value: int) -> None:
         max_value = stat.get_value(self.get_stat(stat))
         if new_value > max_value:

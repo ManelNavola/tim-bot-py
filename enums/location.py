@@ -17,6 +17,7 @@ class Location(Enum):
     ANYWHERE = LocationInstance('Anywhere')
     COLISEUM = LocationInstance('Coliseum')
     FOREST = LocationInstance('Forest')
+    LAKE = LocationInstance('Lake')
     _INFO = {}
 
     @staticmethod

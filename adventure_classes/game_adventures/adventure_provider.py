@@ -1,6 +1,6 @@
 from typing import Optional, Callable
 
-from adventure_classes.game_adventures import forest, tutorial
+from adventure_classes.game_adventures import forest, tutorial, lake
 from adventure_classes.generic.adventure import Adventure
 from enums.emoji import Emoji
 from helpers.command import Command
@@ -16,12 +16,13 @@ class AdventureInstance:
         self._setup_call: Callable = setup_call
 
     async def start(self, cmd: Command):
-        adventure: Adventure = Adventure(self)
+        adventure: Adventure = Adventure(cmd.lang, self)
         await self._setup_call(cmd, adventure)
         await adventure.start(cmd, [cmd.user])
 
 
 name_to_adventure: dict[str, AdventureInstance] = {
     '_tutorial': AdventureInstance(tutorial.setup, 'TUTORIAL.NAME', Emoji.TUTORIAL, tokens=0),
-    'Forest': AdventureInstance(forest.setup, 'FOREST.NAME', Emoji.FOREST)
+    'Forest': AdventureInstance(forest.setup, 'FOREST.NAME', Emoji.FOREST),
+    'Lake': AdventureInstance(lake.setup, 'LAKE.NAME', Emoji.LAKE)
 }
