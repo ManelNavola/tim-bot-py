@@ -73,7 +73,10 @@ class CommandHandler:
 
         tutorial_stage: int = cmd.user.get_tutorial_stage()
         if tutorial_stage != -1 and (cmd.user.get_adventure() is None) and (not ignore_all):
-            await tutorial.play_tutorial(cmd, tutorial_stage)
+            if cmd.guild:
+                await tutorial.play_tutorial(cmd, tutorial_stage)
+            else:
+                await cmd.send_hidden("You must first talk to me in a guild to be able to DM me!")
         else:
             try:
                 await func(cmd, *args, **kwargs)  # Execute command
