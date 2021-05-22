@@ -92,7 +92,6 @@ cmd_handler.register_command(simple.leaderboard,
 # Betting
 cmd_handler.register_command(bet.info,
                              base="bet", name="info", description="Get information about betting",
-                             guild_only=True,
                              guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(bet.add,
@@ -258,6 +257,7 @@ cmd_handler.register_command(adventure.start_adventure,
                                      ]
                                  )
                              ],
+                             guild_only=True,
                              guild_ids=registered_guild_ids)
 
 
