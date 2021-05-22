@@ -3,6 +3,8 @@ from typing import Optional
 
 from autoslot import Slots
 
+from item_data.abilities import AbilityContainer
+
 if typing.TYPE_CHECKING:
     from adventure_classes.generic.battle.battle_entity import BattleEntity
 
@@ -17,3 +19,4 @@ class BattleActionData(Slots):
         self.damage_multiplier: int = damage_multiplier
         self.target_entity: Optional['BattleEntity'] = target_entity
         self.targeted_entities: Optional[dict['BattleEntity', int]] = targeted_entities
+        self.override_ability: Optional[AbilityContainer] = None

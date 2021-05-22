@@ -213,8 +213,9 @@
     "Stats": {
       "CONT": 5,
       "HP": 10,
-      "STR": 5,
-      "DEF": 5
+      "DEF": 5,
+      "AP": 6,
+      "STR": 3
     },
     "Name": "Godly Ent",
     "Pool": "BOSS"
@@ -233,10 +234,10 @@
     "Name": "Entling",
     "Location": "Forest",
     "Stats": {
-      "HP": 4,
       "STR": 3,
-      "DEF": 3
+      "DEF": 3,
+      "HP": 4
     },
-    "Pool": "BOSS_SPAWN"
+    "Pool": ""
   }
 }

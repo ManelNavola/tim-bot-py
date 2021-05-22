@@ -1,7 +1,8 @@
 from adventure_classes.game_adventures.adventure_provider import AdventureInstance
 from adventure_classes.generic.adventure import Adventure
-from adventure_classes.generic.battle.battle import BattleChapter, BattleGroupUsers, BattleGroup
+from adventure_classes.generic.battle import battle
 from adventure_classes.generic.stat_modifier import StatModifierAdd
+from entities.ai.ability_ai import AbilityAI, AbilityDecision
 from entities.bot_entity import BotEntity
 from enums.emoji import Emoji
 from enums.item_rarity import ItemRarity
@@ -9,6 +10,7 @@ from enums.item_type import ItemType
 from enums.location import Location
 from helpers.command import Command
 from item_data import item_utils
+from item_data.abilities import AbilityContainer, AbilityEnum
 from item_data.stat import Stat
 
 FIGHT_BOT: bool = True
@@ -23,10 +25,9 @@ async def rich(cmd: Command):
     await cmd.send_hidden("capitalism ho")
 
 
-async def heal(cmd: Command):
+async def invincible(cmd: Command):
     cmd.user.user_entity.add_battle_modifier(StatModifierAdd(Stat.EVA, 9999))
-    cmd.user.user_entity.add_battle_modifier(StatModifierAdd(Stat.STR, 9999))
-    await cmd.send_hidden("cheater...")
+    await cmd.send_hidden("invincible...")
 
 
 async def gimme_all(cmd: Command, tier: str = '0', location: str = 'Anywhere', rarity: str = 'Common'):
@@ -45,22 +46,11 @@ async def gimme_all(cmd: Command, tier: str = '0', location: str = 'Anywhere', r
 
 
 async def setup(_: 'Command', adventure: Adventure):
-    be: BotEntity = BotEntity('potato bad 1', {
-        Stat.HP: 40,
-        Stat.STR: 2,
-        Stat.DEF: 2,
-    })
-    be2: BotEntity = BotEntity('potato bad 2', {
-        Stat.HP: 40,
-        Stat.STR: 2,
-        Stat.DEF: 2,
-    })
-    be3: BotEntity = BotEntity('potato good', {
-        Stat.HP: 40,
-        Stat.STR: 2,
-        Stat.DEF: 2,
-    })
-    adventure.add_chapter(BattleChapter(BattleGroupUsers(entities=[be3]), BattleGroup([be, be2])))
+    ability_ai: AbilityAI = AbilityAI([
+        AbilityDecision(0, 0.5, AbilityContainer(AbilityEnum.SUMMON, 100), max_uses=1)
+    ])
+    boss: BotEntity = battle.rnd(adventure, Location.FOREST, 'BOSS', ability_ai)
+    battle.qcsab(adventure, boss, icon=Emoji.FOREST)
 
 
 async def test(cmd: Command):

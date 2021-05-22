@@ -289,7 +289,7 @@ if utils.is_test():
                                  name="rich", description="MAKE IT RAIN", guild_ids=registered_guild_ids,
                                  ignore_battle=True)
 
-    cmd_handler.register_command(test.heal,
+    cmd_handler.register_command(test.invincible,
                                  name="invincible", description="Hax", guild_ids=registered_guild_ids,
                                  ignore_battle=True)
 

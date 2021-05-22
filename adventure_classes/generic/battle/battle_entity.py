@@ -17,6 +17,9 @@ from item_data.abilities import AbilityInstance, AbilityContainer
 from item_data.stat import Stat
 from user_data.user import User
 
+if typing.TYPE_CHECKING:
+    from adventure_classes.generic.battle.battle import BattleGroup
+
 
 class AttackResult(Slots):
     def __init__(self):
@@ -28,14 +31,18 @@ class AttackResult(Slots):
 
 
 class BattleEntity:
-    def __init__(self, entity: Entity):
+    def __init__(self, entity: Entity, group: 'BattleGroup'):
         self._entity: Entity = entity
+        self._group: 'BattleGroup' = group
         self._turn_modifiers: list[StatModifier] = []
         self._ability_instances: list[AbilityInstance] = []
         self._last_target: Optional['BattleEntity'] = None
         # Apply global stat modifiers
         for modifier in entity.get_battle_modifiers():
             self._turn_modifiers.append(modifier.clone(-1))
+
+    def get_group(self) -> 'BattleGroup':
+        return self._group
 
     def step_battle_modifiers(self) -> None:
         self._entity.step_battle_modifiers()
@@ -68,17 +75,57 @@ class BattleEntity:
     def get_abilities(self) -> list[AbilityContainer]:
         return self._entity.get_abilities()
 
-    def get_persistent_value(self, stat: Stat) -> int:
+    def _get_persistent_value(self, stat: Stat) -> int:
         return self._entity.get_persistent_value(stat)
 
-    def change_persistent_value(self, stat: Stat, value: int) -> None:
+    def _change_persistent_value(self, stat: Stat, value: int) -> None:
         self._entity.change_persistent_value(stat, value)
 
-    def set_persistent_value(self, stat: Stat, value: int) -> None:
+    def _set_persistent_value(self, stat: Stat, value: int) -> None:
         self._entity.set_persistent_value(stat, value)
 
     def get_stat_value(self, stat: Stat) -> typing.Any:
         return stat.get_value(self.get_stat(stat))
+
+    def get_hp(self) -> int:
+        return self._get_persistent_value(Stat.HP)
+
+    def has_hp(self, value: int) -> int:
+        return self.get_hp() >= value
+
+    def get_max_hp(self) -> int:
+        return self.get_stat_value(Stat.HP)
+
+    def set_hp(self, value: int) -> None:
+        self._set_persistent_value(Stat.HP, value)
+
+    def damage(self, value: int) -> None:
+        self._change_persistent_value(Stat.HP, -value)
+
+    def heal(self, value: int) -> None:
+        self._change_persistent_value(Stat.HP, value)
+
+    def get_ap(self) -> int:
+        return self._get_persistent_value(Stat.AP)
+
+    def regen_ap(self) -> None:
+        if self._has_stat(Stat.AP):
+            self._change_persistent_value(Stat.AP, 1)
+
+    def has_ap(self, value: int) -> bool:
+        return self.get_ap() >= value
+
+    def use_ap(self, value: int) -> bool:
+        if self.get_ap() >= value:
+            self._change_persistent_value(Stat.AP, -value)
+            return True
+        return False
+
+    def set_ap(self, value: int) -> None:
+        self._set_persistent_value(Stat.AP, value)
+
+    def change_ap(self, value: int) -> None:
+        self._change_persistent_value(Stat.AP, value)
 
     def get_stat(self, stat: Stat) -> int:
         number: float = self._entity.get_stat(stat)
@@ -105,7 +152,7 @@ class BattleEntity:
     def bot_decide(self, data: BattleActionData) -> BattleEmoji:
         assert isinstance(self._entity, BotEntity), 'Cannot bot decide on a non-Bot entity'
         bot_entity: BotEntity = self._entity
-        return bot_entity.get_ai().decide(data)
+        return bot_entity.get_ai().decide(self, data)
 
     def is_bot(self) -> bool:
         return isinstance(self._entity, BotEntity)
@@ -138,8 +185,8 @@ class BattleEntity:
         # Vamp
         if random.random() < self.get_stat_value(Stat.VAMP):
             ar.vamp = True
-            self.change_persistent_value(Stat.HP, min(self.get_stat_value(Stat.HP), int_dealt))
-        target.change_persistent_value(Stat.HP, -int_dealt)
+            self.heal(min(self.get_stat_value(Stat.HP), int_dealt))
+        target.damage(int_dealt)
         ar.damage = int_dealt
 
         return ar
@@ -179,21 +226,26 @@ class BattleEntity:
         if battle_emoji == BattleEmoji.WAIT:
             return f"> {battle_emoji} {self.get_name()} waits..."
         spell_index: int = battle_emoji.get_spell_index()
-        if 0 <= spell_index < len(self.get_abilities()):
-            ability_holder: AbilityContainer = self.get_abilities()[spell_index]
+        if 0 <= spell_index < len(self.get_abilities()) or (data.override_ability is not None):
+            ability_holder: AbilityContainer
+            if data.override_ability is None:
+                ability_holder = self.get_abilities()[spell_index]
+            else:
+                ability_holder = data.override_ability
             if (target_entity is None) and ability_holder.ability.allow_self():
                 target_entity = self
             if target_entity is None:
                 return None
-            if ability_holder.get_cost() > self.get_persistent_value(Stat.AP):
+            if not self.use_ap(ability_holder.get_cost()):
                 return None
-            self.change_persistent_value(Stat.AP, -ability_holder.get_cost())
             ret: str = f"> {battle_emoji} {ability_holder.use(self, target_entity)}"
-            target_entity.add_ability_instance(AbilityInstance(ability_holder))
+            if ability_holder.get_duration() > 0:
+                target_entity.add_ability_instance(AbilityInstance(ability_holder))
             start: str = ability_holder.start(target_entity)
             if start:
                 ret += f"\n> {ability_holder.get_icon()} {start}"
             return ret
+
         return None
 
     def print(self) -> str:

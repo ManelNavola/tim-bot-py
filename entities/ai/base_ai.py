@@ -10,12 +10,12 @@ if typing.TYPE_CHECKING:
 
 class BotAI(ABC):
     @abstractmethod
-    def decide(self, data: 'BattleActionData') -> BattleEmoji:
+    def decide(self, battle_entity: 'BattleEntity', data: 'BattleActionData') -> BattleEmoji:
         pass
 
 
 class BaseBotAI(BotAI):
-    def decide(self, data: 'BattleActionData') -> BattleEmoji:
+    def decide(self, battle_entity: 'BattleEntity', data: 'BattleActionData') -> BattleEmoji:
         best: int = -1
         first_most_attacked: 'BattleEntity' = next(iter(data.targeted_entities.keys()))
         for battle_entity, count in data.targeted_entities.items():

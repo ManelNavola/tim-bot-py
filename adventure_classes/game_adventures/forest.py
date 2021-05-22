@@ -7,9 +7,12 @@ from adventure_classes.generic.chapter import Chapter
 from adventure_classes.generic.choice import ChoiceChapter
 from adventure_classes.generic.reward import MoneyRewardChapter, ItemRewardChapter
 from adventure_classes.generic.stat_modifier import StatModifier, StatModifierAdd
+from entities.ai.ability_ai import AbilityAI, AbilityDecision
+from entities.bot_entity import BotEntity
 from enums.emoji import Emoji
 from enums.location import Location
 from enums.item_rarity import ItemRarity
+from item_data.abilities import AbilityContainer, AbilityEnum
 from item_data.item_classes import Item
 from item_data.item_utils import RandomItemBuilder
 from item_data.stat import Stat
@@ -88,11 +91,15 @@ def aa_deeper(adventure: Adventure):
     adventure.add_chapter(cc)
 
     battle.qsab(adventure, Location.FOREST, 'B')
-    battle.qsab(adventure, Location.FOREST, 'BOSS',
-                icon=Emoji.FOREST,
-                pre_text=['You feel the forest watching you...',
-                          'Suddenly you see something move!',
-                          'But it is not a wild animal...'])
+    ability_ai: AbilityAI = AbilityAI([
+        AbilityDecision(0, 0.5, AbilityContainer(AbilityEnum.SUMMON, 100), max_uses=1)
+    ])
+    boss: BotEntity = battle.rnd(adventure, Location.FOREST, 'BOSS', ability_ai)
+    battle.qcsab(adventure, boss,
+                 icon=Emoji.FOREST,
+                 pre_text=['You feel the forest watching you...',
+                           'Suddenly you see something move!',
+                           'But it is not a wild animal...'])
 
     item: Item = RandomItemBuilder(0).set_location(Location.FOREST).build()
     adventure.add_chapter(ItemRewardChapter(item))

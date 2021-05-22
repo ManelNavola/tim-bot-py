@@ -1,30 +1,12 @@
-from typing import Optional
-
-from entities.ai.base_ai import BotAI, BaseBotAI
-from entities.entity import Entity
+from entities.ai.base_ai import BotAI
 # from item_data.abilities import AbilityInstance
+from entities.entity import Entity
 from item_data.abilities import AbilityEnum
 from item_data.stat import Stat
 
 
-class BotEntityBuilder:
-    def __init__(self, name: str, stat_dict: dict[Stat, int], enemy_id: Optional[int] = None):
-        # abilities: Optional[list[AbilityInstance]] = None, ):
-        # if not abilities:
-        #    abilities = []
-        # self.abilities: list[AbilityInstance] = abilities
-        self.stat_dict: dict[Stat, int] = stat_dict
-        self.name = name
-        self.enemy_id: Optional[int] = enemy_id
-
-    def instance(self):
-        return BotEntity(self.name, self.stat_dict.copy())
-        # [ab for ab in self.abilities])
-
-
 class BotEntity(Entity):
-    def __init__(self, name: str, stat_dict: dict[Stat, int], abilities: list[AbilityEnum] = None,
-                 ai: BotAI = BaseBotAI()):
+    def __init__(self, name: str, stat_dict: dict[Stat, int], ai: BotAI, abilities: list[AbilityEnum] = None):
         super().__init__(stat_dict)
         self._name: str = name
         if abilities:

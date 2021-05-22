@@ -7,9 +7,7 @@ from discord import Message
 
 import utils
 from helpers.translate import tr
-from item_data.stat import Stat
 from user_data.user import User
-# from adventure_classes.generic.user_adventure_data import UserAdventureData
 from helpers import messages
 from helpers.messages import MessagePlus
 from enums.emoji import Emoji

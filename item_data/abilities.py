@@ -4,11 +4,13 @@ from enum import Enum, unique
 
 from typing import Optional
 from autoslot import Slots
+
+from enemy_data import enemy_utils
 from enums.emoji import Emoji
-from item_data.stat import Stat
 
 if typing.TYPE_CHECKING:
     from adventure_classes.generic.battle.battle import BattleEntity
+    from entities.bot_entity import BotEntity
 
 
 class Ability(ABC):
@@ -65,16 +67,44 @@ class Burn(Ability):
     @staticmethod
     def turn(target: 'BattleEntity', tier: int) -> Optional[str]:
         damage: int = (tier + 1) * 3
-        target.change_persistent_value(Stat.HP, -damage)
+        target.damage(damage)
         return f"{target.get_name()} was burnt for {damage} damage!"
+
+
+SUMMON_TYPES_TIER: dict[int, tuple[int, int]] = {
+    100: (22, 5)  # Entling
+}
+
+
+class Summon(Ability):
+    def __init__(self):
+        super().__init__(Emoji.SPARKLE)
+
+    @staticmethod
+    def use(source: 'BattleEntity', target_entity: 'BattleEntity', tier: int) -> str:
+        bot_entity: 'BotEntity' = enemy_utils.get_enemy(SUMMON_TYPES_TIER[tier][0]).instance()
+        source.get_group().add_entity(bot_entity)
+        return f"{source.get_name()} summoned a {bot_entity.get_name()}!"
+
+    @staticmethod
+    def get_duration(tier: int) -> int:
+        return 0
+
+    @staticmethod
+    def get_cost(tier: int) -> int:
+        return SUMMON_TYPES_TIER[tier][1]
 
 
 @unique
 class AbilityEnum(Enum):
     BURN = Burn()
+    SUMMON = Summon()
 
     def get(self) -> Ability:
         return self.value
+
+    def allow_self(self) -> bool:
+        return self.get().allow_self()
 
 
 class AbilityContainer(Slots):

@@ -10,7 +10,9 @@ from adventure_classes.generic.battle.battle_action_data import BattleActionData
 from adventure_classes.generic.battle.battle_entity import BattleEntity
 from adventure_classes.generic.chapter import Chapter
 from enemy_data import enemy_utils
-from entities.bot_entity import BotEntityBuilder
+from enemy_data.bot_entity_builder import BotEntityBuilder
+from entities.ai.base_ai import BotAI
+from entities.bot_entity import BotEntity
 from entities.entity import Entity
 from enums.battle_emoji import BattleEmoji
 from enums.emoji import Emoji
@@ -28,7 +30,7 @@ class BattleGroup:
     def __init__(self, entities: list['Entity'] = None):
         if entities is None:
             entities = []
-        self._battle_entities: list[BattleEntity] = [BattleEntity(entity) for entity in entities]
+        self._battle_entities: list[BattleEntity] = [BattleEntity(entity, self) for entity in entities]
         self._speed: float = 0
 
     def get_name(self) -> str:
@@ -66,12 +68,12 @@ class BattleGroup:
             battle_entity.step_battle_modifiers()
         # Fix entity health
         for battle_entity in self._battle_entities:
-            min_health: int = int(math.ceil(Stat.HP.get_value(battle_entity.get_stat(Stat.HP)) * 0.1))
-            if battle_entity.get_persistent_value(Stat.HP) < min_health:
-                battle_entity.set_persistent_value(Stat.HP, min_health)
+            min_health: int = int(math.ceil(battle_entity.get_max_hp() * 0.1))
+            if not battle_entity.has_hp(min_health):
+                battle_entity.set_hp(min_health)
 
     def add_entity(self, entity: Entity) -> None:
-        self._battle_entities.append(BattleEntity(entity))
+        self._battle_entities.append(BattleEntity(entity, self))
         self._recalculate()
 
     def remove_entity(self, battle_entity: BattleEntity) -> None:
@@ -123,6 +125,36 @@ class BattleChapter(Chapter):
         self._acted: set[User] = set()
         self._pre_text: list[str] = pre_text
         self._late_clear: bool = False
+        self._max_targets: int = 1
+
+    def _recalculation_will_involve_first_time(self) -> bool:
+        old_max_targets: int = self._max_targets
+        if old_max_targets > 1:
+            return False
+        max_targets: int = 1
+        if self._group_a.has_users() and self._group_b.has_users():
+            max_targets = max(len(self._group_a.get_battle_entities()), len(self._group_b.get_battle_entities()))
+        elif self._group_a.has_users() or self._group_b.has_users():
+            if self._group_a.has_users():
+                max_targets = len(self._group_b.get_battle_entities())
+            elif self._group_b.has_users():
+                max_targets = len(self._group_a.get_battle_entities())
+        return max_targets > 1
+
+    async def _recalculate_max_targets(self) -> None:
+        old_max_targets: int = self._max_targets
+        if self._group_a.has_users() and self._group_b.has_users():
+            self._max_targets = max(len(self._group_a.get_battle_entities()), len(self._group_b.get_battle_entities()))
+        elif self._group_a.has_users() or self._group_b.has_users():
+            if self._group_a.has_users():
+                self._max_targets = len(self._group_b.get_battle_entities())
+            elif self._group_b.has_users():
+                self._max_targets = len(self._group_a.get_battle_entities())
+        if self._max_targets > old_max_targets:
+            if old_max_targets == 1:
+                old_max_targets = 0
+            for num in range(old_max_targets, self._max_targets):
+                await self.get_adventure().add_reaction(Emoji.get_number(num + 1), self.choose_target)
 
     def _get_mulitplier(self) -> int:
         return (self._round // self.INCREASE_EVERY) + 1
@@ -192,6 +224,7 @@ class BattleChapter(Chapter):
 
         # Turn happenings
         for battle_entity in current_team.get_battle_entities():
+            battle_entity.regen_ap()
             instances: list[AbilityInstance] = []
             for ability_instance in battle_entity.get_ability_instances():
                 ability_instance.duration_remaining -= 1
@@ -229,7 +262,10 @@ class BattleChapter(Chapter):
             else:
                 battle_entity.set_last_target(None)
 
+        if self._recalculation_will_involve_first_time():
+            self._chosen_targets.clear()
         await self.update()
+        await self._recalculate_max_targets()
         self._late_clear = True
 
         if len(self._available_targets) == 1:
@@ -335,18 +371,8 @@ class BattleChapter(Chapter):
         for battle_entity in self._group_a.get_battle_entities() + self._group_b.get_battle_entities():
             if battle_entity.is_user():
                 abilities = max(abilities, len(battle_entity.get_abilities()))
-        max_targets: int = 0
-        if self._group_a.has_users() and self._group_b.has_users():
-            max_targets = max(len(self._group_a.get_battle_entities()), len(self._group_b.get_battle_entities()))
-        elif self._group_a.has_users() or self._group_b.has_users():
-            if self._group_a.has_users():
-                max_targets = len(self._group_b.get_battle_entities())
-            elif self._group_b.has_users():
-                max_targets = len(self._group_a.get_battle_entities())
-        if max_targets > 1:
-            for num in range(max_targets):
-                await self.get_adventure().add_reaction(Emoji.get_number(num + 1), self.choose_target)
         await self.get_adventure().add_reaction(BattleEmoji.ATTACK.value, self.execute_action)
+        await self._recalculate_max_targets()
         for battle_emoji in BattleEmoji.get_spells(abilities):
             await self.get_adventure().add_reaction(battle_emoji.value, self.execute_action)
         await self.get_adventure().add_reaction(BattleEmoji.WAIT.value, self.execute_action)
@@ -374,10 +400,22 @@ class BattleChapter(Chapter):
         await self.end()
 
 
-def qsab(adventure: Adventure, location: Location, pool: str = '',
-         icon: Emoji = Emoji.BATTLE, pre_text: list[str] = None):
+# Get random enemy
+def rnd(adventure: Adventure, location: Location, pool: str = '', bot_ai: Optional[BotAI] = None) -> BotEntity:
     last_id: Optional[int] = adventure.saved_data.get('_battle_last_id')
     beb: BotEntityBuilder = enemy_utils.get_random_enemy(location, pool, last_id)
     adventure.saved_data['_battle_last_id'] = beb.enemy_id
-    adventure.add_chapter(BattleChapter(BattleGroupUsers(), BattleGroup([beb.instance()]),
+    return beb.instance(bot_ai)
+
+
+# Quick single-player adventure battle
+def qsab(adventure: Adventure, location: Location, pool: str = '',
+         icon: Emoji = Emoji.BATTLE, pre_text: list[str] = None) -> None:
+    qcsab(adventure, rnd(adventure, location, pool), icon, pre_text)
+
+
+# Quick custom single-player adventure battle
+def qcsab(adventure: Adventure, bot_entity: BotEntity,
+          icon: Emoji = Emoji.BATTLE, pre_text: list[str] = None) -> None:
+    adventure.add_chapter(BattleChapter(BattleGroupUsers(), BattleGroup([bot_entity]),
                                         icon=icon, pre_text=pre_text))
