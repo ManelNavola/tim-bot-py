@@ -12,21 +12,28 @@ from utils import TimeSlot, TimeMetric
 
 
 class Guild(Row):
-    TABLE_HYPE = TimeSlot(TimeMetric.MINUTE, 30)
-    TABLE_INCREMENT = 2
-    TABLE_MIN = 10
-    LEADERBOARD_TOP = 5
-    SHOP_DURATION = TimeSlot(TimeMetric.HOUR, 1)
+    TABLE_MIN: int = 10
+    TABLE_HYPE: TimeSlot = TimeSlot(TimeMetric.MINUTE, 30)
+    TABLE_INCREMENT: TimeSlot = TimeSlot(TimeMetric.MINUTE, 1)
+    LEADERBOARD_TOP: int = 5
+    SHOP_DURATION: TimeSlot = TimeSlot(TimeMetric.HOUR, 1)
 
     def __init__(self, db: PostgreSQL, guild_id: int):
         super().__init__(db, "guilds", dict(id=guild_id))
         self.id: int = guild_id
         self._box: Incremental = Incremental(DictRef(self._data, 'table_money'),
                                              DictRef(self._data, 'table_money_time'),
-                                             TimeSlot(TimeMetric.MINUTE, Guild.TABLE_INCREMENT))
-        self.bet: Bet = Bet(db, DictRef(self._data, 'ongoing_bet'))
+                                             Guild.TABLE_INCREMENT)
+        self._lang: DictRef[str] = DictRef(self._data, 'lang')
+        self.bet: Bet = Bet(db, DictRef(self._data, 'ongoing_bet'), self._lang)
         self.registered_user_ids: set[int] = set(self._data['user_ids'])
-        self.shop: Shop = Shop(db, DictRef(self._data, 'shop_time'), self.id)
+        self.shop: Shop = Shop(db, self._lang, DictRef(self._data, 'shop_time'), self.id)
+
+    def get_lang(self) -> str:
+        return self._lang.get()
+
+    def set_lang(self, lang: str) -> None:
+        self._lang.set(lang)
 
     def register_user_id(self, user_id: int) -> None:
         if user_id not in self.registered_user_ids:
@@ -44,15 +51,16 @@ class Guild(Row):
         for i in range(len(users)):
             if i == 0:
                 ld.append(f"{Emoji.FIRST_PLACE} #{i + 1}: "
-                          f"{users[i]['last_name']} - {utils.print_money(users[i]['money'])}")
+                          f"{users[i]['last_name']} - {utils.print_money(self._lang.get(), users[i]['money'])}")
             elif i == 1:
                 ld.append(f"{Emoji.SECOND_PLACE} #{i + 1}: "
-                          f"{users[i]['last_name']} - {utils.print_money(users[i]['money'])}")
+                          f"{users[i]['last_name']} - {utils.print_money(self._lang.get(), users[i]['money'])}")
             elif i == 2:
                 ld.append(f"{Emoji.THIRD_PLACE} #{i + 1}: "
-                          f"{users[i]['last_name']} - {utils.print_money(users[i]['money'])}")
+                          f"{users[i]['last_name']} - {utils.print_money(self._lang.get(), users[i]['money'])}")
             else:
-                ld.append(f"#{i + 1}: {users[i]['last_name']} - {utils.print_money(users[i]['money'])}")
+                ld.append(f"#{i + 1}: {users[i]['last_name']} - "
+                          f"{utils.print_money(self._lang.get(), users[i]['money'])}")
         return '\n'.join(ld)
 
     def _get_box_end(self) -> int:
@@ -85,7 +93,7 @@ class Guild(Row):
         if diff < 0:
             return ""
         else:
-            return f"{self._box.print_rate()} for {utils.print_time(diff)}"
+            return f"{self._box.print_rate(self._lang.get())} for {utils.print_time(self._lang.get(), diff)}"
 
     # async def start_battle(self, ctx: SlashContext, user: User,
     #                        opponent_bot: Optional[BotEntity] = None, opponent_user: Optional[User] = None) -> None:

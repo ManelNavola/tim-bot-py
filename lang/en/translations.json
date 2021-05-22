@@ -1,0 +1,209 @@
+{
+  "ABILITIES": {
+    "CLAW_USE": "{source} paralyzed {target} with their claws!",
+    "SUMMON": "{source} summoned a {summon}!"
+  },
+  "ADVENTURE": {
+    "DIED": "{EMOJI_SKULL} {name} died on {location}...",
+    "FINISH": "{EMOJI_LOCATION} {name} finished {location}.",
+    "NO_TOKENS_MULTIPLE": "{names} don't have enough tokens! (Required: {tokens} {EMOJI_TOKEN})",
+    "NO_TOKENS_SINGLE": "You don't have enough tokens! (Required: {tokens} {EMOJI_TOKEN})",
+    "PROGRESS": "{icon} Progress: {progress}",
+    "START": "{players} started {name}!"
+  },
+  "BATTLE": {
+    "BOSS_START": "BOSS BATTLE START!",
+    "LOADING": "{EMOJI_BATTLE} Loading...",
+    "NO_SPEED_BONUS": "{EMOJI_SPD} No speed bonus",
+    "ROUND": "{EMOJI_BATTLE} Round {round}",
+    "ROUND_DMG": "{EMOJI_BATTLE} Round {round} (x{multiplier} dmg)",
+    "SPEED_BONUS": "{EMOJI_SPD} Speed bonus: {name} ({value})",
+    "START": "BATTLE START!",
+    "WIN": "{name} won the battle!"
+  },
+  "BATTLE_ATTACK": {
+    "ATTACK": "{source} attacked {target} for {damage} damage!",
+    "COUNTER": "{target} countered with {damage} damage!",
+    "CRIT": "{source} dealt a **critical** attack to {target} for {damage} damage!",
+    "CRITICAL_VAMP": "{source} **critically** stole {damage} health from {target}!",
+    "EVADE": "{target} evaded {source}'s attack!",
+    "VAMP": "{source} stole {damage} health from {target}!",
+    "WAIT": "{source} waits..."
+  },
+  "BET": {
+    "BOT_WON": "{name} won the jackpot ({money}), bad luck!",
+    "CREATE": "{name} started a bet with {money}! {EMOJI_MONEY_FLY}",
+    "FINISH": "Bet finished!",
+    "INCREASE": "{name} has increased their bet to {money} {EMOJI_INCREASE}",
+    "INFO1": "Bet money with other users against the bot to win the Jackpot!",
+    "INFO2": "Each bot has a different behaviour, can you overcome their betting strategy?",
+    "JACKPOT": "{EMOJI_SPARKLE} **Jackpot** {money} {EMOJI_SPARKLE}",
+    "LACK": "You don't have {money}!",
+    "MAX": "Your bet cannot increase {money}!",
+    "MAX_BET": "(Max. bet {money})",
+    "MIN_BET": "Starting bet must be at least {money}!",
+    "MIN_INCREASE": "The minimum bet increase is of {money}!",
+    "NO_BET": "No ongoing bet at the moment",
+    "START": "{name} has bet {money} {Emoji.MONEY_FLY}",
+    "TIME": "Bet finishes in {time}",
+    "WON": "{name} won the jackpot! ({money})"
+  },
+  "BONUS": {
+    "NEXT": "{bonus} for the next {duration} battles",
+    "WHOLE": "{value} for the whole adventure"
+  },
+  "CLASS": {
+    "BARBARIAN": "Barbarian",
+    "MAGE": "Mage",
+    "ROGUE": "Rogue",
+    "WARRIOR": "Warrior"
+  },
+  "COMMAND": {
+    "ADVENTURE": {
+      "UNKNOWN": "Unknown location: {location}"
+    },
+    "CHECK": {
+      "NO_INTERACTION": "This user hasn't interacted with me yet!"
+    },
+    "GUILD_ONLY": "This command an only be called in a guild!",
+    "IN_ADVENTURE": "This command cannot be issued during an adventure!",
+    "TRANSFER": {
+      "EMPTY": "Your bank is empty!",
+      "EXECUTE": "{EMOJI_BANK} Transferred {money} from the bank (you now have {total})",
+      "FULL": "You cannot hold more money!"
+    }
+  },
+  "CRATE": {
+    "EMPTY": "{EMOJI_BOX} There is no money in the crate",
+    "LACK": "You don't have {money}!",
+    "MAX": "You cannot hold more money!",
+    "MIN": "You must place a minimum of {money}!",
+    "PLACE": "{EMOJI_BOX} {name} placed {money} in the crate ({rate} {EMOJI_CLOCK})",
+    "SHOW": "{EMOJI_BOX} There is {money} in the crate",
+    "SHOW_RATE": "{EMOJI_BOX} There is {money} in the crate ({rate} {EMOJI_CLOCK})",
+    "TAKE": "{EMOJI_BOX} {name} took {money} from the crate!"
+  },
+  "EQUIPMENT": {
+    "EMPTY": "You have no equipment",
+    "EQUIP": "Equipped {item}",
+    "INVALID_INDEX": "Invalid item index!",
+    "NO_EQUIPPED": "You don't have anything equipped!",
+    "UNEQUIP": "Unequipped {item}",
+    "UNEQUIP_ALL": "Unequipped all items"
+  },
+  "FOREST": {
+    "BOSS1": "You feel the forest watching you...",
+    "BOSS2": "Suddenly you see something move!",
+    "BOSS3": "But it is not a wild animal...",
+    "DECISION1_OPTION1": "Go deep into the forest",
+    "DECISION1_OPTION2": "Go around the forest",
+    "DECISION1_TEXT": "You find yourself at an intersection:",
+    "DECISION2_OPTION1": "Try to sneak past the bear",
+    "DECISION2_OPTION2": "Find another path",
+    "DECISION2_TEXT": "You find a sleeping bear blocking your path:",
+    "DECISION3_OPTION1": "Venture into the darkest, deepest part of the forest",
+    "DECISION3_OPTION2": "Continue your journey",
+    "DECISION3_TEXT": "You find a path without any light:",
+    "DECISION4_OPTION1": "Eat the red mushroom",
+    "DECISION4_OPTION2": "Eat the blue mushroom",
+    "DECISION4_OPTION3": "Eat the green mushroom",
+    "DECISION4_TEXT": "Under a tree you find three mushrooms...",
+    "EVENT1": "You find some healing roots...",
+    "EVENT2": "The bear woke up...",
+    "EVENT3": "You find some áloe behind a bush",
+    "EVENT4": "You find healing herbs near a tree",
+    "EVENT5": "As you venture deeper into the forest, you gather some courage...",
+    "EVENT6": "You feel the effect of the mushroom...",
+    "NAME": "Forest"
+  },
+  "LAKE": {
+    "BOSS1": "As you get closer to the center, the glow disappears...",
+    "BOSS2": "Something catches your leg and you are unable to move!",
+    "BOSS3": "Suddenly the creature emerges from the water...",
+    "DECISION1_OPTION1": "Go to the lake",
+    "DECISION1_OPTION2": "Go around the lake",
+    "DECISION1_TEXT": "You find in front of you a sign warning about the dangerous lake.",
+    "DECISION2_OPTION1": "Pick it up",
+    "DECISION2_OPTION2": "Ignore it",
+    "DECISION2_RESULT1": "You find some herbs in the ground",
+    "DECISION2_RESULT2": "Inside the ground was an enemy...",
+    "DECISION2_TEXT": "You find something strange in the ground.",
+    "DECISION3_OPTION1": "Swim towards the center of the lake",
+    "DECISION3_OPTION2": "Continue your path",
+    "DECISION3_TEXT": "In the center of the lake you can see something glowing...",
+    "EVENT1": "A friendly fisherman gives you a small fish",
+    "EVENT2": "A friendly fisherman gives you a tasty fish",
+    "NAME": "Lake"
+  },
+  "LANGUAGE": "English",
+  "MISC": {
+    "DECIMAL_SEP": ".",
+    "MONEY": "${number}",
+    "RATE": "{amount}/{time}",
+    "THOUSAND_SEP": ",",
+    "TIME": {
+      "DAY": "day",
+      "HOUR": "hour",
+      "HOUR_SHORT": "h",
+      "MIN": "min",
+      "MIN_SHORT": "m",
+      "PRINT": "{number}{abv}",
+      "SEC": "sec",
+      "SEC_SHORT": "s"
+    }
+  },
+  "REWARD": {
+    "BOX": "You find a box beneath your feet",
+    "ITEM_SOLD_SOMEONE": "{name}'s inventory is full! Sold {item} for {money}",
+    "ITEM_SOLD_YOU": "Inventory full! You sold {item} for {money}",
+    "ITEM_SOMEONE": "{name} found {item}!",
+    "ITEM_YOU": "You found {item}!",
+    "MONEY_SOMEONE": "{name} found {money}!",
+    "MONEY_YOU": "You found {money}!"
+  },
+  "SETUP": {
+    "ADMIN": "Only admins can perform that command!",
+    "LANG": "You set language to {lang}"
+  },
+  "SHOP": {
+    "AUTO_EQUIP": "Equipped automatically",
+    "CHANGE": "The shop has changed since the last time, showing shop...",
+    "INVALID": "Invalid item index!",
+    "INVENTORY_FULL": "Your inventory is full!",
+    "LACK": "You don't have {money}!",
+    "MUST_UNEQUIP": "You must unequip the item first!",
+    "NO_ITEMS": "You don't have any items to sell!",
+    "PURCHASE": "{EMOJI_PURCHASE} {name} purchased {item}!",
+    "SOLD": "{EMOJI_PURCHASE} Sold {item} for {money}",
+    "SOLD_MANY": "{EMOJI_PURCHASE} Sold {total} items for {utils.print_money(money)}"
+  },
+  "TUTORIAL": {
+    "ATTACK": "Press the {EMOJI_BATTLE} reaction to attack!",
+    "BATTLE_END": "Nice battle! Press the {EMOJI_OK} reaction to continue!",
+    "CONGRATULATIONS": "Congratulations on beating the tutorial {name}!",
+    "NAME": "Tutorial",
+    "REFERENCE": "Most of the game actions are easy to understand: try {command} if you want to get a quick debriefing on useful commands!",
+    "REMEMBER": "Your mind is empty, but you remember you were a...",
+    "SEAGULL": "As you get closer to the shore, you see something fly down from the sky...",
+    "TOKENS": "Here are {tokens} {EMOJI_TOKEN} tokens get you started, you can use them to go on adventures",
+    "WAKE": "You wake up in a boat...",
+    "WELCOME": "{name}, welcome to {bot_name}!"
+  },
+  "UPGRADE": {
+    "AVAILABLE": "Available upgrades:",
+    "CURRENT": "Current",
+    "EXECUTE": "{EMOJI_ICON} Upgraded {name} to Level {level}! {EMOJI_ICON}",
+    "LACK": "You need {money} for the upgrade!",
+    "LEVEL": "Level",
+    "MAX": "MAX",
+    "MAX_LEVEL": "You are already at max level!",
+    "NEXT_VALUE": "Next Value",
+    "SHORT": "{ICON_UPGRADE} {name} Lvl. {level} [{value}] {EMOJI_ARROW_RIGHT} [{next_value}], Cost: {money}",
+    "SHORT_MAX": "{EMOJI_ICON} {name} Lvl. {level} ({max_word})",
+    "UPGRADE_COST": "Upgrade Cost",
+    "UPGRADE_NAME": "Upgrade Name"
+  },
+  "USER": {
+    "PROFILE": "{name}'s User Profile:"
+  }
+}

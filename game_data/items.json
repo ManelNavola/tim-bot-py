@@ -108,46 +108,96 @@
     }
   },
   "11": {
-    "Name": "Forest Hat",
+    "Name": "Robin's Hat",
     "Location": "Forest",
     "Tier": 0,
     "Type": "Helmet",
     "Stats": {
-      "DEF": 2,
       "HP": 2,
-      "SPD": 1
+      "SPD": 1,
+      "DEF": 1
     }
   },
   "12": {
-    "Name": "Forest Bandana",
+    "Name": "Green Bandana",
     "Location": "Forest",
     "Tier": 0,
     "Type": "Helmet",
     "Stats": {
-      "SPD": 2,
-      "EVA": 2,
       "DEF": 1,
-      "HP": 1
+      "HP": 1,
+      "EVA": 1,
+      "SPD": 1
     }
   },
   "13": {
-    "Name": "Forest Tunic",
+    "Name": "Elf Tunic",
     "Location": "Forest",
     "Tier": 0,
     "Type": "Chest",
     "Stats": {
-      "EVA": 3,
-      "DEF": 3
+      "EVA": 2,
+      "DEF": 2
     }
   },
   "14": {
-    "Name": "Forest Boots",
+    "Name": "Fiber Boots",
     "Location": "Forest",
     "Tier": 0,
     "Type": "Boot",
     "Stats": {
-      "SPD": 3,
-      "EVA": 3
+      "SPD": 2,
+      "EVA": 2
+    }
+  },
+  "15": {
+    "Name": "Old Tome",
+    "Location": "Anywhere",
+    "Tier": 0,
+    "Type": "Secondary",
+    "Stats": {
+      "HP": 1,
+      "DEF": 1
+    }
+  },
+  "16": {
+    "Name": "Rusty Sword",
+    "Location": "Lake",
+    "Tier": 0,
+    "Type": "Weapon",
+    "Stats": {
+      "STR": 2,
+      "CONT": 2
+    }
+  },
+  "17": {
+    "Name": "Fishing Rod",
+    "Location": "Lake",
+    "Tier": 0,
+    "Type": "Weapon",
+    "Stats": {
+      "STR": 2,
+      "CRIT": 2
+    }
+  },
+  "18": {
+    "Name": "Fishing Net",
+    "Location": "Lake",
+    "Tier": 0,
+    "Type": "Secondary",
+    "Stats": {
+      "VAMP": 2,
+      "SPD": 2
+    }
+  },
+  "19": {
+    "Name": "Cooked Lobster",
+    "Location": "Lake",
+    "Tier": 0,
+    "Type": "Secondary",
+    "Stats": {
+      "HP": 2,
+      "DEF": 1
     }
   }
 }

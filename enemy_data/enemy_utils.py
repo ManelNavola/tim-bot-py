@@ -1,17 +1,23 @@
 import json
 import random
+import typing
 from typing import Any, Optional
 
-from entities.bot_entity import BotEntityBuilder
 from enums.location import Location
 from item_data.stat import Stat
 
-_ENEMIES: dict[Location, dict[str, list[BotEntityBuilder]]] = {
+if typing.TYPE_CHECKING:
+    from enemy_data.bot_entity_builder import BotEntityBuilder
+
+_ENEMIES: dict[Location, dict[str, list['BotEntityBuilder']]] = {
     x: {} for x in Location
 }
 
+_ENEMY_IDS: dict[int, 'BotEntityBuilder'] = {}
+
 
 def load():
+    from enemy_data.bot_entity_builder import BotEntityBuilder
     enemy_count: int = 0
     with open('game_data/enemies.json', 'r') as f:
         item_dict: dict[str, Any] = json.load(f)
@@ -27,6 +33,7 @@ def load():
             beb: BotEntityBuilder = BotEntityBuilder(
                 id_v['Name'], stat_dict, enemy_id=int(id_k)
             )
+            _ENEMY_IDS[int(id_k)] = beb
 
             location = Location.get_from_name(id_v['Location'])
             pool = id_v.get('Pool', '')
@@ -36,15 +43,21 @@ def load():
                 _ENEMIES[location][pool] = to_pool
             to_pool.append(beb)
             enemy_count += 1
+    _ENEMY_IDS[-1] = BotEntityBuilder('MissingNo, please contact the developer', {
+        Stat.HP: 10
+    })
     print(f"Loaded {enemy_count} enemies")
 
+
+def get_enemy(enemy_id: int) -> 'BotEntityBuilder':
+    return _ENEMY_IDS[enemy_id]
+
+
 def get_random_enemy(location: Location, pool: str = '', last_chosen_id: Optional[int] = None) \
-        -> BotEntityBuilder:
-    possible_enemies: list[BotEntityBuilder] = _ENEMIES[location][pool]
+        -> 'BotEntityBuilder':
+    possible_enemies: list['BotEntityBuilder'] = _ENEMIES[location][pool]
     if len(possible_enemies) == 0:
-        return BotEntityBuilder('MissingNo, please contact the developer', {
-            Stat.HP: 10
-        })
+        return get_enemy(-1)
     if len(possible_enemies) == 1:
         return possible_enemies[0]
     elif len(possible_enemies) == 2 and (last_chosen_id is not None):
@@ -53,6 +66,6 @@ def get_random_enemy(location: Location, pool: str = '', last_chosen_id: Optiona
                 return possible_enemies[i]
     for i in range(50):
         chosen = random.choice(possible_enemies)
-        if chosen != last_chosen_id:
+        if chosen.enemy_id != last_chosen_id:
             return chosen
     return random.choice(possible_enemies)

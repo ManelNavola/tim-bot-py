@@ -1,40 +1,26 @@
-from typing import Optional
-
+from entities.ai.base_ai import BotAI
+# from item_data.abilities import AbilityInstance
 from entities.entity import Entity
-from item_data.abilities import AbilityInstance
+from item_data.abilities import AbilityEnum
 from item_data.stat import Stat
 
 
-class BotEntityBuilder:
-    def __init__(self, name: str, stat_dict: dict[Stat, int],
-                 abilities: Optional[list[AbilityInstance]] = None, enemy_id: Optional[int] = None):
-        if not abilities:
-            abilities = []
-        self.abilities: list[AbilityInstance] = abilities
-        self.stat_dict: dict[Stat, int] = stat_dict
-        self.name = name
-        self.enemy_id: Optional[int] = enemy_id
-
-    def instance(self):
-        return BotEntity(self.name, self.stat_dict.copy(), [ab for ab in self.abilities])
-
-
 class BotEntity(Entity):
-    def __init__(self, name: str, stat_dict: dict[Stat, int],
-                 abilities: Optional[list[AbilityInstance]] = None):
+    def __init__(self, name: str, stat_dict: dict[Stat, int], ai: BotAI, abilities: list[AbilityEnum] = None):
         super().__init__(stat_dict)
         self._name: str = name
+        if abilities:
+            self._available_abilities = abilities
+        self._ai: BotAI = ai
         self._persistent_stats = {stat: stat.get_value(stat_dict[stat])
                                   for stat in Stat
                                   if stat.is_persistent() and stat in stat_dict}
-        if abilities is not None:
-            self._available_abilities = abilities
+
+    def get_ai(self) -> BotAI:
+        return self._ai
 
     def get_name(self) -> str:
         return self._name
-
-    def get_stat_value(self, stat: Stat) -> int:
-        return self._stat_dict.get(stat, 0)
 
     def print_detailed(self) -> str:
         dc: list[str] = []

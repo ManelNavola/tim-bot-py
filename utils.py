@@ -8,6 +8,9 @@ from autoslot import Slots
 
 
 # Time metric enum
+from helpers.translate import tr
+
+
 @unique
 class TimeMetric(Enum):
     SECOND = 1
@@ -25,15 +28,15 @@ class TimeMetric(Enum):
         else:
             return amount * 86400
 
-    def abbreviation(self) -> str:
+    def abbreviation(self, lang: str) -> str:
         if self == TimeMetric.SECOND:
-            return 'sec'
+            return tr(lang, 'MISC.TIME.SEC')
         elif self == TimeMetric.MINUTE:
-            return 'min'
+            return tr(lang, 'MISC.TIME.MIN')
         elif self == TimeMetric.HOUR:
-            return 'hour'
+            return tr(lang, 'MISC.TIME.HOUR')
         else:
-            return 'day'
+            return tr(lang, 'MISC.TIME.DAY')
 
     def from_seconds(self, diff: int) -> int:
         return diff // self.seconds()
@@ -44,8 +47,8 @@ class TimeSlot(Slots):
         self.metric = metric
         self.amount = amount
 
-    def metric_abbreviation(self):
-        return self.metric.abbreviation()
+    def metric_abbreviation(self, lang: str):
+        return self.metric.abbreviation(lang)
 
     def seconds(self):
         return self.metric.seconds(self.amount)
@@ -73,21 +76,47 @@ def current_ms() -> int:
     return round(time.time() * 1000)
 
 
-def print_money(money: int, decimals: int = 0):
-    return f"${money:,.{decimals}f}"
+def print_float(lang: str, number: float, decimals: int) -> str:
+    if number < 0:
+        return '-' + print_float(lang, -number, decimals)
+    result = ''
+    thousand_sep = tr(lang, 'MISC.THOUSAND_SEP')
+    while number >= 1000:
+        number, r = divmod(number, 1000)
+        result = "%s%03d%s" % (thousand_sep, r, result)
+    rest: float = number % 1
+    return "%d%s%s%s" % (number, result, tr(lang, 'MISC.DECIMAL_SEP'), f"{rest:.{decimals}f}"[2:])
+
+
+def print_int(lang: str, number: int) -> str:
+    if number < 0:
+        return '-' + print_int(lang, -number)
+    result = ''
+    thousand_sep = tr(lang, 'MISC.THOUSAND_SEP')
+    while number >= 1000:
+        number, r = divmod(number, 1000)
+        result = "%s%03d%s" % (thousand_sep, r, result)
+    return "%d%s" % (number, result)
+
+
+def print_money(lang: str, money: int):
+    money_str: str = print_int(lang, money)
+    return tr(lang, 'MISC.MONEY', number=money_str)
 
 
 def is_test():
     return 'DATABASE_URL' not in os.environ
 
 
-def print_time(seconds: int):
+def print_time(lang: str, seconds: int):
     hours = seconds // 3600
     minutes = (seconds % 3600) // 60
     seconds = seconds % 60
     if hours > 0:
-        return f"{hours}h, {minutes}m"
+        return f"{tr(lang, 'MISC.TIME.PRINT', number=hours, abv=tr(lang, 'MISC.TIME.HOUR_SHORT'))}, " \
+               f"{tr(lang, 'MISC.TIME.PRINT', number=minutes, abv=tr(lang, 'MISC.TIME.MIN_SHORT'))}"
     elif minutes > 0:
-        return f"{minutes}m, {seconds}s"
+        return f"{tr(lang, 'MISC.TIME.PRINT', number=minutes, abv=tr(lang, 'MISC.TIME.MIN_SHORT'))}, " \
+               f"{tr(lang, 'MISC.TIME.PRINT', number=seconds, abv=tr(lang, 'MISC.TIME.SEC_SHORT'))}"
     else:
-        return f"{seconds}s"
+        return f"{tr(lang, 'MISC.TIME.PRINT', number=seconds, abv=tr(lang, 'MISC.TIME.SEC_SHORT'))}"

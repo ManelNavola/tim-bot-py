@@ -13,9 +13,11 @@ class LocationInstance(Slots):
 class Location(Enum):
     _ignore_ = ['_INFO']
     NOWHERE = LocationInstance('Nowhere')
+    TUTORIAL = LocationInstance('Tutorial')
     ANYWHERE = LocationInstance('Anywhere')
     COLISEUM = LocationInstance('Coliseum')
     FOREST = LocationInstance('Forest')
+    LAKE = LocationInstance('Lake')
     _INFO = {}
 
     @staticmethod

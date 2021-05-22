@@ -191,9 +191,9 @@
   "18": {
     "Location": "Forest",
     "Stats": {
-      "STR": 4,
-      "HP": 8,
-      "DEF": 6
+      "HP": 7,
+      "DEF": 5,
+      "STR": 4
     },
     "Name": "Beetle",
     "Pool": "C"
@@ -202,8 +202,8 @@
     "Location": "Forest",
     "Stats": {
       "STR": 3,
-      "DEF": 5,
-      "HP": 5
+      "HP": 5,
+      "DEF": 4
     },
     "Name": "Bear",
     "Pool": "D"
@@ -211,12 +211,149 @@
   "20": {
     "Location": "Forest",
     "Stats": {
-      "CONT": 5,
-      "STR": 5,
-      "DEF": 5,
-      "HP": 8
+      "HP": 10,
+      "AP": 6,
+      "STR": 3,
+      "CONT": 6,
+      "DEF": 5
     },
     "Name": "Godly Ent",
+    "Pool": "BOSS"
+  },
+  "21": {
+    "Name": "Seagull",
+    "Location": "Tutorial",
+    "Stats": {
+      "HP": 3,
+      "STR": 1,
+      "DEF": 1
+    },
+    "Pool": ""
+  },
+  "22": {
+    "Name": "Entling",
+    "Location": "Forest",
+    "Stats": {
+      "HP": 4,
+      "DEF": 3,
+      "STR": 4
+    },
+    "Pool": ""
+  },
+  "23": {
+    "Name": "Dragonfly",
+    "Location": "Lake",
+    "Stats": {
+      "HP": 4,
+      "DEF": 2,
+      "EVA": 2,
+      "STR": 3
+    },
+    "Pool": "A"
+  },
+  "24": {
+    "Name": "Hungry Worm",
+    "Location": "Lake",
+    "Stats": {
+      "HP": 3,
+      "SPD": 2,
+      "EVA": 6,
+      "STR": 4
+    },
+    "Pool": "A"
+  },
+  "25": {
+    "Name": "Snail",
+    "Location": "Lake",
+    "Stats": {
+      "DEF": 4,
+      "HP": 2,
+      "STR": 1,
+      "CONT": 8
+    },
+    "Pool": "A"
+  },
+  "26": {
+    "Name": "Tough Turtle",
+    "Location": "Lake",
+    "Stats": {
+      "STR": 4,
+      "HP": 5,
+      "DEF": 4
+    },
+    "Pool": "B"
+  },
+  "27": {
+    "Name": "Silent Snake",
+    "Location": "Lake",
+    "Stats": {
+      "STR": 4,
+      "CRIT": 8,
+      "HP": 6,
+      "DEF": 3
+    },
+    "Pool": "B"
+  },
+  "28": {
+    "Name": "Fearless Frog",
+    "Location": "Lake",
+    "Stats": {
+      "HP": 4,
+      "STR": 4,
+      "DEF": 2,
+      "SPD": 5,
+      "EVA": 6
+    },
+    "Pool": "B"
+  },
+  "29": {
+    "Name": "Alligator",
+    "Location": "Lake",
+    "Stats": {
+      "HP": 6,
+      "SPD": 4,
+      "CONT": 2,
+      "DEF": 4,
+      "STR": 6
+    },
+    "Pool": "C"
+  },
+  "30": {
+    "Name": "Beaver",
+    "Location": "Lake",
+    "Stats": {
+      "STR": 4,
+      "DEF": 4,
+      "HP": 7,
+      "EVA": 3,
+      "CONT": 3,
+      "SPD": 3
+    },
+    "Pool": "C"
+  },
+  "31": {
+    "Name": "Oblivious Otter",
+    "Location": "Lake",
+    "Stats": {
+      "STR": 4,
+      "DEF": 4,
+      "HP": 7,
+      "SPD": 3,
+      "EVA": 2,
+      "CONT": 1,
+      "CRIT": 1
+    },
+    "Pool": "C"
+  },
+  "32": {
+    "Name": "Magnum Lobster",
+    "Location": "Lake",
+    "Stats": {
+      "DEF": 5,
+      "HP": 15,
+      "AP": 4,
+      "STR": 4
+    },
     "Pool": "BOSS"
   }
 }

@@ -8,11 +8,13 @@ from discord_slash import SlashCommand
 from discord_slash.utils.manage_commands import create_option, create_choice
 
 import utils
-from commands import simple, crate, bet, upgrade, shop, test, adventure
+from adventure_classes.game_adventures import adventure_provider
+from commands import simple, crate, bet, upgrade, shop, test, adventure, setup, equipment
 from game_data import data_loader
-from helpers import storage, messages
+from helpers import storage, messages, translate
 from db import database
 from helpers.command import CommandHandler
+from helpers.translate import tr
 from user_data.user import User
 
 # Load data
@@ -48,7 +50,7 @@ async def on_ready():
 
 # Reaction catching
 @bot.event
-async def on_reaction_add(reaction: discord.Reaction, discord_user: discord.User):
+async def on_reaction_add(reaction: discord.Reaction, discord_user: discord.Member):
     user: Optional[User] = storage.get_user(db, discord_user.id, create=False)
     if user is not None:
         await messages.on_reaction_add(user, discord_user, reaction.message.id, reaction)
@@ -67,13 +69,15 @@ cmd_handler.register_command(simple.check,
                                      option_type=6,
                                      required=True
                                  )
-                             ], guild_ids=registered_guild_ids)
+                             ], guild_only=True,
+                             guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(simple.inv,
                              name="inv", description="Check your inventory",
                              guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(simple.post_inv, name="post_inv", description="Post your inventory",
+                             guild_only=True,
                              guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(simple.transfer,
@@ -82,11 +86,13 @@ cmd_handler.register_command(simple.transfer,
 
 cmd_handler.register_command(simple.leaderboard,
                              name="leaderboard", description="Check out the top players",
+                             guild_only=True,
                              guild_ids=registered_guild_ids)
 
 # Betting
 cmd_handler.register_command(bet.info,
                              base="bet", name="info", description="Get information about betting",
+                             guild_only=True,
                              guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(bet.add,
@@ -98,10 +104,12 @@ cmd_handler.register_command(bet.add,
                                      option_type=4,
                                      required=True
                                  )
-                             ], guild_ids=registered_guild_ids)
+                             ], guild_only=True,
+                             guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(bet.check,
                              base="bet", name="check", description="Check the current bet",
+                             guild_only=True,
                              guild_ids=registered_guild_ids)
 
 # Upgrades
@@ -132,6 +140,7 @@ cmd_handler.register_command(upgrade.upgrade, 'inventory',
 # Crate
 cmd_handler.register_command(crate.check,
                              base="crate", name="check", description="Check money in the crate",
+                             guild_only=True,
                              guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(crate.place,
@@ -143,14 +152,17 @@ cmd_handler.register_command(crate.place,
                                      option_type=4,
                                      required=True
                                  )
-                             ], guild_ids=registered_guild_ids)
+                             ], guild_only=True,
+                             guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(crate.take,
                              base="crate", name="take", description="Take money from the crate",
+                             guild_only=True,
                              guild_ids=registered_guild_ids)
 
 # Shop
 cmd_handler.register_command(shop.check, base="shop", name="check", description="Check the guild shop",
+                             guild_only=True,
                              guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(shop.buy,
@@ -162,7 +174,7 @@ cmd_handler.register_command(shop.buy,
                                      option_type=4,
                                      required=True
                                  )
-                             ],
+                             ], guild_only=True,
                              guild_ids=registered_guild_ids)
 
 cmd_handler.register_command(shop.sell,
@@ -190,7 +202,7 @@ cmd_handler.register_command(simple.stats,
 #                              name="abilities", description="Check your abilities",
 #                              guild_ids=registered_guild_ids)
 
-cmd_handler.register_command(simple.equip,
+cmd_handler.register_command(equipment.equip,
                              name="equip", description="Equip an item",
                              options=[
                                  create_option(
@@ -202,11 +214,11 @@ cmd_handler.register_command(simple.equip,
                              ],
                              guild_ids=registered_guild_ids)
 
-cmd_handler.register_command(simple.equip_best,
+cmd_handler.register_command(equipment.equip_best,
                              name="equip_best", description="Equips the best items you have according to their price",
                              guild_ids=registered_guild_ids)
 
-cmd_handler.register_command(simple.unequip,
+cmd_handler.register_command(equipment.unequip,
                              name="unequip", description="Unequip an item",
                              options=[
                                  create_option(
@@ -218,7 +230,7 @@ cmd_handler.register_command(simple.unequip,
                              ],
                              guild_ids=registered_guild_ids)
 
-cmd_handler.register_command(simple.unequip_all,
+cmd_handler.register_command(equipment.unequip_all,
                              name="unequip_all", description="Unequip all items",
                              guild_ids=registered_guild_ids)
 
@@ -238,12 +250,35 @@ cmd_handler.register_command(adventure.start_adventure,
                                      required=True,
                                      choices=[
                                          create_choice(
-                                             name="Forest",
-                                             value="Forest"
+                                             name=name,
+                                             value=name
                                          )
+                                         for name, instance in adventure_provider.name_to_adventure.items()
+                                         if not name.startswith('_')
                                      ]
                                  )
                              ],
+                             guild_ids=registered_guild_ids)
+
+
+# Administration
+cmd_handler.register_command(setup.set_language,
+                             base="setup",
+                             name="language", description="Change the bot's language",
+                             options=[
+                                 create_option(
+                                     name="language",
+                                     description="Language to set the bot to",
+                                     option_type=3,
+                                     required=True,
+                                     choices=[
+                                         create_choice(
+                                             name=f"{tr(x, 'LANGUAGE')}",
+                                             value=f"{x}"
+                                         ) for x in translate.get_available()
+                                     ]
+                                 )
+                             ], ignore_all=True,
                              guild_ids=registered_guild_ids)
 
 # Register test command
@@ -254,12 +289,28 @@ if utils.is_test():
                                  name="rich", description="MAKE IT RAIN", guild_ids=registered_guild_ids,
                                  ignore_battle=True)
 
-    cmd_handler.register_command(test.heal,
+    cmd_handler.register_command(test.invincible,
                                  name="invincible", description="Hax", guild_ids=registered_guild_ids,
                                  ignore_battle=True)
 
+    cmd_handler.register_command(test.tokenize,
+                                 name="tokenize", description="Gimme tokens!",
+                                 guild_ids=registered_guild_ids)
+
     cmd_handler.register_command(test.test,
                                  name="test", description="Quickly test anything!",
+                                 guild_ids=registered_guild_ids)
+
+    cmd_handler.register_command(test.gimme_all,
+                                 name="gimme_all", description="gimme_all!",
+                                 options=[
+                                     create_option(
+                                         name=x,
+                                         description=x,
+                                         option_type=3,
+                                         required=False
+                                     ) for x in ['tier', 'location', 'rarity']
+                                 ],
                                  guild_ids=registered_guild_ids)
 
 # Run bot based on test

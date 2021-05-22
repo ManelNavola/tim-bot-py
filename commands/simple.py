@@ -1,16 +1,19 @@
 import discord
 
 import utils
+from enums.emoji import Emoji
+from enums.user_class import UserClass
 from helpers.command import Command
 from helpers import storage
+from helpers.translate import tr
 
 
 async def inv(cmd: Command):
-    await cmd.send_hidden(cmd.user.print(private=True, checking=False))
+    await cmd.send_hidden(cmd.user.print(cmd.lang, private=True, checking=False))
 
 
 async def post_inv(cmd: Command):
-    await cmd.send(cmd.user.print(private=True, checking=cmd.user.get_name()))
+    await cmd.send(cmd.user.print(cmd.lang, private=True, checking=cmd.user.get_name()))
 
 
 async def check(cmd: Command, user: discord.Member):
@@ -20,21 +23,22 @@ async def check(cmd: Command, user: discord.Member):
 
     user_m = storage.get_user(cmd.db, user.id, False)
     if not user_m:
-        await cmd.send_hidden("This user hasn't interacted with me yet!")
+        await cmd.send_hidden(tr(cmd.lang, 'COMMAND.CHECK.NO_INTERACTION'))
         return
-    await cmd.send(user_m.print(private=False, checking=True))
+    await cmd.send(user_m.print(cmd.lang, private=False, checking=True))
 
 
 async def transfer(cmd: Command):
     if cmd.user.get_bank() == 0:
-        await cmd.error("Your bank is empty!")
+        await cmd.error(tr(cmd.lang, 'COMMAND.TRANSFER.EMPTY'))
     else:
         transferred = cmd.user.withdraw_bank()
         if transferred == 0:
-            await cmd.error("You cannot hold more money!")
+            await cmd.error(tr(cmd.lang, 'COMMAND.TRANSFER.FULL'))
         else:
-            await cmd.send_hidden(f"Transferred {utils.print_money(transferred)} from the bank "
-                                  f"(you now have {utils.print_money(cmd.user.get_money())})")
+            await cmd.send_hidden(tr(cmd.lang, 'COMMAND.TRANSFER.EXECUTE', EMOJI_BANK=Emoji.BANK,
+                                     money=utils.print_money(cmd.lang, transferred),
+                                     total=utils.print_money(cmd.lang, cmd.user.get_money())))
 
 
 async def leaderboard(cmd: Command):
@@ -42,44 +46,12 @@ async def leaderboard(cmd: Command):
 
 
 async def stats(cmd: Command):
-    await cmd.send_hidden(cmd.user.user_entity.print_detailed())
-
-
-async def equip(cmd: Command, number: int):
-    result = cmd.user.inventory.equip(number - 1)
-    if result is not None:
-        cmd.user.user_entity.update_equipment(cmd.user.inventory.get_equipment())
-        await cmd.send_hidden(f"Equipped {result}")
+    if cmd.user.get_class_index() == -1:
+        await cmd.send_hidden('You have no stats yet...')
     else:
-        await cmd.error("Invalid item index!")
-
-
-async def equip_best(cmd: Command):
-    tr = []
-    cmd.user.inventory.equip_best()
-    for item in cmd.user.inventory.get_equipment():
-        tr.append(f"Equipped {item.print()}")
-    if tr:
-        await cmd.send('\n'.join(tr))
-    else:
-        await cmd.error("You have no equipment")
-
-
-async def unequip(cmd: Command, number: int):
-    result = cmd.user.inventory.unequip(number - 1)
-    if result is not None:
-        cmd.user.user_entity.update_equipment(cmd.user.inventory.get_equipment())
-        await cmd.send_hidden(f"Unequipped {result}")
-    else:
-        await cmd.error("Invalid item index!")
-
-
-async def unequip_all(cmd: Command):
-    if len(cmd.user.inventory.get_equipment()) == 0:
-        await cmd.error("You don't have anything equipped!")
-        return
-    cmd.user.inventory.unequip_all()
-    await cmd.send_hidden("Unequipped all items")
+        ts: str = cmd.user.user_entity.print_detailed()
+        uc: UserClass = UserClass.get_from_id(cmd.user.get_class_index())
+        await cmd.send_hidden(f"{uc.get_icon()} {uc.get_name(cmd.lang)}\n{ts}")
 
 
 async def abilities(cmd: Command):

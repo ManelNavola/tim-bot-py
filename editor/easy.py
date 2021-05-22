@@ -8,10 +8,11 @@ from tkinter import *
 
 from jsonpath_ng import parse
 
-from adventure_classes.generic.battle_entity import BattleEntity
+from adventure_classes.generic.battle.battle import BattleEntity, BattleGroup
+from entities.ai.no_ai import NoAI
 from entities.bot_entity import BotEntity
 from tk_utils import center
-from item_data.stat import Stat
+from item_data.stat import Stat, StatType
 
 
 class EasyData:
@@ -310,7 +311,7 @@ class EasyJSONStatsWeights(EasyJSONStats):
         for stat in Stat:
             value = EasyJSON.get_value(self, data).get(stat.get_abv())
             if value:
-                tr.append((f"{stat.value.represent(stat.get_value(value))} {stat.get_abv()}", value))
+                tr.append((f"{value} {stat.get_abv()}", value))
         tr.sort(key=lambda x: -x[1])
         return ', '.join([x[0] for x in tr])
 
@@ -318,7 +319,16 @@ class EasyJSONStatsWeights(EasyJSONStats):
 class EasyJSONBattleStats(EasyJSONStats):
     def show(self, data: dict[str, Any], key) -> str:
         stat_data = {Stat.get_by_abv(x): v for x, v in data['Stats'].items()}
-        return BattleEntity(BotEntity('', stat_data)).print() + f' [{sum(stat_data.values())}]'
+        weighted_sum: float = 0
+        for stat, value in stat_data.items():
+            if stat.get_type() == StatType.MAIN:
+                weighted_sum += value
+            elif stat.get_type() == StatType.SECONDARY:
+                if stat != Stat.AP:
+                    weighted_sum += value * 0.5
+            elif stat.get_type() == StatType.CHANCE:
+                weighted_sum += value * 0.3
+        return BattleEntity(BotEntity('', stat_data, NoAI()), BattleGroup()).print() + f' [{weighted_sum:.1f}]'
 
 
 class EasyGridTree(EasyGrid):
@@ -492,9 +502,10 @@ class EasyGridTree(EasyGrid):
         self.frame.grid_columnconfigure(0, weight=1)
         self.frame.grid_columnconfigure(1, weight=0)
 
-        self.frame.grid(row=2, column=0, columnspan=2, sticky='news')
+        self.frame.grid(row=2, column=0, columnspan=2, sticky='nswe')
 
         self.frame.rowconfigure(0, weight=0)
+        self.frame.rowconfigure(1, weight=1)
 
         # Window
 
@@ -641,7 +652,7 @@ class EasyGridTree(EasyGrid):
             for i in range(len(self.structure)):
                 if self.filtering_by[i]:
                     if self.structure[i].name in data[k]:
-                        if self.filtering_by[i] not in data[k][self.structure[i].name].lower():
+                        if self.filtering_by[i] not in str(data[k][self.structure[i].name]).lower():
                             correct = False
                             break
             if correct:

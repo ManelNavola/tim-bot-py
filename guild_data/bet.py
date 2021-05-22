@@ -9,6 +9,7 @@ from db.database import PostgreSQL
 from helpers import storage
 from enums.emoji import Emoji
 from helpers.dictref import DictRef
+from helpers.translate import tr
 from user_data.user import User
 from utils import TimeSlot, TimeMetric
 
@@ -33,8 +34,9 @@ class Bet:
         (999999999999, ['robot', 'sunglasses', 'cowboy'])
     ]
 
-    def __init__(self, db: PostgreSQL, bet_ref: DictRef[dict]):
+    def __init__(self, db: PostgreSQL, bet_ref: DictRef[dict], lang: DictRef[str]):
         self._db = db
+        self._lang: DictRef[str] = lang
         self._bet_ref: DictRef[dict] = bet_ref
         self._info_changed: bool = False
         self._stored_info = None
@@ -96,14 +98,13 @@ class Bet:
         user_ids.append('BOT')
         weights.append(self._bot.get_bet())
         winner_id = random.choices(user_ids, weights=weights, k=1)[0]
-        result = ["~ Bet finished! ~"]
+        result = ['~ ' + tr(self._lang.get(), 'BET.FINISH') + ' ~']
         total_bet = self.get_bet_sum() + self._bot.get_bet()
-        money_str = utils.print_money(total_bet)
+        money_str = utils.print_money(self._lang.get(), total_bet)
         if winner_id == 'BOT':
-            result.append(f"{self._bot.icon} won the jackpot ({money_str}), bad luck!")
+            result.append(tr(self._lang.get(), 'BET.BOT_WON', name=self._bot.icon, money=money_str))
         else:
-            name = self._bet_ref['bets'][winner_id][0]
-            result.append(f"{name} won the jackpot! ({money_str})")
+            result.append(tr(self._lang.get(), 'BET.WON', name=self._bet_ref['bets'][winner_id][0], money=money_str))
             user = storage.get_user(self._db, winner_id)
             user.add_money(total_bet)
         await ctx.send('\n'.join(result))
@@ -112,8 +113,8 @@ class Bet:
 
     def print(self) -> str:
         s = max(self._bet_ref['finish_time'] - utils.now(), 0)
-        time_remaining_str = utils.print_time(s)
-        lines = [f"Bet finishes in {time_remaining_str}"]
+        time_remaining_str = utils.print_time(self._lang.get(), s)
+        lines = [tr(self._lang.get(), 'BET.TIME', time=time_remaining_str)]
         if self._info_changed:
             self._stored_info = []
             # Sort bet data
@@ -121,13 +122,14 @@ class Bet:
             bets = list(self._bet_ref['bets'].values())
             bets.append((self._bot.icon, self._bot.get_bet()))
             bets.sort(key=lambda x: x[1], reverse=True)
-            total_bet_str = utils.print_money(total_bet)
             # Jackpot
-            self._stored_info.append(f"{Emoji.SPARKLE} **Jackpot** {total_bet_str} {Emoji.SPARKLE} "
-                                     f"(Max. bet {utils.print_money(self._limit)})")
+            a: str = tr(self._lang.get(), 'BET.JACKPOT', EMOJI_SPARKLE=Emoji.SPARKLE,
+                        money=utils.print_money(self._lang.get(), total_bet))
+            b: str = tr(self._lang.get(), 'BET.MAX_BET', money=utils.print_money(self._lang.get(), self._limit))
+            self._stored_info.append(f"{a}\n{b}")
             # Player+bot bets
             for single_bet in bets:
-                money_str = utils.print_money(single_bet[1])
+                money_str = utils.print_money(self._lang.get(), single_bet[1])
                 pct = single_bet[1] / total_bet
                 self._stored_info.append(f"{single_bet[0]}: {money_str} ({pct:.0%})")
 

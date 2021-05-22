@@ -1,112 +1,166 @@
-from typing import Optional
+import typing
+from abc import ABC, abstractmethod
+from enum import Enum, unique
 
+from typing import Optional
 from autoslot import Slots
 
-import utils
+from adventure_classes.generic.stat_modifier import StatModifierAdd
+from enemy_data import enemy_utils
+from enums.emoji import Emoji
+from helpers.translate import tr
 from item_data.stat import Stat
 
-
-class AbilityTier(Slots):
-    def __init__(self, stat: Stat, duration: int, multiplier: float = 1, adder: int = 0, other: bool = False):
-        self.stat: Stat = stat
-        self.duration: int = duration
-        self.multiplier: float = multiplier
-        self.adder: int = adder
-        self.other: bool = other
-
-    def print(self) -> str:
-        if self.multiplier != 1:
-            return f"x{self.multiplier} {self.stat.abv}/{self.duration} turns"
-        else:
-            return f"+{self.adder} {self.stat.abv}/{self.duration} turns"
+if typing.TYPE_CHECKING:
+    from adventure_classes.generic.battle.battle import BattleEntity
+    from entities.bot_entity import BotEntity
 
 
-class AbilityDesc(Slots):
-    def __init__(self, ability_id: int, name: str, tiers: list[AbilityTier]):
-        self.id: int = ability_id
-        self._name: str = name
-        self._tiers: list[AbilityTier] = tiers
+class Ability(ABC):
+    def __init__(self, icon: Emoji):
+        self.icon = icon
 
-    def get_name(self):
-        return self._name
+    @staticmethod
+    @abstractmethod
+    def use(lang: str, source: 'BattleEntity', target_entity: 'BattleEntity', tier: int) -> str:  # noqa
+        pass
 
-    def get_tier_amount(self) -> int:
-        return len(self._tiers)
+    @staticmethod
+    def start(lang: str, target: 'BattleEntity', tier: int) -> Optional[str]:  # noqa
+        return None
 
-    def get_tier(self, tier: int) -> AbilityTier:
-        return self._tiers[tier]
+    @staticmethod
+    def turn(lang: str, target: 'BattleEntity', tier: int) -> Optional[str]:  # noqa
+        return None
+
+    @staticmethod
+    def end(lang: str, target: 'BattleEntity', tier: int) -> Optional[str]:  # noqa
+        return None
+
+    @staticmethod
+    def get_duration(tier: int) -> int:
+        return 0
+
+    @staticmethod
+    def allow_self() -> bool:
+        return False
+
+    @staticmethod
+    @abstractmethod
+    def get_cost(tier: int) -> int:
+        pass
+
+
+class Burn(Ability):
+    def __init__(self):
+        super().__init__(Emoji.BURN)
+
+    @staticmethod
+    def use(lang: str, source: 'BattleEntity', target_entity: 'BattleEntity', tier: int) -> str:
+        return f"{source.get_name()} used Burn on {target_entity.get_name()}!"
+
+    @staticmethod
+    def get_duration(tier: int) -> int:
+        return 4
+
+    @staticmethod
+    def get_cost(tier: int) -> int:
+        return 6
+
+    @staticmethod
+    def turn(lang: str, target: 'BattleEntity', tier: int) -> Optional[str]:
+        damage: int = (tier + 1) * 3
+        target.damage(damage)
+        return f"{target.get_name()} was burnt for {damage} damage!"
+
+
+class Claw(Ability):
+    def __init__(self):
+        super().__init__(Emoji.LOBSTER)
+
+    @staticmethod
+    def use(lang: str, source: 'BattleEntity', target_entity: 'BattleEntity', tier: int) -> str:
+        target_entity.add_turn_modifier(StatModifierAdd(Stat.DEF, -3, 3))
+        target_entity.add_turn_modifier(StatModifierAdd(Stat.STR, -3, 3))
+        return tr(lang, 'ABILITIES.CLAW_USE', source=source.get_name(), target=target_entity.get_name())
+
+    @staticmethod
+    def get_duration(tier: int) -> int:
+        return 3
+
+    @staticmethod
+    def get_cost(tier: int) -> int:
+        return 4
+
+
+SUMMON_TYPES_TIER: dict[int, tuple[int, int]] = {
+    100: (22, 5)  # Entling
+}
+
+
+class Summon(Ability):
+    def __init__(self):
+        super().__init__(Emoji.SPARKLE)
+
+    @staticmethod
+    def use(lang: str, source: 'BattleEntity', target_entity: 'BattleEntity', tier: int) -> str:
+        bot_entity: 'BotEntity' = enemy_utils.get_enemy(SUMMON_TYPES_TIER[tier][0]).instance()
+        source.get_group().add_entity(bot_entity)
+        return tr(lang, 'ABILITIES.SUMMON', source=source.get_name(), summon=bot_entity.get_name())
+
+    @staticmethod
+    def get_duration(tier: int) -> int:
+        return 0
+
+    @staticmethod
+    def get_cost(tier: int) -> int:
+        return SUMMON_TYPES_TIER[tier][1]
+
+
+@unique
+class AbilityEnum(Enum):
+    BURN = Burn()
+    SUMMON = Summon()
+    CLAW = Claw()
+
+    def get(self) -> Ability:
+        return self.value
+
+    def allow_self(self) -> bool:
+        return self.get().allow_self()
+
+
+class AbilityContainer(Slots):
+    def __init__(self, ability: AbilityEnum, tier: int):
+        self.ability: AbilityEnum = ability
+        self.tier: int = tier
+
+    def get_duration(self) -> int:
+        return self.ability.get().get_duration(self.tier)
+
+    def use(self, lang: str, source: 'BattleEntity', target_entity: 'BattleEntity') -> str:
+        return self.ability.get().use(lang, source, target_entity, self.tier)
+
+    def start(self, lang: str, target_entity: 'BattleEntity') -> str:
+        return self.ability.get().start(lang, target_entity, self.tier)
+
+    def turn(self, lang: str, target_entity: 'BattleEntity') -> str:
+        return self.ability.get().turn(lang, target_entity, self.tier)
+
+    def end(self, lang: str, target_entity: 'BattleEntity') -> str:
+        return self.ability.get().end(lang, target_entity, self.tier)
+
+    def get_cost(self) -> int:
+        return self.ability.get().get_cost(self.tier)
+
+    def get_icon(self) -> Emoji:
+        return self.ability.get().icon
 
 
 class AbilityInstance(Slots):
-    def __init__(self, desc: Optional[AbilityDesc] = None, tier: Optional[int] = None,
-                 decode: Optional[tuple[int, int]] = None):
-        if decode is None:
-            self.desc = desc
-            self.tier = tier
-        else:
-            self.desc = Ability.get_by_index(decode[0])
-            self.tier = decode[1]
+    def __init__(self, holder: AbilityContainer):
+        self.duration_remaining = holder.get_duration()
+        self.ability_holder = holder
 
-    def get_effect(self) -> str:
-        if self.get().multiplier != 1:
-            if self.get().other:
-                return f"x{self.get().multiplier:.2f} {self.get().stat.abv} on opponent for {self.get().duration} turns"
-            else:
-                return f"x{self.get().multiplier:.2f} {self.get().stat.abv} for {self.get().duration} turns"
-        elif self.get().adder != 0:
-            if self.get().other:
-                return f"+{self.get().adder} {self.get().stat.abv} on opponent for {self.get().duration} turns"
-            else:
-                return f"+{self.get().adder} {self.get().stat.abv} for {self.get().duration} turns"
-
-    def get_name(self) -> str:
-        return f"{self.desc.get_name()} {utils.NUMERAL_TO_ROMAN[self.tier + 1]}"
-
-    def get(self) -> AbilityTier:
-        return self.desc.get_tier(self.tier)
-
-    def encode(self) -> tuple[int, int]:
-        return self.desc.id, self.tier
-
-
-ABILITY_TIER_CHANCES = [100, 40, 8]
-
-
-PROTECTION = AbilityDesc(0, "Protection", [
-    AbilityTier(Stat.DEF, 3, multiplier=2),
-    AbilityTier(Stat.DEF, 4, multiplier=2),
-    AbilityTier(Stat.DEF, 5, multiplier=2)
-])
-
-FLEE = AbilityDesc(2, "Flee", [
-    AbilityTier(Stat.EVA, 3, adder=20),
-    AbilityTier(Stat.EVA, 3, adder=40),
-    AbilityTier(Stat.EVA, 3, adder=60)
-])
-
-CURSE = AbilityDesc(3, "Curse", [
-    AbilityTier(Stat.STR, 2, multiplier=0.8, other=True),
-    AbilityTier(Stat.STR, 3, multiplier=0.8, other=True),
-    AbilityTier(Stat.STR, 3, multiplier=0.6, other=True)
-])
-
-
-class Ability:
-    PROTECTION: AbilityDesc = PROTECTION
-    FLEE: AbilityDesc = FLEE
-    CURSE: AbilityDesc = CURSE
-
-    @staticmethod
-    def get_all() -> list[AbilityDesc]:
-        al: list[AbilityDesc] = [PROTECTION, FLEE, CURSE]
-        return al
-
-    @staticmethod
-    def get_by_name(name: str) -> AbilityDesc:
-        d: dict[str, AbilityDesc] = {ai.get_name(): ai for ai in Ability.get_all()}
-        return d.get(name)
-
-    @staticmethod
-    def get_by_index(index: int) -> AbilityDesc:
-        d: dict[int, AbilityDesc] = {ai.id: ai for ai in Ability.get_all()}
-        return d[index]
+    def get_icon(self) -> Emoji:
+        return self.ability_holder.get_icon()
