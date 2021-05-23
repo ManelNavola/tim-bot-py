@@ -1,6 +1,8 @@
 import asyncio
 from asyncio import Event
 
+from helpers.observable import Observable
+
 
 class WaitUntil:
     def __init__(self, timeout):
@@ -9,6 +11,7 @@ class WaitUntil:
         self._running = True
         self._was_completed = False
         self._wait_event: Event = Event()
+        self.on_timer_finish: Observable = Observable()
 
     def is_running(self):
         return self._running

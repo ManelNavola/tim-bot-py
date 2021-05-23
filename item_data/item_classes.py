@@ -48,13 +48,13 @@ class Item:
 
     def get_price(self, ignore_modifier: bool = False):
         stat_dict: dict[Stat, int] = self.get_stats()
-        stat_sum = sum([v * (k.value.cost + 1) for k, v in stat_dict.items()])
+        stat_sum: float = sum([float(v) * k.get_type().get_real_value() for k, v in stat_dict.items()])
         rarity = self._rarity.get_id() + 1
         price_mod = 1
         if (self.price_modifier is not None) and (not ignore_modifier):
             price_mod = self.price_modifier
 
-        before_round = (stat_sum * pow(rarity, 0.5) * 10) * price_mod
+        before_round = (stat_sum * pow(rarity, 0.8) * 80) * price_mod
         return round(before_round / 10) * 10
 
     def print(self) -> str:

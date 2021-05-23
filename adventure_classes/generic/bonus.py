@@ -21,7 +21,7 @@ class BonusChapter(Chapter):
 
     async def init(self):
         self.add_log(self._text)
-        users: set[User] = self.get_adventure().get_users()
+        users: list[User] = self.get_adventure().get_users()
         for bonus in self._bonus:
             if bonus.duration < 0:
                 self.add_log(tr(self.get_lang(), 'BONUS.WHOLE',

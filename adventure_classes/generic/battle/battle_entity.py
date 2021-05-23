@@ -143,8 +143,9 @@ class BattleEntity:
 
     def get_money_value(self) -> int:
         stat_dict: dict[Stat, int] = self._entity.get_stat_dict()
-        money: int = round(sum(stat.get_cost() * count for stat, count in stat_dict.items()) * 0.035)
-        return money
+        stat_sum: float = sum(stat.get_type().get_real_value() * count for stat, count in stat_dict.items())
+
+        return pow(stat_sum / 2.8, 1.6)
 
     def get_stat(self, stat: Stat) -> int:
         number: float = self._entity.get_stat(stat)

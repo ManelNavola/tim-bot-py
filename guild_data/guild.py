@@ -95,6 +95,9 @@ class Guild(Row):
         else:
             return f"{self._box.print_rate(self._lang.get())} for {utils.print_time(self._lang.get(), diff)}"
 
+    def reload_shop(self) -> None:
+        self.shop.reload()
+
     # async def start_battle(self, ctx: SlashContext, user: User,
     #                        opponent_bot: Optional[BotEntity] = None, opponent_user: Optional[User] = None) -> None:
     #     assert (opponent_user is not None) or (opponent_bot is not None), "A battle must have an opponent!"
