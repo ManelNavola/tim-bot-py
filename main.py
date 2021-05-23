@@ -301,6 +301,10 @@ if utils.is_test():
                                  name="test", description="Quickly test anything!",
                                  guild_ids=registered_guild_ids)
 
+    cmd_handler.register_command(test.relshop,
+                                 name="relshop", description="Reload the shop",
+                                 guild_ids=registered_guild_ids)
+
     cmd_handler.register_command(test.gimme_all,
                                  name="gimme_all", description="gimme_all!",
                                  options=[

@@ -7,6 +7,7 @@ from discord import Message
 
 import utils
 from helpers.translate import tr
+from item_data.item_classes import Item
 from user_data.user import User
 from helpers import messages
 from helpers.messages import MessagePlus
@@ -18,11 +19,32 @@ if typing.TYPE_CHECKING:
     from adventure_classes.game_adventures.adventure_provider import AdventureInstance
 
 
+class UserAdventureData:
+    def __init__(self, user: User):
+        self._user: User = user
+        self._earned_money: int = 0
+        self._enemies_defeated: int = 0
+        self._items_found: list[Item] = []
+        self._user.on_money_changed += self._on_money_changed
+
+    def _on_money_changed(self, money: int):
+        self._earned_money += money
+
+    def unregister_all(self):
+        self._user.on_money_changed -= self._on_money_changed
+
+    def print(self, lang: str) -> str:
+        has_plus: str = ''
+        if self._earned_money > 0:
+            has_plus = '+'
+        return f"{has_plus}{utils.print_money(lang, self._earned_money)}"
+
+
 class Adventure:
     def __init__(self, lang: str, instance: 'AdventureInstance'):
         self._lang: str = lang
         self._instance: 'AdventureInstance' = instance
-        self._users: set[User] = set()
+        self._users: dict[User, UserAdventureData] = {}
         self._started_on: int = -1
         self._message: Optional[MessagePlus] = None
         self._chapters: list['Chapter'] = []
@@ -30,6 +52,7 @@ class Adventure:
         self._current_chapter: int = 0
         self._event: Event = Event()
         self.lost: bool = False
+        self._finished: bool = False
 
     def get_lang(self) -> str:
         return self._lang
@@ -61,7 +84,7 @@ class Adventure:
                                    EMOJI_TOKEN=Emoji.TOKEN))
             return
 
-        self._users = users
+        self._users = {user: UserAdventureData(user) for user in users}
         for user in users:
             user.remove_tokens(self._instance.tokens)
             user.start_adventure(self)
@@ -81,22 +104,38 @@ class Adventure:
             await chapter.init()
             await self._event.wait()
             if self.lost:
-                await self._message.edit(tr(self._lang, 'ADVENTURE.DIED', EMOJI_SKULL=Emoji.DEAD,
-                                            name=self.get_user_names(), location=tr(self._lang, self._instance.name)))
-                for user in self._users:
-                    user.end_adventure()
-                messages.unregister(self._message)
+                await self.finish(lost=True)
                 return
 
             self._event.clear()
 
-        await self._message.edit(tr(self._lang, 'ADVENTURE.FINISH', EMOJI_LOCATION=self._instance.icon,
-                                    name=self.get_user_names(), location=tr(self._lang, self._instance.name)))
+        await self.finish(lost=False)
+
+    async def finish(self, lost: bool) -> None:
+        # Ensure not finished
+        if self._finished:
+            return
+        self._finished = True
+
+        # End message
+        end_log: str = '\n'.join([
+            f"{user.get_name()}: {data.print(self._lang)}" for user, data in self._users.items()
+        ])
+        if lost:
+            await self._message.edit(tr(self._lang, 'ADVENTURE.DIED', EMOJI_SKULL=Emoji.DEAD,
+                                        name=self.get_user_names(), location=tr(self._lang, self._instance.name))
+                                     + f"\n({end_log})")
+        else:
+            await self._message.edit(tr(self._lang, 'ADVENTURE.FINISH', EMOJI_LOCATION=self._instance.icon,
+                                        name=self.get_user_names(), location=tr(self._lang, self._instance.name))
+                                     + f"\n({end_log})")
+
+        # Cleanup
         for user in self._users:
             user.end_adventure()
         messages.unregister(self._message)
 
-    def has_finished(self):
+    def has_finished(self) -> bool:
         if utils.now() - self._started_on < 10:
             return False
         return self._message.has_finished()
@@ -104,10 +143,10 @@ class Adventure:
     def get_user(self) -> User:
         assert len(self._users) == 1, "More than one user found"
 
-        return next(iter(self._users))
+        return next(iter(self._users.keys()))
 
-    def get_users(self):
-        return self._users
+    def get_users(self) -> list[User]:
+        return list(self._users.keys())
 
     def insert_chapter(self, chapter: 'Chapter', index: int = 0) -> None:
         self._chapters.insert(index, chapter)

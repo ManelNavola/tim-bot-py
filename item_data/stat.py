@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, unique
 from typing import Optional, Any
 
 from autoslot import Slots
@@ -6,20 +6,27 @@ from autoslot import Slots
 from enums.emoji import Emoji
 
 
+@unique
 class StatType(Enum):
     MAIN = 0
     CHANCE = 1
     SECONDARY = 2
 
+    def get_real_value(self) -> float:
+        return {
+            StatType.MAIN: 1.0,
+            StatType.CHANCE: 0.7,
+            StatType.SECONDARY: 0.6
+        }[self]
+
 
 class StatInstance(Slots):
-    def __init__(self, abv: str, name: str, icon: Emoji, cost: int, stat_type: StatType = StatType.MAIN,
+    def __init__(self, abv: str, name: str, icon: Emoji, stat_type: StatType = StatType.MAIN,
                  multiplier: Any = 1, limit_per_item: int = 9999, is_persistent: bool = False):
         self.name: str = name
         self.abv: str = abv
         self.type: StatType = stat_type
         self.icon: Emoji = icon
-        self.cost: int = cost
         self.limit: int = limit_per_item
         self.multiplier: Any = multiplier
         self.is_persistent: bool = is_persistent
@@ -73,10 +80,10 @@ class StatInstancePercent(StatInstance):
 
 
 class StatInstancePercentWeighted(StatInstance):
-    def __init__(self, abv: str, name: str, icon: Emoji, cost: int, weight: int, stat_type: StatType = StatType.MAIN,
+    def __init__(self, abv: str, name: str, icon: Emoji, weight: int, stat_type: StatType = StatType.MAIN,
                  multiplier: Any = 1,
                  limit_per_item: int = 9999, is_persistent: bool = False):
-        super().__init__(abv, name, icon, cost, stat_type, multiplier, limit_per_item, is_persistent)
+        super().__init__(abv, name, icon, stat_type, multiplier, limit_per_item, is_persistent)
         self._weight = weight
 
     def get_value(self, value: int) -> Any:
@@ -89,29 +96,29 @@ class StatInstancePercentWeighted(StatInstance):
 
 class HP(StatInstance):
     def __init__(self):
-        super().__init__('HP', "Health Points", Emoji.HP, 10,
+        super().__init__('HP', "Health Points", Emoji.HP,
                          multiplier=2, is_persistent=True)
 
 
 class AP(StatInstance):
     def __init__(self):
-        super().__init__('AP', "Action Points", Emoji.AP, 10,
+        super().__init__('AP', "Action Points", Emoji.AP,
                          is_persistent=True, stat_type=StatType.SECONDARY)
 
 
 class STR(StatInstance):
     def __init__(self):
-        super().__init__('STR', "Attack strength", Emoji.STR, 20)
+        super().__init__('STR', "Attack strength", Emoji.STR)
 
 
 class DEF(StatInstance):
     def __init__(self):
-        super().__init__('DEF', "Damage reduction", Emoji.DEF, 10)
+        super().__init__('DEF', "Damage reduction", Emoji.DEF)
 
 
 class SPD(StatInstanceDecimals):
     def __init__(self):
-        super().__init__('SPD', "Attack speed", Emoji.SPD, 10,
+        super().__init__('SPD', "Attack speed", Emoji.SPD,
                          multiplier=0.05, stat_type=StatType.SECONDARY)
 
     @staticmethod
@@ -121,26 +128,26 @@ class SPD(StatInstanceDecimals):
 
 class EVA(StatInstancePercentWeighted):
     def __init__(self):
-        super().__init__('EVA', "Chance of ignoring an attack", Emoji.EVA, 10, stat_type=StatType.CHANCE,
+        super().__init__('EVA', "Chance of ignoring an attack", Emoji.EVA, stat_type=StatType.CHANCE,
                          weight=30)
 
 
 class CONT(StatInstancePercentWeighted):
     def __init__(self):
-        super().__init__('CONT', "Chance of attacking immediately when receiving damage", Emoji.CONT, 10,
+        super().__init__('CONT', "Chance of attacking immediately when receiving damage", Emoji.CONT,
                          stat_type=StatType.CHANCE,
                          weight=30)
 
 
 class CRIT(StatInstancePercentWeighted):
     def __init__(self):
-        super().__init__('CRIT', "Chance of attack with double damage", Emoji.CRIT, 10, stat_type=StatType.CHANCE,
+        super().__init__('CRIT', "Chance of attack with double damage", Emoji.CRIT, stat_type=StatType.CHANCE,
                          weight=30)
 
 
 class VAMP(StatInstancePercentWeighted):
     def __init__(self):
-        super().__init__('VAMP', "Chance of stealing health on attack", Emoji.VAMP, 10, stat_type=StatType.CHANCE,
+        super().__init__('VAMP', "Chance of stealing health on attack", Emoji.VAMP, stat_type=StatType.CHANCE,
                          weight=30)
 
 
@@ -172,9 +179,6 @@ class Stat(Enum):
 
     def get_type(self) -> StatType:
         return self.value.type
-
-    def get_cost(self) -> int:
-        return self.value.cost
 
     @staticmethod
     def get_type_list(st: StatType) -> list['Stat']:

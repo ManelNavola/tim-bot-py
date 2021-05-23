@@ -45,6 +45,11 @@ async def gimme_all(cmd: Command, tier: str = '0', location: str = 'Anywhere', r
     await cmd.send_hidden("epic")
 
 
+async def relshop(cmd: Command):
+    cmd.guild.reload_shop()
+    await cmd.send_hidden(f"{Emoji.SHOP}")
+
+
 async def tokenize(cmd: Command):
     cmd.user.set_tokens(5)
     await cmd.send_hidden(f"{Emoji.TOKEN}")

@@ -37,7 +37,7 @@ class ItemRewardChapter(RewardChapter):
                              for user in self.get_adventure().get_users()
                              if user.inventory.get_empty_slot() is not None]
         if not users:
-            users = list(self.get_adventure().get_users().keys())
+            users = self.get_adventure().get_users()
 
         user: User = random.choice(users)
 

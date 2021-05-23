@@ -10,6 +10,7 @@ from helpers.incremental import Incremental
 from db.row import Row
 from entities.user_entity import UserEntity
 from enums.emoji import Emoji
+from helpers.observable import Observable
 from helpers.translate import tr
 from item_data import item_utils
 from item_data.item_classes import Item
@@ -49,7 +50,7 @@ class User(Row):
         self._bank = Incremental(DictRef(self._data, 'bank'), DictRef(self._data, 'bank_time'),
                                  TimeSlot(TimeMetric.HOUR, self.upgrades['garden'].get_value()))
         self._tokens = Incremental(DictRef(self._data, 'tokens'), DictRef(self._data, 'tokens_time'),
-                                   TimeSlot(TimeMetric.DAY, 12))
+                                   TimeSlot(TimeMetric.HOUR, 2))
         self._adventure: Optional[Adventure] = None
         self._lang: DictRef[str] = DictRef(self._data, 'lang')
 
@@ -81,6 +82,9 @@ class User(Row):
             print(f"{user_id} exceeded {slots} items: {len(item_slots)}!")
         self.inventory: Inventory = Inventory(self._db, DictRef(self._data, 'equipment'), slots, inv_items,
                                               self.user_entity, self.id)
+
+        # Observables
+        self.on_money_changed: Observable[int] = Observable()
 
     def set_tokens(self, amount: int) -> None:
         self._tokens.set(amount)
@@ -117,7 +121,7 @@ class User(Row):
     def get_money_space(self) -> int:
         return max(0, self.get_money_limit() - self.get_money())
 
-    def set_money(self, amount: int) -> None:
+    def _set_money(self, amount: int) -> None:
         self._data['money'] = amount
 
     def add_money(self, amount: int) -> int:
@@ -133,15 +137,17 @@ class User(Row):
                 to_bank = new_money - money_limit
                 new_money = money_limit
                 excess = self.add_bank(to_bank)
-            self.set_money(new_money)
+            self._set_money(new_money)
+        self.on_money_changed.call(amount - excess)
         return excess
 
     def remove_money(self, amount: int) -> bool:
         assert amount >= 0, "Cannot remove negative money"
         money = self.get_money()
         new_money = money - amount
+        self.on_money_changed.call(-amount)
         if new_money >= 0:
-            self.set_money(new_money)
+            self._set_money(new_money)
             return True
         return False
 

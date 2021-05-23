@@ -30,7 +30,7 @@ class Shop:
     SELL_MULTIPLIER: float = 0.4
     ITEM_BUILDER: RandomItemBuilder = RandomItemBuilder(0).set_location(Location.ANYWHERE).choose_rarity(
         [ItemRarity.COMMON, ItemRarity.UNCOMMON, ItemRarity.RARE, ItemRarity.EPIC],
-        [60, 30, 8, 2])
+        [50, 30, 8, 2])
 
     def __init__(self, db: PostgreSQL, lang: DictRef[str], shop_time: DictRef[int], guild_id: int):
         self._db = db
@@ -46,6 +46,9 @@ class Shop:
     @staticmethod
     def get_sell_price(item: Item):
         return int(item.get_price() * Shop.SELL_MULTIPLIER)
+
+    def reload(self) -> None:
+        self._clear_shop()
 
     def _check_shop(self):
         diff = utils.now() - self._shop_time.get()
@@ -124,7 +127,7 @@ class Shop:
             self._shop_items[index] = item_utils.from_dict(found_items[index]['data'])
 
     def _clear_shop(self) -> None:
-        shop_items: list[Optional[Item]] = self._shop_items  # PYCHARM WHAT
+        shop_items: list[Optional[Item]] = self._shop_items
         shop_len: int = len([1 for x in shop_items if x is not None])
         if shop_len > 0:
             self._db.delete_row("guild_items", dict(guild_id=self._guild_id), shop_len)
