@@ -54,4 +54,4 @@ async def sell_all(cmd: Command):
     else:
         cmd.user.add_money(total_price)
         await cmd.send_hidden(tr(cmd.lang, 'SHOP.SOLD_MANY', EMOJI_PURCHASE=Emoji.PURCHASE, total=total_items,
-                                 money=total_price))
+                                 money=utils.print_money(cmd.lang, total_price)))

@@ -199,9 +199,13 @@ def delete_user_item(db: PostgreSQL, user_id: int, item: Item) -> None:
     item.id = -1
 
 
-def transfer_shop(db: PostgreSQL, guild_id: int, user_id: int, slot: int, item: Item) -> None:
+# def transfer_shop(db: PostgreSQL, guild_id: int, user_id: int, slot: int, item: Item) -> None:
+#    db.delete_row("guild_items", dict(guild_id=guild_id, item_id=item.id))
+#    db.insert_data("user_items", dict(user_id=user_id, slot=slot, item_id=item.id))
+
+
+def remove_shop(db: PostgreSQL, guild_id: int, item: Item) -> None:
     db.delete_row("guild_items", dict(guild_id=guild_id, item_id=item.id))
-    db.insert_data("user_items", dict(user_id=user_id, slot=slot, item_id=item.id))
 
 
 def from_dict(item_dict: dict[str, Any]):

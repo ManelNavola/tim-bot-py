@@ -10,7 +10,7 @@ from enums.item_rarity import ItemRarity
 from helpers.dictref import DictRef
 from item_data import item_utils
 from item_data.item_classes import Item
-from item_data.item_utils import transfer_shop, create_guild_item, RandomItemBuilder
+from item_data.item_utils import remove_shop, create_guild_item, RandomItemBuilder
 from utils import TimeSlot, TimeMetric
 if typing.TYPE_CHECKING:
     from user_data.user import User
@@ -100,11 +100,12 @@ class Shop:
             return ip
 
         item = self._shop_items[item_index]
-        slot = user.inventory.create_item(item)
-        if slot is not None:
-            if user.remove_money(item.get_price()):
+        if user.has_money(item.get_price()):
+            slot = user.inventory.create_item(item)
+            if slot is not None:
+                user.remove_money(item.get_price())
                 was_there_before = (user.inventory.get_first(item.get_description().type) is not None)
-                transfer_shop(self._db, self._guild_id, user.id, slot, item)
+                remove_shop(self._db, self._guild_id, item)
                 self._shop_items[item_index] = None
                 self._last_valid_checks[item_index] = False
                 self._restock_shop()
@@ -112,10 +113,9 @@ class Shop:
                 if not was_there_before:
                     ip.must_equip = slot
                 return ip
-            else:
-                ip.price = item.get_price()
-                return ip
+            return ip
         else:
+            ip.price = item.get_price()
             return ip
 
     def _fetch_shop(self):
