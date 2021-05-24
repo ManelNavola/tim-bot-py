@@ -107,7 +107,7 @@ def b_reward(adventure):
 def ba_bear(adventure):
     if random.random() < 0.4:
         battle.qsab(adventure, Location.FOREST, 'D', icon=Emoji.BEAR,
-                    pre_text=[tr(adventure.get_lang, 'FOREST.EVENT2')])
+                    pre_text=[tr(adventure.get_lang(), 'FOREST.EVENT2')])
     else:
         battle.qsab(adventure, Location.FOREST, 'A')
     b_reward(adventure)
@@ -120,7 +120,7 @@ def bb_around_bear(adventure):
 
 
 def b_around(adventure):
-    bc = BonusChapter(tr(adventure.get_lang, 'FOREST.EVENT1'))
+    bc = BonusChapter(tr(adventure.get_lang(), 'FOREST.EVENT1'))
     bc.add_persistent(Stat.HP, Stat.HP.get_value(3))
     adventure.add_chapter(bc)
     battle.qsab(adventure, Location.FOREST, 'B')

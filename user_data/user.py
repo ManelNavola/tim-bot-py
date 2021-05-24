@@ -141,15 +141,19 @@ class User(Row):
         self.on_money_changed.call(amount - excess)
         return excess
 
-    def remove_money(self, amount: int) -> bool:
-        assert amount >= 0, "Cannot remove negative money"
+    def has_money(self, amount: int) -> bool:
         money = self.get_money()
         new_money = money - amount
-        self.on_money_changed.call(-amount)
-        if new_money >= 0:
-            self._set_money(new_money)
+        return new_money >= 0
+
+    def remove_money(self, amount: int) -> bool:
+        assert amount >= 0, "Cannot remove negative money"
+        if self.has_money(amount):
+            self.on_money_changed.call(-amount)
+            self._set_money(self.get_money() - amount)
             return True
-        return False
+        else:
+            return False
 
     def get_tokens(self) -> int:
         if self._tokens.get_base() > self.get_token_limit():

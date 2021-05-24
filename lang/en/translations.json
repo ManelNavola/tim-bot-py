@@ -173,9 +173,10 @@
     "LACK": "You don't have {money}!",
     "MUST_UNEQUIP": "You must unequip the item first!",
     "NO_ITEMS": "You don't have any items to sell!",
+    "NO_SELL": "You don't have any unequipped items to sell!",
     "PURCHASE": "{EMOJI_PURCHASE} {name} purchased {item}!",
     "SOLD": "{EMOJI_PURCHASE} Sold {item} for {money}",
-    "SOLD_MANY": "{EMOJI_PURCHASE} Sold {total} items for {utils.print_money(money)}"
+    "SOLD_MANY": "{EMOJI_PURCHASE} Sold {total} items for {money}"
   },
   "TUTORIAL": {
     "ATTACK": "Press the {EMOJI_BATTLE} reaction to attack!",
