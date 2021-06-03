@@ -7,7 +7,7 @@ import utils
 from adventure_classes.generic.adventure import Adventure
 from adventure_classes.generic.battle.battle_action_data import BattleActionData
 from adventure_classes.generic.battle.battle_entity import BattleEntity
-from adventure_classes.generic.battle.battle_group import BattleGroup, BattleGroupUsers
+from adventure_classes.generic.battle.battle_group import BattleGroup, BattleGroupUserDelayed
 from adventure_classes.generic.chapter import Chapter
 from enemy_data import enemy_utils
 from enemy_data.bot_entity_builder import BotEntityBuilder
@@ -406,11 +406,16 @@ def qsab(adventure: Adventure, location: Location, pool: str = '',
 # Quick custom single-player adventure battle
 def qcsab(adventure: Adventure, bot_entity: BotEntity,
           icon: Emoji = Emoji.BATTLE, pre_text: list[str] = None, is_boss: bool = False) -> None:
-    adventure.add_chapter(BattleChapter(BattleGroupUsers(), BattleGroup([bot_entity]),
+    adventure.add_chapter(BattleChapter(BattleGroupUserDelayed(), BattleGroup([bot_entity]),
                                         icon=icon, pre_text=pre_text, is_boss=is_boss))
 
 
 # Quick custom single-player adventure battle
 def qsbb(adventure: Adventure, bot_entity: BotEntity, icon: Emoji = Emoji.BATTLE, pre_text: list[str] = None) -> None:
-    adventure.add_chapter(BattleChapter(BattleGroupUsers(), BattleGroup([bot_entity]),
+    adventure.add_chapter(BattleChapter(BattleGroupUserDelayed(), BattleGroup([bot_entity]),
                                         icon=icon, pre_text=pre_text, is_boss=True))
+
+
+# Team vs team battle
+def qtvt(adventure: Adventure, team_a: list['User'], team_b: list['User']) -> None:
+    adventure.add_chapter(BattleChapter(BattleGroup(users=team_a), BattleGroup(users=team_b)))

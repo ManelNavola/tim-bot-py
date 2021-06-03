@@ -16,11 +16,9 @@ class BattleGroup:
             entities = []
         if users is None:
             users = []
+        self._users: list['User'] = users
         self._battle_entities: list[BattleEntity] = [BattleEntity(entity, self) for entity in entities]
-        for user in users:
-            self._battle_entities.append(BattleEntity(user.user_entity, self, user))
         self._speed: float = 0
-        self._recalculate()
 
     def get_name(self) -> str:
         return ', '.join(battle_entity.get_name() for battle_entity in self.get_battle_entities())
@@ -51,7 +49,11 @@ class BattleGroup:
     def get_speed(self) -> float:
         return self._speed
 
-    def load(self, adventure: 'Adventure') -> None:
+    def load(self, _: 'Adventure') -> None:
+        # Load users if any
+        for user in self._users:
+            self._battle_entities.append(BattleEntity(user.user_entity, self, user))
+        self._recalculate()
         # Battle effects step
         for battle_entity in self._battle_entities:
             battle_entity.step_battle_modifiers()
@@ -82,17 +84,10 @@ class BattleGroup:
             self._speed = sum(fl) / float(len(fl))
 
 
-class BattleGroupUsers(BattleGroup):
-    def __init__(self, users: list['User'] = None, entities: list[Entity] = None):
-        if entities is None:
-            entities = []
-        super().__init__(entities)
-        if users is None:
-            users = []
-        self._users_to_load: list['User'] = users
+class BattleGroupUserDelayed(BattleGroup):
+    def __init__(self):
+        super().__init__()
 
     def load(self, adventure: 'Adventure') -> None:
-        for user in adventure.get_users():
-            if user in adventure.get_users():
-                self.add_user(user)
+        self._users = adventure.get_users()
         super().load(adventure)

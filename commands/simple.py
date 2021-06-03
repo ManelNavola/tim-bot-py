@@ -1,7 +1,12 @@
 import discord
 
 import utils
+from adventure_classes.game_adventures import adventure_provider
+from adventure_classes.generic.battle.battle import BattleChapter
+from adventure_classes.generic.battle.battle_group import BattleGroup
+from enemy_data import enemy_utils
 from enums.emoji import Emoji
+from enums.location import Location
 from enums.user_class import UserClass
 from helpers.command import Command
 from helpers import storage
@@ -26,6 +31,25 @@ async def check(cmd: Command, user: discord.Member):
         await cmd.send_hidden(tr(cmd.lang, 'COMMAND.CHECK.NO_INTERACTION'))
         return
     await cmd.send(user_m.print(cmd.lang, private=False, checking=True))
+
+
+async def duel(cmd: Command, user: discord.Member):
+    if user.id in [824935594509336576, 824720383596560444]:
+        await cmd.send_hidden("Sure, bring it on.")
+        await adventure_provider.quick_adventure(cmd, [cmd.user], 'Tim Lord Duel', Emoji.DEAD, 0, [
+            BattleChapter(BattleGroup(users=[cmd.user]),
+                          BattleGroup([enemy_utils.get_random_enemy(Location.NOWHERE, 'TIM').instance()]))
+        ])
+        return
+
+    user_m = storage.get_user(cmd.db, user.id, False)
+    user_m.member = user
+    if not user_m:
+        await cmd.send_hidden(tr(cmd.lang, 'COMMAND.CHECK.NO_INTERACTION'))
+        return
+    await adventure_provider.name_to_adventure['_duel'].start(cmd, [cmd.user], {
+        'duel_user': user_m
+    })
 
 
 async def transfer(cmd: Command):

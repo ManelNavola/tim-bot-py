@@ -3,8 +3,12 @@ import os
 import time
 
 from enum import unique, Enum
+from typing import Optional
 
 from autoslot import Slots
+from discord.ext.commands import Bot
+
+BOT_CLIENT: Optional[Bot] = None
 
 
 # Time metric enum

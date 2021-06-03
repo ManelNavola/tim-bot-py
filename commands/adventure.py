@@ -5,6 +5,6 @@ from helpers.translate import tr
 
 async def start_adventure(cmd: Command, location: str):
     if location in adventure_provider.name_to_adventure:
-        await adventure_provider.name_to_adventure[location].start(cmd)
+        await adventure_provider.name_to_adventure[location].start(cmd, [cmd.user])
     else:
         await cmd.send_hidden(tr(cmd.lang, 'COMMANDS.ADVENTURE.UNKNOWN', location=location))

@@ -120,6 +120,10 @@ class Emoji(Enum):
     # Abilities
     BURN = r'\🔥'
 
+    # Generic
+    TICK = r'\✅'
+    CROSS = r'\❌'
+
     def __str__(self) -> str:
         return self.value
 

@@ -238,6 +238,11 @@ class User(Row):
         assert self.get_adventure() is None, "User is already in an adventure!"
         self._adventure = adventure
 
+    def join_adventure(self, adventure: 'Adventure'):
+        assert self.get_adventure() is None, "User is already in an adventure!"
+        self._adventure = adventure
+        self._adventure.insert_user(self)
+
     def get_adventure(self) -> Optional['Adventure']:
         if self._adventure is not None:
             if self._adventure.has_finished():
