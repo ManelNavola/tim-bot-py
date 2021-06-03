@@ -1,34 +1,83 @@
+import random
+from abc import ABC, abstractmethod
 from typing import Any, Optional
 
-from autoslot import Slots
-
-from enums.item_type import ItemType
-from item_data import stat_utils
+from enums.emoji import Emoji
+from enums.item_type import EquipmentType
+from enums.location import Location
 from enums.item_rarity import ItemRarity
-from item_data.stat import Stat
+from item_data import item_loader
+from item_data.item_descriptions import EquipmentDescription, ItemDescription, PotionDescription
+from item_data.stat import Stat, StatType
+from item_data.stat_modifier import StatModifier
 
 
-class ItemDescription(Slots):
-    def __init__(self, key: int, data: dict[str, Any]):
-        self.id: int = key
-        self.name: str = data['Name']
-        self.type: ItemType = ItemType.get_from_name(data['Type'])
-        self.tier: int = data['Tier']
-        self.base_stats: dict[Stat, int] = stat_utils.unpack_stat_dict(data['Stats'])
+class Item(ABC):
+    def __init__(self, item_id: int = -1):
+        self._id: int = item_id
+        self._desc: Optional[ItemDescription] = None
+        self._price_modifier: Optional[float] = None
+
+    def get_id(self) -> int:
+        return self._id
+
+    def get_desc(self) -> ItemDescription:
+        return self._desc
+
+    @abstractmethod
+    def get_price(self) -> int:
+        pass
+
+    def get_price_modifier(self) -> Optional[float]:
+        return self._price_modifier
+
+    def from_dict(self, desc_id: int, data_dict: dict[str, Any]) -> None:
+        self._desc = item_loader.get_description(desc_id)
+        self._price_modifier = data_dict.get('price_modifier', None)
+
+    def build(self, desc_id: int, price_modifier: Optional[int] = None) -> None:
+        self._desc = item_loader.get_description(desc_id)
+        self._price_modifier = price_modifier
+
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = {}
+        if self._price_modifier is not None:
+            d['price_modifier'] = self._price_modifier
+        return d
+
+    def print(self) -> str:
+        raise NotImplementedError("Should not be able to print a base Item class")
 
 
-class Item:
-    def __init__(self, description: ItemDescription, rarity: ItemRarity, stat_bonus: dict[Stat, int] = None):
-        self.id: int = -1
-        self.price_modifier: Optional[int] = None
-        self._description: ItemDescription = description
-        self._rarity: ItemRarity = rarity
-        if stat_bonus is None:
-            stat_bonus = {}
-        self._stat_bonus: dict[Stat, int] = stat_bonus
+class Equipment(Item):
+    def __init__(self, item_id: int = -1):
+        super().__init__(item_id)
+        self._rarity: ItemRarity = ItemRarity.UNKNOWN
+        self._stat_bonus: dict[Stat, int] = {}
 
-    def get_description(self) -> ItemDescription:
-        return self._description
+    def from_dict(self, desc_id: int, data_dict: dict[str, Any]) -> None:
+        super().from_dict(desc_id, data_dict)
+        self._rarity = ItemRarity.get_from_id(data_dict['rarity'])
+        self._stat_bonus = EquipmentDescription.unpack_stat_dict(data_dict['stat_bonus'])
+
+    def build(self, desc_id: int, rarity: ItemRarity, stat_bonus: dict[Stat, int], # noqa who cares
+              price_modifier: Optional[float] = None) -> None:
+        super().build(desc_id, price_modifier)
+        self._rarity = rarity
+        self._stat_bonus = stat_bonus
+
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = super().to_dict()
+        d.update({
+            'rarity': self._rarity.get_id(),
+            'stat_bonus': EquipmentDescription.pack_stat_dict(self._stat_bonus)
+        })
+        return d
+
+    def get_desc(self) -> EquipmentDescription:
+        desc: ItemDescription = super().get_desc()
+        assert isinstance(desc, EquipmentDescription)
+        return desc
 
     def get_stats(self):
         stats: dict[Stat, int] = self.get_desc().base_stats.copy()

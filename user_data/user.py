@@ -12,8 +12,6 @@ from entities.user_entity import UserEntity
 from enums.emoji import Emoji
 from helpers.observable import Observable
 from helpers.translate import tr
-from item_data import item_utils
-from item_data.item_classes import Item
 from item_data.stat import StatInstance
 from user_data import upgrades
 from user_data.inventory import Inventory
@@ -70,22 +68,32 @@ class User(Row):
             }
 
         # Fill inventory
-        slots = self.upgrades['inventory'].get_value()
-        inv_items: list[Optional[Item]] = [None] * slots
-        item_slots = self._db.start_join('users', dict(id=self.id), columns=['slot', 'item_id'],
-                                         limit=self.upgrades['inventory'].get_value()) \
+        items_data = self._db.start_join('users', dict(id=self.id), columns=['slot', 'item_id'], limit=30) \
             .join('user_items', field_matches=[('user_id', 'id')]) \
             .execute()
-        for is_info in item_slots:
-            item_dict: dict[str, Any] = self._db.get_row_data('items', dict(id=is_info['item_id']))
-            item: Item = item_utils.from_dict(item_dict['data'])
-            item.id = item_dict['id']
-            inv_items[is_info['slot']] = item
-        if len(item_slots) > slots:
-            # Too many item_data... log
-            print(f"{user_id} exceeded {slots} items: {len(item_slots)}!")
-        self.inventory: Inventory = Inventory(self._db, DictRef(self._data, 'equipment'), slots, inv_items,
-                                              self.user_entity, self.id)
+        self.inventory: Inventory = Inventory(self._db, items_data,
+                                              self.upgrades['inventory'].get_value(),
+                                              1, self.id, self.user_entity)
+        # for is_info in item_slots:
+        #     slot: str = is_info['slot']
+        #     item_dict: dict[str, Any] = self._db.get_row_data('items', dict(id=is_info['item_id']))
+        #
+        # slots = self.upgrades['inventory'].get_value()
+        # inv_items: list[Optional[Item]] = [None] * slots
+        # item_slots = self._db.start_join('users', dict(id=self.id), columns=['slot', 'item_id'],
+        #                                  limit=self.upgrades['inventory'].get_value()) \
+        #     .join('user_items', field_matches=[('user_id', 'id')]) \
+        #     .execute()
+        # for is_info in item_slots:
+        #     item_dict: dict[str, Any] = self._db.get_row_data('items', dict(id=is_info['item_id']))
+        #     item: Item = item_utils.from_dict(item_dict['data'])
+        #     item.id = item_dict['id']
+        #     inv_items[is_info['slot']] = item
+        # if len(item_slots) > slots:
+        #     # Too many item_data... log
+        #     print(f"{user_id} exceeded {slots} items: {len(item_slots)}!")
+        # self.inventory: Inventory = Inventory(self._db, DictRef(self._data, 'equipment'), slots, inv_items,
+        #                                       self.user_entity, self.id)
 
         # Observables
         self.on_money_changed: Observable[int] = Observable()

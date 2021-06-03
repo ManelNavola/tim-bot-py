@@ -18,14 +18,6 @@ if typing.TYPE_CHECKING:
     from user_data.user import User
 
 
-class ItemPurchase:
-    def __init__(self):
-        self.reload_shop: bool = False
-        self.item: Optional[Item] = None
-        self.price: Optional[int] = None
-        self.must_equip: Optional[int] = None
-
-
 class Shop:
     SHOP_DURATION: TimeSlot = TimeSlot(TimeMetric.HOUR, 1)
     ITEM_AMOUNT: int = 4
@@ -184,7 +176,7 @@ class Shop:
             self._get_dict_ref(slot).set(item)
 
     def _clear_shop(self) -> None:
-        shop_items: list[Optional[Item]] = self._shop_items
+        shop_items: dict[int, Item] = self._shop_items
         shop_len: int = len([1 for x in shop_items if x is not None])
         if shop_len > 0:
             self._db.delete_row("guild_items", dict(guild_id=self._guild_id), shop_len)

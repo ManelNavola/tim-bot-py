@@ -7,37 +7,135 @@ from entities.user_entity import UserEntity
 from enums.emoji import Emoji
 from helpers.action_result import ActionResult
 from helpers.dictref import DictRef
-from enums.item_type import ItemType
+from enums.item_type import EquipmentType
+from helpers.translate import tr
 from item_data import item_utils
-from item_data.item_classes import Item
-from item_data.item_utils import delete_user_item
+from item_data.item_classes import Equipment, Item, Potion
+from item_data.item_utils import delete_user_item, move_user_item_slot, swap_user_items
+
+
+@unique
+class SlotType(Enum):
+    INVALID = -1
+    ITEMS = 0
+    EQUIPMENT = 1
+    POTION_BAG = 2
 
 
 class Inventory:
-    def __init__(self, db: PostgreSQL, equipped_ref: DictRef[list[int]], inv_limit: int, item_list: list[Item],
-                 user_entity: UserEntity, user_id: int):
+    SELL_MULTIPLIER: float = 0.4
+    # Inventory (0-99)
+    # Equipment (h, c, b, w, s)
+    # Potions (p0-p9)
+    # def __init__(self, db: PostgreSQL, equipped_ref: DictRef[list[int]], inv_limit: int, item_list: list[Item],
+    #              user_entity: UserEntity, user_id: int):
+    #     self._db: PostgreSQL = db
+    #     self._user_id: int = user_id
+    #     self._items: list[Optional[Item]] = item_list
+    #     self._equipped_ref: DictRef[list[int]] = equipped_ref
+    #     self._limit: int = inv_limit
+    #     self._user_entity: UserEntity = user_entity
+    #     self._user_entity.update_equipment(self.get_equipment())
+
+    CHAR_TO_EQUIPMENT_TYPE: dict[str, EquipmentType] = {
+        'h': EquipmentType.HELMET,
+        'c': EquipmentType.CHEST,
+        'w': EquipmentType.WEAPON,
+        's': EquipmentType.SECONDARY,
+        'b': EquipmentType.BOOT,
+    }
+
+    EQUIPMENT_TYPE_TO_CHAR: dict[EquipmentType, str] = {
+        v: k for k, v in CHAR_TO_EQUIPMENT_TYPE.items()
+    }
+
+    def __init__(self, db: PostgreSQL, items_data, item_slots: int, potion_slots: int, user_id: int,
+                 user_entity: UserEntity):
         self._db: PostgreSQL = db
         self._user_id: int = user_id
-        self._items: list[Optional[Item]] = item_list
-        self._equipped_ref: DictRef[list[int]] = equipped_ref
-        self._limit: int = inv_limit
         self._user_entity: UserEntity = user_entity
+        self._items: dict[int, Item] = {}
+        self._item_slots: int = item_slots
+        self._equipment: dict[EquipmentType, Equipment] = {}
+        self._potions: dict[int, Potion] = {}
+        self._potion_slots: int = potion_slots
+
+        for isd in items_data:
+            slot: str = isd['slot'].strip()
+            item_id: int = isd['item_id']
+            item_dict: dict[str, Any] = self._db.get_row_data('items', dict(id=item_id))  # STARTS @ 1!!!
+            item: Item = item_utils.get_from_dict(item_id, item_dict['desc_id'], item_dict['data'])
+            self._get_dict_ref(slot).set(item)
+
         self._user_entity.update_equipment(self.get_equipment())
 
-    def _get_item_indices(self):
-        return [i for i, j in enumerate(self._items) if j is not None]
+    def _get_dict_ref(self, slot: str) -> DictRef[Item]:
+        if slot.isnumeric():
+            # Inventory item
+            return DictRef(self._items, int(slot))
+        elif slot.lower()[0] == 'p':
+            # Potion bag
+            return DictRef(self._potions, int(slot[1:]))
+        elif slot in Inventory.CHAR_TO_EQUIPMENT_TYPE:
+            # Equipment
+            return DictRef(self._equipment, Inventory.CHAR_TO_EQUIPMENT_TYPE[slot.lower()[0]])
+        raise ValueError(f"Unknown slot >{slot}<")
 
-    def get_first(self, item_type: ItemType) -> Optional[Item]:
-        for i in self._get_item_indices():
-            item: Item = self._items[i]
-            if item.get_description().type == item_type:
-                return item
-        return None
+    def _get_slot_type(self, slot: str) -> SlotType:
+        if slot.isnumeric():
+            # Inventory item
+            if 0 < int(slot) <= self._item_slots:
+                return SlotType.ITEMS
+        elif slot.lower()[0] == 'p':
+            # Potion bag?
+            slot = slot[1:]
+            if slot.isnumeric():
+                # Potion bag.
+                if 0 < int(slot) <= self._potion_slots:
+                    return SlotType.POTION_BAG
+        elif slot.lower() in Inventory.CHAR_TO_EQUIPMENT_TYPE:
+            # Equipment
+            return SlotType.EQUIPMENT
+        return SlotType.INVALID
 
-    def get_empty_slot(self) -> Optional[int]:
-        for i in range(len(self._items)):
-            if self._items[i] is None:
-                return i
+    def get_potion(self) -> Optional[Potion]:
+        for i in range(1, self._potion_slots + 1):
+            if i in self._potions:
+                return self._potions[i]
+
+    def get_all_potions(self) -> list[Potion]:
+        potions: list[Potion] = []
+        for i in range(1, self._potion_slots + 1):
+            if i in self._potions:
+                potions.append(self._potions[i])
+        return potions
+
+    def use_potion(self) -> None:
+        for i in range(1, self._potion_slots + 1):
+            if i in self._potions:
+                item_utils.delete_user_item(self._db, self._user_id, self._potions[i])
+                del self._potions[i]
+                return
+
+    def update_equipment(self) -> None:
+        self._user_entity.update_equipment(self.get_equipment())
+
+    def set_item_limit(self, limit: int) -> None:
+        self._item_slots = limit
+
+    def get_empty_slot(self, slot_type: SlotType) -> Optional[str]:
+        if slot_type == SlotType.INVALID:
+            return None
+        if slot_type == SlotType.ITEMS:
+            for i in range(1, self._item_slots + 1):
+                if i not in self._items:
+                    return str(i)
+            return None
+        if slot_type == SlotType.POTION_BAG:
+            for i in range(1, self._potion_slots + 1):
+                if i not in self._potions:
+                    return f"p{i}"
+            return None
         return None
 
     def _move(self, from_slot: str, to_slot: str) -> None:

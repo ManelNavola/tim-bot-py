@@ -40,6 +40,8 @@ class Emoji(Enum):
     LEGGINGS = r'\👖'
     BOOTS = r'\👢'
     ARROW_RIGHT = r'➜'
+    POTION = r'\⚗️'
+    POTION_TUBE = r'\🧪'
 
     # Leaderboard
     TROPHY = r'\🏆'

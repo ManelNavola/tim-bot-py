@@ -48,9 +48,14 @@ def delete_user_item(db: PostgreSQL, user_id: int, item: 'Item') -> None:
     item._id = -1
 
 
-# def transfer_shop(db: PostgreSQL, guild_id: int, user_id: int, slot: int, item: Item) -> None:
-#    db.delete_row("guild_items", dict(guild_id=guild_id, item_id=item.id))
-#    db.insert_data("user_items", dict(user_id=user_id, slot=slot, item_id=item.id))
+def transfer_guild_to_user(db: PostgreSQL, guild_id: int, item: 'Item', user_id: int, slot: str) -> None:
+    db.delete_row("guild_items", dict(guild_id=guild_id, item_id=item.get_id()))
+    db.insert_data('user_items', {
+        'user_id': user_id,
+        'item_id': item.get_id(),
+        'slot': slot
+    })
+    item._id = -1
 
 
 def clone_item(db: PostgreSQL, item: 'Item') -> Item:
@@ -60,12 +65,16 @@ def clone_item(db: PostgreSQL, item: 'Item') -> Item:
     }, returns=True, return_columns=['id'])
     return get_from_dict(fetch_data['id'], item.get_desc().id, item.to_dict())
 
-def remove_shop(db: PostgreSQL, guild_id: int, item: Item) -> None:
-    db.delete_row("guild_items", dict(guild_id=guild_id, item_id=item.id))
 
-
-def from_dict(item_dict: dict[str, Any]):
-    desc: ItemDescription = _INDEX_TO_ITEM[item_dict['desc_id']]
-    rarity: ItemRarity = ItemRarity.get_from_id(item_dict['rarity'])
-    stat_bonus: dict[Stat, int] = stat_utils.unpack_stat_dict(item_dict['stat_bonus'])
-    return Item(desc, rarity, stat_bonus)
+def get_from_dict(item_id: int, desc_id: int, data_dict: dict[str, Any]) -> 'Item':
+    description: ItemDescription = item_loader.get_description(desc_id)
+    it: ItemType = description.type
+    item: Item
+    if it == ItemType.EQUIPMENT:
+        item = Equipment(item_id)
+    elif it == ItemType.POTION:
+        item = Potion(item_id)
+    else:
+        raise KeyError("Unknown item type")
+    item.from_dict(desc_id, data_dict)
+    return item

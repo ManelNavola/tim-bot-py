@@ -3,7 +3,7 @@ from typing import Optional
 from entities.entity import Entity
 from enums.item_type import EquipmentType
 from helpers.dictref import DictRef
-from item_data.item_classes import Item
+from item_data.item_classes import Equipment
 from item_data.stat import Stat
 from enums.user_class import UserClass
 
@@ -39,8 +39,7 @@ class UserEntity(Entity):
         else:
             return self._stat_dict.get(stat, default) + self._base_dict.get(stat, default)
 
-    def update_equipment(self, item_list: list[Item]):
-        calc_power: float = 0
+    def update_equipment(self, item_list: dict[EquipmentType, Equipment]):
         self._stat_dict.clear()
         # self._available_abilities.clear()
         for equipment in item_list.values():

@@ -7,7 +7,7 @@ from entities.ai.ability_ai import AbilityAI, AbilityDecision
 from entities.bot_entity import BotEntity
 from enums.emoji import Emoji
 from enums.item_rarity import ItemRarity
-from enums.item_type import ItemType
+from enums.item_type import EquipmentType
 from enums.location import Location
 from helpers.command import Command
 # from item_data import item_utils

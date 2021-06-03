@@ -7,7 +7,6 @@ from typing import Any
 
 from enums.item_type import EquipmentType, ItemType
 from enums.location import Location
-from enums.item_type import ItemType
 from item_data.stat import Stat
 from tk_utils import center
 from easy import EasyJSONField, EasyItem, EasyJSONKey, EasyJSONEnum, EasyGridTree, EasyValidation, \
@@ -155,14 +154,15 @@ class Equipment(JSONEditor):
                              EasyItem('Tier', EasyJSONField('Tier', 'Tier', EasyValidation.positive, width=5),
                                       2, 0,
                                       field_width=5),
-                             EasyItem('Type', EasyJSONEnum('Type', 'Type', ItemType), 3, 0),
+                             EasyItem('Subtype', EasyJSONEnum('Subtype', 'Subtype', EquipmentType), 3, 0),
                              EasyItem('Stats', EasyJSONStatsWeights('Stats'), 0, 1, row_span=4),
                          ], [64, 128, 128, 32, 128]),
                          {
                              'Name': 'Item',
                              'Location': Location.NOWHERE.get_id(),
                              'Tier': 0,
-                             'Type': ItemType.BOOT.get_name(),
+                             'Type': ItemType.EQUIPMENT.get_id(),
+                             'Subtype': EquipmentType.BOOT.get_id(),
                              'Stats': {}
                          },
                          read_from='../game_data/items.json',
