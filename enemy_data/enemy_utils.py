@@ -35,7 +35,7 @@ def load():
             )
             _ENEMY_IDS[int(id_k)] = beb
 
-            location = Location.get_from_name(id_v['Location'])
+            location = Location.from_id(id_v['Location'])
             pool = id_v.get('Pool', '')
             to_pool = _ENEMIES[location].get(pool)
             if to_pool is None:

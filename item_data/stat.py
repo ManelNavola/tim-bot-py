@@ -12,7 +12,7 @@ class StatType(Enum):
     CHANCE = 1
     SECONDARY = 2
 
-    def get_real_value(self) -> float:
+    def get_weighted_value(self) -> float:
         return {
             StatType.MAIN: 1.0,
             StatType.CHANCE: 0.7,

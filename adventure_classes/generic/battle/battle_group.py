@@ -1,20 +1,24 @@
 import math
 import typing
 
-from adventure_classes.generic.adventure import Adventure
 from adventure_classes.generic.battle.battle_entity import BattleEntity
 from entities.entity import Entity
 from item_data.stat import Stat
 
 if typing.TYPE_CHECKING:
     from user_data.user import User
+    from adventure_classes.generic.adventure import Adventure
 
 
 class BattleGroup:
-    def __init__(self, entities: list[Entity] = None):
+    def __init__(self, entities: list[Entity] = None, users: list['User'] = None):
         if entities is None:
             entities = []
+        if users is None:
+            users = []
         self._battle_entities: list[BattleEntity] = [BattleEntity(entity, self) for entity in entities]
+        for user in users:
+            self._battle_entities.append(BattleEntity(user.user_entity, self, user))
         self._speed: float = 0
         self._recalculate()
 
@@ -47,7 +51,7 @@ class BattleGroup:
     def get_speed(self) -> float:
         return self._speed
 
-    def load(self, adventure: Adventure) -> None:
+    def load(self, adventure: 'Adventure') -> None:
         # Battle effects step
         for battle_entity in self._battle_entities:
             battle_entity.step_battle_modifiers()
@@ -59,6 +63,10 @@ class BattleGroup:
 
     def add_entity(self, entity: Entity) -> None:
         self._battle_entities.append(BattleEntity(entity, self))
+        self._recalculate()
+
+    def add_user(self, user: 'User') -> None:
+        self._battle_entities.append(BattleEntity(user.user_entity, self, user))
         self._recalculate()
 
     def remove_entity(self, battle_entity: BattleEntity) -> None:
@@ -83,8 +91,8 @@ class BattleGroupUsers(BattleGroup):
             users = []
         self._users_to_load: list['User'] = users
 
-    def load(self, adventure: Adventure) -> None:
+    def load(self, adventure: 'Adventure') -> None:
         for user in adventure.get_users():
             if user in adventure.get_users():
-                self.add_entity(user.user_entity)
+                self.add_user(user)
         super().load(adventure)

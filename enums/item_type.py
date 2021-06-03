@@ -1,13 +1,13 @@
 from enum import unique, Enum
-from typing import Optional
 
 from autoslot import Slots
 
 from enums.emoji import Emoji
 
 
-class ItemTypeInstance(Slots):
-    def __init__(self, name: str, icon: Emoji):
+class EquipmentTypeInstance(Slots):
+    def __init__(self, etype_id: int, name: str, icon: Emoji):
+        self.id: int = etype_id
         self.icon: Emoji = icon
         self.name: str = name
 
@@ -32,9 +32,23 @@ class ItemType(Enum):
     def get_name(self) -> str:
         return self.value.name
 
+    def get_id(self) -> int:
+        return self.value.id
+
     def get_icon_str(self) -> str:
         return str(self.value.icon)
 
+    @staticmethod
+    def from_name(name: str) -> 'EquipmentType':
+        return {
+            x.value.name: x for x in EquipmentType
+        }[name]
+
+    @staticmethod
+    def from_id(eid: int) -> 'EquipmentType':
+        return {
+            x.value.id: x for x in EquipmentType
+        }[eid]
 
 it_dict = {
     'from_name': {x.value.name: x for x in ItemType}

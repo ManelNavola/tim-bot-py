@@ -1,107 +1,118 @@
 {
   "0": {
     "Name": "Sharp Spear",
-    "Type": "Weapon",
+    "Type": 0,
+    "Subtype": 3,
     "Stats": {
       "STR": 2
     },
     "Tier": 0,
-    "Location": "Anywhere"
+    "Location": 2
   },
   "1": {
     "Name": "Leather Boots",
-    "Type": "Boot",
+    "Type": 0,
+    "Subtype": 0,
     "Stats": {
       "SPD": 2
     },
     "Tier": 0,
-    "Location": "Anywhere"
+    "Location": 2
   },
   "2": {
     "Name": "Cotton Shirt",
-    "Type": "Chest",
+    "Type": 0,
+    "Subtype": 1,
     "Stats": {
       "HP": 1,
       "DEF": 1
     },
     "Tier": 0,
-    "Location": "Anywhere"
+    "Location": 2
   },
   "3": {
     "Name": "Wooden Sword",
-    "Type": "Weapon",
+    "Type": 0,
+    "Subtype": 3,
     "Stats": {
       "STR": 1,
       "SPD": 1
     },
     "Ability": "Protection",
     "Tier": 0,
-    "Location": "Anywhere"
+    "Location": 2
   },
   "4": {
     "Name": "Sandals",
-    "Type": "Boot",
+    "Type": 0,
+    "Subtype": 0,
     "Stats": {
       "EVA": 2
     },
     "Ability": "Flee",
     "Tier": 0,
-    "Location": "Anywhere"
+    "Location": 2
   },
   "5": {
     "Name": "Simple Headband",
-    "Type": "Helmet",
+    "Type": 0,
+    "Subtype": 2,
     "Stats": {
       "EVA": 2
     },
     "Tier": 0,
-    "Location": "Anywhere"
+    "Location": 2
   },
   "6": {
     "Name": "Metal Axe",
-    "Type": "Weapon",
+    "Type": 0,
+    "Subtype": 3,
     "Stats": {
       "STR": 1
     },
     "Ability": "Blunder",
     "Tier": 0,
-    "Location": "Nowhere"
+    "Location": 0
   },
   "7": {
     "Name": "Broken Shield",
-    "Type": "Secondary",
+    "Type": 0,
+    "Subtype": 4,
     "Stats": {
       "DEF": 2
     },
     "Ability": "Protection",
     "Tier": 0,
-    "Location": "Anywhere"
+    "Location": 2
   },
   "8": {
     "Name": "Sharp Spear",
-    "Type": "Weapon",
+    "Type": 0,
+    "Subtype": 3,
     "Stats": {
       "STR": 1,
       "SPD": 1,
       "CRIT": 1
     },
     "Tier": 0,
-    "Location": "Nowhere"
+    "Location": 0
   },
   "9": {
     "Name": "Leather Coat",
-    "Location": "Anywhere",
+    "Type": 0,
+    "Location": 2,
     "Tier": 0,
-    "Type": "Chest",
+    "Subtype": 1,
     "Stats": {
       "HP": 2
     }
   },
   "10": {
     "Name": "Wool Beanie",
-    "Location": "Anywhere",
+    "Type": 0,
+    "Location": 2,
     "Tier": 0,
-    "Type": "Helmet",
+    "Subtype": 2,
     "Stats": {
       "HP": 1,
       "DEF": 1
@@ -109,9 +120,10 @@
   },
   "11": {
     "Name": "Robin's Hat",
-    "Location": "Forest",
+    "Type": 0,
+    "Location": 4,
     "Tier": 0,
-    "Type": "Helmet",
+    "Subtype": 2,
     "Stats": {
       "HP": 2,
       "SPD": 1,
@@ -120,9 +132,10 @@
   },
   "12": {
     "Name": "Green Bandana",
-    "Location": "Forest",
+    "Type": 0,
+    "Location": 4,
     "Tier": 0,
-    "Type": "Helmet",
+    "Subtype": 2,
     "Stats": {
       "DEF": 1,
       "HP": 1,
@@ -132,9 +145,10 @@
   },
   "13": {
     "Name": "Elf Tunic",
-    "Location": "Forest",
+    "Type": 0,
+    "Location": 4,
     "Tier": 0,
-    "Type": "Chest",
+    "Subtype": 1,
     "Stats": {
       "EVA": 2,
       "DEF": 2
@@ -142,9 +156,10 @@
   },
   "14": {
     "Name": "Fiber Boots",
-    "Location": "Forest",
+    "Type": 0,
+    "Location": 4,
     "Tier": 0,
-    "Type": "Boot",
+    "Subtype": 0,
     "Stats": {
       "SPD": 2,
       "EVA": 2
@@ -152,9 +167,10 @@
   },
   "15": {
     "Name": "Old Tome",
-    "Location": "Anywhere",
+    "Type": 0,
+    "Location": 2,
     "Tier": 0,
-    "Type": "Secondary",
+    "Subtype": 4,
     "Stats": {
       "HP": 1,
       "DEF": 1
@@ -162,9 +178,10 @@
   },
   "16": {
     "Name": "Rusty Sword",
-    "Location": "Lake",
+    "Type": 0,
+    "Location": 5,
     "Tier": 0,
-    "Type": "Weapon",
+    "Subtype": 3,
     "Stats": {
       "STR": 2,
       "CONT": 2
@@ -172,9 +189,10 @@
   },
   "17": {
     "Name": "Fishing Rod",
-    "Location": "Lake",
+    "Type": 0,
+    "Location": 5,
     "Tier": 0,
-    "Type": "Weapon",
+    "Subtype": 3,
     "Stats": {
       "STR": 2,
       "CRIT": 2
@@ -182,9 +200,10 @@
   },
   "18": {
     "Name": "Fishing Net",
-    "Location": "Lake",
+    "Type": 0,
+    "Location": 5,
     "Tier": 0,
-    "Type": "Secondary",
+    "Subtype": 4,
     "Stats": {
       "VAMP": 2,
       "SPD": 2
@@ -192,12 +211,73 @@
   },
   "19": {
     "Name": "Cooked Lobster",
-    "Location": "Lake",
+    "Type": 0,
+    "Location": 5,
     "Tier": 0,
-    "Type": "Secondary",
+    "Subtype": 4,
     "Stats": {
       "HP": 2,
       "DEF": 1
     }
+  },
+  "20": {
+    "Name": "Red Potion",
+    "Type": 1,
+    "Modifiers": [
+      {
+        "Stat": "STR",
+        "Value": 2,
+        "Operation": 0,
+        "Duration": 4
+      }
+    ]
+  },
+  "21": {
+    "Name": "Blue Potion",
+    "Type": 1,
+    "Modifiers": [
+      {
+        "Stat": "DEF",
+        "Value": 2,
+        "Operation": 0,
+        "Duration": 4
+      }
+    ]
+  },
+  "22": {
+    "Name": "HP Potion I",
+    "Type": 1,
+    "Modifiers": [
+      {
+        "Stat": "HP",
+        "Value": 4,
+        "Operation": 0,
+        "Persistent": true
+      }
+    ]
+  },
+  "23": {
+    "Name": "HP Potion II",
+    "Type": 1,
+    "Modifiers": [
+      {
+        "Stat": "HP",
+        "Value": 8,
+        "Operation": 0,
+        "Persistent": true
+      }
+    ]
+  },
+  "24": {
+    "Name": "HP Potion III",
+    "Type": 1,
+    "Modifiers": [
+      {
+        "Stat": "HP",
+        "Value": 16,
+        "Operation": 0,
+        "Persistent": true
+      }
+    ]
   }
 }

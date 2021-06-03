@@ -1,5 +1,5 @@
 from adventure_classes.generic.chapter import Chapter
-from adventure_classes.generic.stat_modifier import StatModifier
+from item_data.stat_modifier import StatModifier
 from enums.emoji import Emoji
 from helpers.translate import tr
 from item_data.stat import Stat
@@ -25,12 +25,12 @@ class BonusChapter(Chapter):
         for bonus in self._bonus:
             if bonus.duration < 0:
                 self.add_log(tr(self.get_lang(), 'BONUS.WHOLE',
-                                value=f"{bonus.print()} {bonus.stat.get_abv()}"))
+                                value=f"{bonus.print(True)}"))
             else:
                 self.add_log(tr(self.get_lang(), 'BONUS.NEXT',
-                                value=f"{bonus.print()} {bonus.stat.get_abv()}", duration=bonus.duration))
+                                value=f"{bonus.print(True)}", duration=bonus.duration))
             for user in users:
-                user.user_entity.add_battle_modifier(bonus)
+                user.user_entity.add_modifier(bonus)
         for bonus in self._persistent_bonus:
             stat: Stat = bonus[0]
             amount: int = bonus[1]

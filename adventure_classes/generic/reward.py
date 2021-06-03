@@ -1,5 +1,6 @@
 import random
 from abc import abstractmethod
+from typing import Optional
 
 import utils
 from adventure_classes.generic.chapter import Chapter
@@ -7,6 +8,7 @@ from enums.emoji import Emoji
 from guild_data.shop import Shop
 from helpers.translate import tr
 from item_data.item_classes import Item
+from user_data.inventory import SlotType
 from user_data.user import User
 
 
@@ -30,18 +32,20 @@ class RewardChapter(Chapter):
 class ItemRewardChapter(RewardChapter):
     def __init__(self, item: Item):
         super().__init__()
-        self.item = item
+        self.item: Item = item
 
     async def reward(self):
         users: list[User] = [user
                              for user in self.get_adventure().get_users()
-                             if user.inventory.get_empty_slot() is not None]
+                             if user.inventory.get_empty_slot(SlotType.ITEMS) is not None]
         if not users:
             users = self.get_adventure().get_users()
 
         user: User = random.choice(users)
 
-        if user.inventory.create_item(self.item) is not None:
+        slot: Optional[str] = user.inventory.get_empty_slot(SlotType.ITEMS)
+        if slot is not None:
+            user.inventory.add_item(self.item, slot)
             if len(self.get_adventure().get_users()) == 1:
                 await self.send_log(tr(self.get_lang(), 'REWARD.ITEM_YOU', item=self.item.print()))
             else:

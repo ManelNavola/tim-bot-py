@@ -1,208 +1,64 @@
-import json
-import random
-from typing import Optional, Any
+from typing import Any
 
 from db.database import PostgreSQL
 from enums.item_type import ItemType
-from enums.location import Location
-from enums.item_rarity import ItemRarity
-from item_data import stat_utils
-from item_data.item_classes import ItemDescription, Item
-from item_data.stat import Stat, StatType
-
-_ITEMS: dict[int, dict[Location, dict[ItemType, list[ItemDescription]]]] = {
-    tier: {location: {itemType: [] for itemType in ItemType} for location in Location} for tier in range(5)
-}
-
-_ITEM_TYPES_IN_LOCATION: dict[int, dict[Location, set[ItemType]]] = {
-    tier: {location: set() for location in Location} for tier in range(5)
-}
-
-_INDEX_TO_ITEM: dict[int, ItemDescription] = {}
+from item_data import item_loader
+from item_data.item_classes import Equipment, Item, Potion
+from item_data.item_descriptions import ItemDescription
 
 
-def load():
-    item_count: int = 0
-    with open('game_data/items.json', 'r') as f:
-        item_dict: dict[str, Any] = json.load(f)
-        for id_k, id_v in item_dict.items():
-            tier: int = id_v['Tier']
-            location: Location = Location.get_from_name(id_v['Location'])
-            item_type: ItemType = ItemType.get_from_name(id_v['Type'])
-            desc: ItemDescription = ItemDescription(int(id_k), id_v)
-            _ITEMS[tier][location][item_type].append(desc)
-            _INDEX_TO_ITEM[int(id_k)] = desc
-            _ITEM_TYPES_IN_LOCATION[tier][location].add(item_type)
-            item_count += 1
-    print(f"Loaded {item_count} items")
-
-
-def get_stat_bonus(desc: ItemDescription, rarity: ItemRarity) -> dict[Stat, int]:
-    base_main: list[Stat] = [x for x in desc.base_stats.keys() if x.get_type() == StatType.MAIN]
-    chance_main: list[Stat] = [x for x in desc.base_stats.keys() if x.get_type() == StatType.CHANCE]
-
-    sb: dict[Stat, int] = {}
-    if rarity == ItemRarity.COMMON:  # =
-        pass
-
-    elif rarity == ItemRarity.UNCOMMON:  # +0/1
-        if chance_main:
-            sb[random.choice(chance_main)] = 1
-        else:
-            sb[random.choice(Stat.get_type_list(StatType.CHANCE))] = 1
-
-    elif rarity == ItemRarity.RARE:  # +1/1
-        if chance_main:
-            sb[random.choice(chance_main)] = 1
-        else:
-            sb[random.choice(Stat.get_type_list(StatType.CHANCE))] = 1
-        if base_main:
-            sb[random.choice(base_main)] = 1
-        else:
-            if chance_main:
-                rc = random.choice(chance_main)
-                sb[rc] = sb.get(rc, 0) + 1
-            else:
-                rc = random.choice(Stat.get_type_list(StatType.CHANCE))
-                sb[rc] = sb.get(rc, 0) + 1
-
-    elif rarity == ItemRarity.EPIC:  # +1/2
-        first_one = random.randint(1, 2)
-        if base_main:
-            sb[random.choice(base_main)] = first_one
-        else:
-            sb[random.choice(Stat.get_type_list(StatType.MAIN))] = first_one
-        if chance_main:
-            sb[random.choice(chance_main)] = 3 - first_one
-        else:
-            sb[random.choice(Stat.get_type_list(StatType.CHANCE))] = 3 - first_one
-
-    elif rarity == ItemRarity.LEGENDARY:  # +2/2
-        if base_main:
-            sb[random.choice(base_main)] = 2
-        else:
-            sb[random.choice(Stat.get_type_list(StatType.MAIN))] = 2
-        if chance_main:
-            sb[random.choice(chance_main)] = 2
-        else:
-            sb[random.choice(Stat.get_type_list(StatType.CHANCE))] = 2
-
-    elif rarity == ItemRarity.RED_LEGENDARY:  # +3/1
-        if base_main:
-            sb[random.choice(base_main)] = 3
-        else:
-            sb[random.choice(Stat.get_type_list(StatType.MAIN))] = 3
-        if chance_main:
-            sb[random.choice(chance_main)] = 1
-        else:
-            sb[random.choice(Stat.get_type_list(StatType.CHANCE))] = 1
-
-    elif rarity == ItemRarity.BLUE_LEGENDARY:  # +1/3
-        if base_main:
-            sb[random.choice(base_main)] = 1
-        else:
-            sb[random.choice(Stat.get_type_list(StatType.MAIN))] = 1
-        if chance_main:
-            sb[random.choice(chance_main)] = 3
-        else:
-            sb[random.choice(Stat.get_type_list(StatType.CHANCE))] = 3
-
-    return sb
-
-
-class RandomItemBuilder:
-    def __init__(self, tier: int):
-        self.tier: int = tier
-        self.location: Location = Location.ANYWHERE
-        self.item_type: list[ItemType] = []
-        self.item_type_weights: list[int] = []
-        self.item_rarity: list[ItemRarity] = \
-            [ItemRarity.COMMON, ItemRarity.UNCOMMON, ItemRarity.RARE, ItemRarity.EPIC, ItemRarity.LEGENDARY]
-        self.item_rarity_weights: list[int] = \
-            [100, 60, 25, 5, 1]
-
-    def set_location(self, location: Location) -> 'RandomItemBuilder':
-        self.location = location
-        return self
-
-    def set_type(self, item_type: ItemType) -> 'RandomItemBuilder':
-        self.item_type = [item_type]
-        self.item_type_weights = [1]
-        return self
-
-    def choose_type(self, item_types: list[ItemType], weights: Optional[list[int]]) -> 'RandomItemBuilder':
-        self.item_type = item_types
-        if weights:
-            assert len(weights) == len(item_types)
-            self.item_type_weights = weights
-        else:
-            self.item_type_weights = [1] * len(item_types)
-        return self
-
-    def set_rarity(self, rarity: ItemRarity):
-        self.item_rarity = [rarity]
-        self.item_rarity_weights = [1]
-        return self
-
-    def choose_rarity(self, item_rarities: list[ItemRarity], weights: Optional[list[float]] = None)\
-            -> 'RandomItemBuilder':
-        self.item_rarity = item_rarities
-        if weights:
-            assert len(weights) == len(item_rarities)
-            self.item_rarity_weights = weights
-        else:
-            self.item_rarity_weights = [1] * len(item_rarities)
-        return self
-
-    def build(self):
-        if not self.item_type:
-            self.item_type = list(_ITEM_TYPES_IN_LOCATION[self.tier][self.location])
-            self.item_type_weights = [1 for _ in self.item_type]
-        item_type: ItemType = random.choices(self.item_type, weights=self.item_type_weights, k=1)[0]
-        item_rarity: ItemRarity = random.choices(self.item_rarity, weights=self.item_rarity_weights, k=1)[0]
-        if item_rarity == ItemRarity.LEGENDARY:
-            r: float = random.random()
-            if 0.1 < r < 0.2:
-                item_rarity = ItemRarity.RED_LEGENDARY
-            elif r < 0.1:
-                item_rarity = ItemRarity.BLUE_LEGENDARY
-        desc: ItemDescription = random.choice(_ITEMS[self.tier][self.location][item_type])
-        return Item(desc, item_rarity, get_stat_bonus(desc, item_rarity))
-
-
-def create_guild_item(db: PostgreSQL, guild_id: int, item: Item) -> None:
+def create_guild_item(db: PostgreSQL, guild_id: int, item: 'Item', slot: str) -> None:
     fetch_data = db.insert_data("items", {
-        'data': item.get_row_data()
+        'data': item.to_dict(),
+        'desc_id': item.get_desc().id
     }, returns=True, return_columns=['id'])
-    item.id = fetch_data['id']
+    item._id = fetch_data['id']
     db.insert_data("guild_items", {
         'guild_id': guild_id,
-        'item_id': item.id
+        'slot': slot,
+        'item_id': item.get_id()
     })
 
 
-def create_user_item(db: PostgreSQL, user_id: int, item: Item, slot: int) -> None:
+def create_user_item(db: PostgreSQL, user_id: int, item: 'Item', slot: str) -> None:
     fetch_data = db.insert_data('items', {
-        'data': item.get_row_data()
+        'data': item.to_dict(),
+        'desc_id': item.get_desc().id
     }, returns=True, return_columns=['id'])
-    item.id = fetch_data['id']
+    item._id = fetch_data['id']
     db.insert_data('user_items', {
         'user_id': user_id,
-        'item_id': item.id,
+        'item_id': item.get_id(),
         'slot': slot
     })
 
 
-def delete_user_item(db: PostgreSQL, user_id: int, item: Item) -> None:
-    db.delete_row("user_items", dict(user_id=user_id, item_id=item.id))
-    db.delete_row("items", dict(id=item.id))
-    item.id = -1
+def move_user_item_slot(db: PostgreSQL, user_id: int, item: 'Item', new_slot: str):
+    db.update_data('user_items', dict(user_id=user_id, item_id=item.get_id()), dict(slot=new_slot))
+
+
+def swap_user_items(db: PostgreSQL, user_id: int, from_slot: str, to_slot: str, from_item: 'Item', to_item: 'Item'):
+    db.update_data('user_items', dict(user_id=user_id, slot=from_slot), dict(item_id=from_item.get_id()))
+    db.update_data('user_items', dict(user_id=user_id, slot=to_slot),   dict(item_id=to_item.get_id()))
+
+
+def delete_user_item(db: PostgreSQL, user_id: int, item: 'Item') -> None:
+    db.delete_row("user_items", dict(user_id=user_id, item_id=item.get_id()))
+    db.delete_row("items", dict(id=item.get_id()))
+    item._id = -1
 
 
 # def transfer_shop(db: PostgreSQL, guild_id: int, user_id: int, slot: int, item: Item) -> None:
 #    db.delete_row("guild_items", dict(guild_id=guild_id, item_id=item.id))
 #    db.insert_data("user_items", dict(user_id=user_id, slot=slot, item_id=item.id))
 
+
+def clone_item(db: PostgreSQL, item: 'Item') -> Item:
+    fetch_data = db.insert_data('items', {
+        'data': item.to_dict(),
+        'desc_id': item.get_desc().id
+    }, returns=True, return_columns=['id'])
+    return get_from_dict(fetch_data['id'], item.get_desc().id, item.to_dict())
 
 def remove_shop(db: PostgreSQL, guild_id: int, item: Item) -> None:
     db.delete_row("guild_items", dict(guild_id=guild_id, item_id=item.id))

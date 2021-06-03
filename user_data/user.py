@@ -1,5 +1,5 @@
 import typing
-from typing import Optional, Any
+from typing import Optional
 
 from discord import Member
 
@@ -30,6 +30,8 @@ class User(Row):
         self.id = user_id
         self.member = None
         self._tutorial_stage: DictRef[int] = DictRef(self._data, 'tutorial')
+        if utils.is_test():
+            self._tutorial_stage.set(-1)
         self.upgrades_row = Row(db, 'user_upgrades', dict(user_id=user_id))
         self.upgrades = {
             'bank': upgrades.UpgradeLink(upgrades.BANK_LIMIT,
@@ -57,6 +59,8 @@ class User(Row):
         # User entity
         self.user_entity: UserEntity = UserEntity(DictRef(self._data, 'last_name'))
         self._user_class: DictRef[int] = DictRef(self._data, 'class')
+        if utils.is_test():
+            self._user_class.set(UserClass.WARRIOR.get_id())
         self._persistent_stats: dict[StatInstance, int] = {}
         if self._user_class.get() != -1:
             uc: UserClass = UserClass.get_from_id(self._user_class.get())
@@ -268,7 +272,7 @@ class User(Row):
                                 f"{utils.print_time(self.get_lang(), self._tokens.get_until(self.get_tokens() + 1))})")
             if checking:
                 to_print.append(f"{Emoji.STATS} Equipment Power: {self.user_entity.get_power()}")
-            to_print.append(self.inventory.print())
+            to_print.append(self.inventory.print(self.get_lang()))
         else:
             to_print.append(f"{Emoji.MONEY} Money: {utils.print_money(lang, self.get_money())}")
             to_print.append(f"{Emoji.SCROLL} Average Level: {self.get_average_level()}")
@@ -282,7 +286,7 @@ class User(Row):
         self._bank.set(self.get_bank())
 
     def _update_inventory_limit(self) -> None:
-        self.inventory.set_limit(self.get_inventory_limit())
+        self.inventory.set_item_limit(self.get_inventory_limit())
 
     def save(self) -> None:
         super().save()

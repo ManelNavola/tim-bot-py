@@ -96,6 +96,7 @@ class Adventure:
             message = await cmd.send(tr(self._lang, "ADVENTURE.START", players=self.get_user_names(),
                                         name=tr(self._lang, self._instance.name)) + "\n" + self.print_progress(None))
         self._message = messages.register_message_reactions(message, [user.id for user in self._users])
+
         await asyncio.sleep(2)
 
         while self._chapters:

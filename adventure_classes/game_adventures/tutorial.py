@@ -11,7 +11,7 @@ from enums.item_rarity import ItemRarity
 from enums.location import Location
 from enums.user_class import UserClass
 from helpers.translate import tr
-from item_data.item_utils import RandomItemBuilder
+from item_data.item_classes import RandomEquipmentBuilder
 from user_data.user import User
 
 if typing.TYPE_CHECKING:
@@ -60,4 +60,4 @@ async def setup(cmd: 'Command', adventure: Adventure):
     adventure.add_chapter(TutorialClassChapter())
     battle.qsab(adventure, Location.TUTORIAL, pre_text=[tr(cmd.lang, "TUTORIAL.SEAGULL")])
     adventure.add_chapter(TutorialEndChapter())
-    adventure.add_chapter(ItemRewardChapter(RandomItemBuilder(0).set_rarity(ItemRarity.COMMON).build()))
+    adventure.add_chapter(ItemRewardChapter(RandomEquipmentBuilder(0).set_rarity(ItemRarity.COMMON).build()))

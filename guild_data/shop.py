@@ -1,16 +1,18 @@
 import random
 import typing
-from typing import Optional
+from typing import Any
 
 import utils
 from db.database import PostgreSQL
 from enums.emoji import Emoji
 from enums.location import Location
 from enums.item_rarity import ItemRarity
+from helpers.action_result import ActionResult
 from helpers.dictref import DictRef
-from item_data import item_utils
-from item_data.item_classes import Item
-from item_data.item_utils import remove_shop, create_guild_item, RandomItemBuilder
+from item_data import item_utils, item_loader
+from item_data.item_classes import Equipment, RandomEquipmentBuilder, Item, Potion
+from item_data.item_utils import create_guild_item, transfer_guild_to_user, clone_item, create_user_item
+from user_data.inventory import Inventory, SlotType
 from utils import TimeSlot, TimeMetric
 if typing.TYPE_CHECKING:
     from user_data.user import User
@@ -27,8 +29,9 @@ class ItemPurchase:
 class Shop:
     SHOP_DURATION: TimeSlot = TimeSlot(TimeMetric.HOUR, 1)
     ITEM_AMOUNT: int = 4
+    POTION_AMOUNT: int = 1
     SELL_MULTIPLIER: float = 0.4
-    ITEM_BUILDER: RandomItemBuilder = RandomItemBuilder(0).set_location(Location.ANYWHERE).choose_rarity(
+    ITEM_BUILDER: RandomEquipmentBuilder = RandomEquipmentBuilder(0).set_location(Location.ANYWHERE).choose_rarity(
         [ItemRarity.COMMON, ItemRarity.UNCOMMON, ItemRarity.RARE, ItemRarity.EPIC],
         [50, 30, 8, 2])
 
@@ -37,8 +40,9 @@ class Shop:
         self._lang = lang
         self._guild_id: int = guild_id
         self._shop_time: DictRef[int] = shop_time
-        self._shop_items: list[Optional[Item]] = [None] * Shop.ITEM_AMOUNT
-        self._last_valid_checks: list[Optional[bool]] = [False] * Shop.ITEM_AMOUNT
+        self._shop_items: dict[int, Item] = {}
+        self._shop_potions: dict[int, Potion] = {}
+        self._last_valid_checks: set[int] = set()
 
     def get_lang(self) -> str:
         return self._lang.get()
@@ -72,84 +76,143 @@ class Shop:
     def print(self) -> str:
         self._check_shop()
         diff = utils.now() - self._shop_time.get()
-        for i in range(Shop.ITEM_AMOUNT):
-            self._last_valid_checks[i] = True
+        for i in range(1, Shop.ITEM_AMOUNT + 1):
+            self._last_valid_checks.add(i)
         to_ret = [f"{Emoji.SHOP} Shop (Restocks in "
                   f"{utils.print_time(self.get_lang(), Shop.SHOP_DURATION.seconds() - diff)}"
                   f"{Emoji.CLOCK})"]
-        for i in range(len(self._shop_items)):
+        for i in range(1, len(self._shop_items) + 1):
             item = self._shop_items[i]
-            if item.price_modifier is None:
-                to_ret.append(f"{i + 1}: {item.print()}"
+            if item.get_price_modifier() is None:
+                to_ret.append(f"{i}: {item.print()}"
                               f" - {utils.print_money(self.get_lang(), item.get_price())}")
             else:
-                if item.price_modifier > 1:
-                    to_ret.append(f"{i + 1}: {item.print()}"
+                if item.get_price_modifier() > 1:
+                    to_ret.append(f"{i}: {item.print()}"
                                   f" - {utils.print_money(self.get_lang(), item.get_price())} {Emoji.INCREASE}")
                 else:
-                    to_ret.append(f"{i + 1}: {item.print()}"
+                    to_ret.append(f"{i}: {item.print()}"
                                   f" - {utils.print_money(self.get_lang(), item.get_price())} {Emoji.DECREASE}")
+        item = self._shop_potions[0]
+        if item.get_price_modifier() is None:
+            to_ret.append(f"p: {item.print()}"
+                          f" - {utils.print_money(self.get_lang(), item.get_price())}")
+        else:
+            if item.get_price_modifier() > 1:
+                to_ret.append(f"p: {item.print()}"
+                              f" - {utils.print_money(self.get_lang(), item.get_price())} {Emoji.INCREASE}")
+            else:
+                to_ret.append(f"p: {item.print()}"
+                              f" - {utils.print_money(self.get_lang(), item.get_price())} {Emoji.DECREASE}")
         return '\n'.join(to_ret)
 
-    def purchase_item(self, user: 'User', item_index: int) -> ItemPurchase:
-        ip: ItemPurchase = ItemPurchase()
+    @staticmethod
+    def _get_slot_type(slot: str) -> SlotType:
+        if slot.isnumeric():
+            # Items
+            if 0 < int(slot) <= Shop.ITEM_AMOUNT:
+                return SlotType.ITEMS
+        elif slot.lower() == 'p':
+            # Potion
+            return SlotType.POTION_BAG
+        return SlotType.INVALID
+
+    def buy(self, user: 'User', slot: str) -> ActionResult:
         self._check_shop()
 
-        if not self._last_valid_checks[item_index]:
-            ip.reload_shop = True
-            return ip
+        slot_type: SlotType = Shop._get_slot_type(slot)
+        if slot_type == SlotType.INVALID:
+            return ActionResult(message='INVENTORY.INVALID_SLOT_TYPE')
 
-        item = self._shop_items[item_index]
+        item_index: int = -1
+        item: Item = self._get_dict_ref(slot).get()
+        if slot_type == SlotType.ITEMS:
+            item_index = int(slot)
+            if item_index not in self._last_valid_checks:
+                return ActionResult(reload_shop=True)
+
+        auto_equip: bool = False
         if user.has_money(item.get_price()):
-            slot = user.inventory.create_item(item)
-            if slot is not None:
+            user_slot: str = user.inventory.get_empty_slot(slot_type)
+            if isinstance(item, Equipment) and (user.inventory.get_equipment().get(item.get_desc().subtype) is None):
+                # Equip directly
+                user_slot = Inventory.EQUIPMENT_TYPE_TO_CHAR[item.get_desc().subtype]
+                auto_equip = True
+            if user_slot is not None:
                 user.remove_money(item.get_price())
-                was_there_before = (user.inventory.get_first(item.get_description().type) is not None)
-                remove_shop(self._db, self._guild_id, item)
-                self._shop_items[item_index] = None
-                self._last_valid_checks[item_index] = False
+                if slot_type == SlotType.ITEMS:
+                    user.inventory.add_item(item, user_slot)
+                    transfer_guild_to_user(self._db, self._guild_id, item, user.id, user_slot)
+                    del self._shop_items[item_index]
+                    self._last_valid_checks.remove(item_index)
+                elif slot_type == SlotType.POTION_BAG:
+                    new_item: Item = clone_item(self._db, item)
+                    create_user_item(self._db, user.id, new_item, user_slot)
+                    user.inventory.add_item(new_item, user_slot)
                 self._restock_shop()
-                ip.item = item
-                if not was_there_before:
-                    ip.must_equip = slot
-                return ip
-            return ip
+                if auto_equip:
+                    user.inventory.update_equipment()
+                    return ActionResult(message='SHOP.PURCHASE', success=True,
+                                        EMOJI_PURCHASE=Emoji.PURCHASE, name=user.get_name(), item=item.print(),
+                                        must_equip=True)
+                else:
+                    return ActionResult(message='SHOP.PURCHASE', success=True,
+                                        EMOJI_PURCHASE=Emoji.PURCHASE, name=user.get_name(), item=item.print())
+            return ActionResult(message='INVENTORY.FULL')
         else:
-            ip.price = item.get_price()
-            return ip
+            return ActionResult(message='SHOP.LACK', money=utils.print_money(self.get_lang(), item.get_price()))
+
+    def _get_dict_ref(self, slot: str) -> DictRef[Item]:
+        if slot.isnumeric():
+            # Inventory item
+            return DictRef(self._shop_items, int(slot))
+        elif slot.lower()[0] == 'p':
+            # Potion bag
+            return DictRef(self._shop_potions, 0)
+        raise ValueError(f"Unknown shop slot >{slot}<")
 
     def _fetch_shop(self):
-        found_items = self._db.start_join('guilds', dict(id=self._guild_id), None, Shop.ITEM_AMOUNT)\
-            .join('guild_items', [('guild_id', 'id')])\
-            .join('items', [('id', 'item_id')])\
+        items_data = self._db.start_join('guilds', dict(id=self._guild_id), columns=['slot', 'item_id'],
+                                         limit=Shop.ITEM_AMOUNT + Shop.POTION_AMOUNT) \
+            .join('guild_items', field_matches=[('guild_id', 'id')]) \
             .execute()
-        for index in range(len(found_items)):
-            self._shop_items[index] = item_utils.from_dict(found_items[index]['data'])
+        for isd in items_data:
+            slot: str = isd['slot'].strip()
+            item_id: int = isd['item_id']
+            item_dict: dict[str, Any] = self._db.get_row_data('items', dict(id=item_id))
+            item: Item = item_utils.get_from_dict(item_id, item_dict['desc_id'], item_dict['data'])
+            self._get_dict_ref(slot).set(item)
 
     def _clear_shop(self) -> None:
         shop_items: list[Optional[Item]] = self._shop_items
         shop_len: int = len([1 for x in shop_items if x is not None])
         if shop_len > 0:
             self._db.delete_row("guild_items", dict(guild_id=self._guild_id), shop_len)
-        for item in shop_items:
+        for item in shop_items.values():
             if item is not None:
-                self._db.delete_row("items", dict(id=item.id))
-        self._shop_items = [None] * Shop.ITEM_AMOUNT
+                self._db.delete_row("items", dict(id=item.get_id()))
+        self._shop_items.clear()
 
     def _restock_shop(self) -> bool:
         restocked = False
-        for i in range(0, Shop.ITEM_AMOUNT):
-            if self._shop_items[i] is None:
-                item: Item = Shop.ITEM_BUILDER.build()
-                create_guild_item(self._db, self._guild_id, item)
+        for i in range(1, Shop.ITEM_AMOUNT + 1):
+            if i not in self._shop_items:
+                equipment: Equipment = Shop.ITEM_BUILDER.build()
+                create_guild_item(self._db, self._guild_id, equipment, str(i))
                 if random.random() < 0.2:
                     if random.random() < 0.5:
-                        item.price_modifier = 0.8
+                        equipment.price_modifier = 0.8
                     else:
-                        item.price_modifier = 1.2
-                self._last_valid_checks[i] = False
-                self._shop_items[i] = item
+                        equipment.price_modifier = 1.2
+                self._last_valid_checks.add(i)
+                self._shop_items[i] = equipment
                 restocked = True
+        if 0 not in self._shop_potions:
+            potion: Potion = Potion()
+            potion.build(random.choice(item_loader.get_potion_list()).id)
+            create_guild_item(self._db, self._guild_id, potion, f"p")
+            self._shop_potions[0] = potion
+            restocked = True
         if restocked > 0:
             return True
         return False

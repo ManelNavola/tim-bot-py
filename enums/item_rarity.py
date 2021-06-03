@@ -12,6 +12,7 @@ class RarityInstance(Slots):
 @unique
 class ItemRarity(Enum):
     _ignore_ = ['_INFO']
+    UNKNOWN = RarityInstance(-1, "Unknown")
     COMMON = RarityInstance(0, "Common")
     UNCOMMON = RarityInstance(1, "Uncommon")
     RARE = RarityInstance(2, "Rare")
@@ -29,7 +30,7 @@ class ItemRarity(Enum):
         return self.value.id
 
     @staticmethod
-    def get_from_name(name: str) -> 'ItemRarity':
+    def from_name(name: str) -> 'ItemRarity':
         return ItemRarity._INFO['from_name'][name]
 
     def get_name(self) -> str:

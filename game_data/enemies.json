@@ -7,7 +7,7 @@
       "STR": 2,
       "EVA": 4
     },
-    "Location": "Coliseum",
+    "Location": 3,
     "Pool": "0"
   },
   "1": {
@@ -18,7 +18,7 @@
       "STR": 2,
       "SPD": 1
     },
-    "Location": "Coliseum",
+    "Location": 3,
     "Pool": "0"
   },
   "2": {
@@ -27,7 +27,7 @@
       "HP": 3,
       "SPD": 3
     },
-    "Location": "Coliseum",
+    "Location": 3,
     "Pool": "0"
   },
   "3": {
@@ -36,7 +36,7 @@
       "HP": 3,
       "STR": 5
     },
-    "Location": "Coliseum",
+    "Location": 3,
     "Pool": "1"
   },
   "4": {
@@ -47,7 +47,7 @@
       "STR": 2,
       "DEF": 1
     },
-    "Location": "Coliseum",
+    "Location": 3,
     "Pool": "1"
   },
   "5": {
@@ -59,7 +59,7 @@
       "HP": 6,
       "DEF": 1
     },
-    "Location": "Coliseum",
+    "Location": 3,
     "Pool": "1"
   },
   "6": {
@@ -70,7 +70,7 @@
       "STR": 2,
       "DEF": 3
     },
-    "Location": "Coliseum",
+    "Location": 3,
     "Pool": "2"
   },
   "7": {
@@ -80,7 +80,7 @@
       "DEF": 2
     },
     "Name": "Rock Golem",
-    "Location": "Coliseum",
+    "Location": 3,
     "Pool": "1"
   },
   "8": {
@@ -91,7 +91,7 @@
       "DEF": 4
     },
     "Name": "Gold Guardian",
-    "Location": "Coliseum",
+    "Location": 3,
     "Pool": "2"
   },
   "9": {
@@ -101,11 +101,11 @@
       "STR": 6
     },
     "Name": "Angry Lion",
-    "Location": "Coliseum",
+    "Location": 3,
     "Pool": "2"
   },
   "10": {
-    "Location": "Forest",
+    "Location": 4,
     "Stats": {
       "STR": 1,
       "HP": 2,
@@ -115,7 +115,7 @@
     "Name": "Squirrel"
   },
   "11": {
-    "Location": "Forest",
+    "Location": 4,
     "Stats": {
       "STR": 2,
       "HP": 2,
@@ -125,7 +125,7 @@
     "Pool": "A"
   },
   "12": {
-    "Location": "Forest",
+    "Location": 4,
     "Stats": {
       "DEF": 1,
       "HP": 3,
@@ -136,7 +136,7 @@
     "Pool": "A"
   },
   "13": {
-    "Location": "Forest",
+    "Location": 4,
     "Stats": {
       "HP": 4,
       "SPD": 2,
@@ -146,7 +146,7 @@
     "Name": "Jumpy Deer"
   },
   "14": {
-    "Location": "Forest",
+    "Location": 4,
     "Stats": {
       "HP": 4,
       "STR": 3,
@@ -157,7 +157,7 @@
     "Pool": "B"
   },
   "15": {
-    "Location": "Forest",
+    "Location": 4,
     "Stats": {
       "STR": 4,
       "HP": 3,
@@ -167,7 +167,7 @@
     "Pool": "B"
   },
   "16": {
-    "Location": "Forest",
+    "Location": 4,
     "Stats": {
       "HP": 6,
       "SPD": 4,
@@ -178,7 +178,7 @@
     "Pool": "C"
   },
   "17": {
-    "Location": "Forest",
+    "Location": 4,
     "Stats": {
       "STR": 4,
       "HP": 6,
@@ -189,7 +189,7 @@
     "Pool": "C"
   },
   "18": {
-    "Location": "Forest",
+    "Location": 4,
     "Stats": {
       "HP": 7,
       "DEF": 5,
@@ -199,7 +199,7 @@
     "Pool": "C"
   },
   "19": {
-    "Location": "Forest",
+    "Location": 4,
     "Stats": {
       "STR": 3,
       "HP": 5,
@@ -209,7 +209,7 @@
     "Pool": "D"
   },
   "20": {
-    "Location": "Forest",
+    "Location": 4,
     "Stats": {
       "HP": 10,
       "AP": 6,
@@ -222,7 +222,7 @@
   },
   "21": {
     "Name": "Seagull",
-    "Location": "Tutorial",
+    "Location": 1,
     "Stats": {
       "HP": 3,
       "STR": 1,
@@ -232,7 +232,7 @@
   },
   "22": {
     "Name": "Entling",
-    "Location": "Forest",
+    "Location": 4,
     "Stats": {
       "HP": 4,
       "DEF": 3,
@@ -242,7 +242,7 @@
   },
   "23": {
     "Name": "Dragonfly",
-    "Location": "Lake",
+    "Location": 5,
     "Stats": {
       "HP": 4,
       "DEF": 2,
@@ -253,7 +253,7 @@
   },
   "24": {
     "Name": "Hungry Worm",
-    "Location": "Lake",
+    "Location": 5,
     "Stats": {
       "HP": 3,
       "SPD": 2,
@@ -264,7 +264,7 @@
   },
   "25": {
     "Name": "Snail",
-    "Location": "Lake",
+    "Location": 5,
     "Stats": {
       "DEF": 4,
       "HP": 2,
@@ -275,7 +275,7 @@
   },
   "26": {
     "Name": "Tough Turtle",
-    "Location": "Lake",
+    "Location": 5,
     "Stats": {
       "STR": 4,
       "HP": 5,
@@ -285,7 +285,7 @@
   },
   "27": {
     "Name": "Silent Snake",
-    "Location": "Lake",
+    "Location": 5,
     "Stats": {
       "STR": 4,
       "CRIT": 8,
@@ -296,7 +296,7 @@
   },
   "28": {
     "Name": "Fearless Frog",
-    "Location": "Lake",
+    "Location": 5,
     "Stats": {
       "HP": 4,
       "STR": 4,
@@ -308,7 +308,7 @@
   },
   "29": {
     "Name": "Alligator",
-    "Location": "Lake",
+    "Location": 5,
     "Stats": {
       "HP": 6,
       "SPD": 4,
@@ -320,7 +320,7 @@
   },
   "30": {
     "Name": "Beaver",
-    "Location": "Lake",
+    "Location": 5,
     "Stats": {
       "STR": 4,
       "DEF": 4,
@@ -333,7 +333,7 @@
   },
   "31": {
     "Name": "Oblivious Otter",
-    "Location": "Lake",
+    "Location": 5,
     "Stats": {
       "STR": 4,
       "DEF": 4,
@@ -347,7 +347,7 @@
   },
   "32": {
     "Name": "Magnum Lobster",
-    "Location": "Lake",
+    "Location": 5,
     "Stats": {
       "DEF": 5,
       "HP": 15,

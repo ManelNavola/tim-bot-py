@@ -61,7 +61,8 @@ class PostgreSQL:
             self._cursor.execute(f"SELECT {column_names} FROM {table_name} WHERE {where_info} LIMIT {limit}")
             return self._cursor.fetchall()
 
-    def start_join(self, table_from: str, match_columns: SQLDict, columns: SQLColumns = None, limit: int = 1) -> 'Join':
+    def start_join(self, table_from: str, match_columns: SQLDict, columns: SQLColumns = None, limit: Optional[int] = 1)\
+            -> 'Join':
         return Join(self, table_from, match_columns, columns, limit)
 
     def insert_data(self, table_name: str, column_data: SQLDict, returns: bool = False,
@@ -134,7 +135,7 @@ class JoinOn:
 
 class Join:
     def __init__(self, db: PostgreSQL, table_from: str, match_columns: SQLDict, columns: SQLColumns = None,
-                 limit: int = 1):
+                 limit: Optional[int] = 1):
         self._db = db
         self._table_from: str = table_from
         self._match_columns: SQLDict = match_columns

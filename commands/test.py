@@ -1,7 +1,8 @@
+from typing import Optional
+
 from adventure_classes.game_adventures.adventure_provider import AdventureInstance
 from adventure_classes.generic.adventure import Adventure
 from adventure_classes.generic.battle import battle
-from adventure_classes.generic.stat_modifier import StatModifierAdd
 from entities.ai.ability_ai import AbilityAI, AbilityDecision
 from entities.bot_entity import BotEntity
 from enums.emoji import Emoji
@@ -9,9 +10,12 @@ from enums.item_rarity import ItemRarity
 from enums.item_type import ItemType
 from enums.location import Location
 from helpers.command import Command
-from item_data import item_utils
+# from item_data import item_utils
 from item_data.abilities import AbilityContainer, AbilityEnum
+from item_data.item_classes import RandomEquipmentBuilder, Item
 from item_data.stat import Stat
+from item_data.stat_modifier import StatModifierOperation, StatModifier
+from user_data.inventory import SlotType
 
 FIGHT_BOT: bool = True
 
@@ -26,22 +30,37 @@ async def rich(cmd: Command):
 
 
 async def invincible(cmd: Command):
-    cmd.user.user_entity.add_battle_modifier(StatModifierAdd(Stat.EVA, 9999))
+    cmd.user.user_entity.add_modifier(StatModifier(Stat.EVA, 9999, StatModifierOperation.ADD))
     await cmd.send_hidden("invincible...")
 
 
-async def gimme_all(cmd: Command, tier: str = '0', location: str = 'Anywhere', rarity: str = 'Common'):
-    cmd.user.inventory.unequip_all()
-    cmd.user.inventory.sell_all()
+def _gimme(tier: str = '0', location: str = 'Anywhere', rarity: str = 'Common', subtype: str = 'Boots') -> Item:
     tier = int(tier)
-    location = Location.get_from_name(location)
-    rarity = ItemRarity.get_from_name(rarity)
-    i = 0
-    for x in ItemType:
-        item = item_utils.RandomItemBuilder(tier).set_location(location).set_rarity(rarity).set_type(x).build()
-        cmd.user.inventory.create_item(item)
-        i += 1
-    cmd.user.inventory.equip_best()
+    location = Location.from_name(location)
+    rarity = ItemRarity.from_name(rarity)
+    subtype = EquipmentType.from_name(subtype)
+    return RandomEquipmentBuilder(tier).set_location(location).set_rarity(rarity).set_type(subtype).build()
+
+
+async def gimme(cmd: Command, tier: str = '0', location: str = 'Anywhere', rarity: str = 'Common',
+                subtype: str = 'Boots'):
+    slot: Optional[str] = cmd.user.inventory.get_empty_slot(SlotType.ITEMS)
+    if slot is None:
+        await cmd.error("Full lmao")
+        return
+    item = _gimme(tier, location, rarity, subtype)
+    cmd.user.inventory.add_item(item, slot)
+    await cmd.send_hidden("nice")
+
+
+async def gimme_all(cmd: Command, tier: str = '0', location: str = 'Anywhere', rarity: str = 'Common'):
+    for et in EquipmentType:
+        slot: Optional[str] = cmd.user.inventory.get_empty_slot(SlotType.ITEMS)
+        if slot is None:
+            await cmd.error("Full lmao")
+            return
+        item = _gimme(tier, location, rarity, et.get_name())
+        cmd.user.inventory.add_item(item, slot)
     await cmd.send_hidden("epic")
 
 

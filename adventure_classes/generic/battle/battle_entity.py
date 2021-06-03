@@ -5,8 +5,9 @@ from typing import Optional
 from autoslot import Slots
 
 from adventure_classes.generic.battle import battle_utils
-from adventure_classes.generic.battle.battle import BattleActionData
-from adventure_classes.generic.stat_modifier import StatModifier
+from adventure_classes.generic.battle.battle_action_data import BattleActionData
+from item_data.item_classes import Potion
+from item_data.stat_modifier import StatModifier
 from entities.bot_entity import BotEntity
 from entities.entity import Entity
 from entities.user_entity import UserEntity
@@ -15,10 +16,10 @@ from enums.emoji import Emoji
 from helpers.translate import tr
 from item_data.abilities import AbilityInstance, AbilityContainer
 from item_data.stat import Stat
-from user_data.user import User
 
 if typing.TYPE_CHECKING:
     from adventure_classes.generic.battle.battle import BattleGroup
+    from user_data.user import User
 
 
 class AttackResult(Slots):
@@ -31,32 +32,31 @@ class AttackResult(Slots):
 
 
 class BattleEntity:
-    def __init__(self, entity: Entity, group: 'BattleGroup'):
+    def __init__(self, entity: Entity, group: 'BattleGroup', user: Optional['User'] = None):
         self._entity: Entity = entity
+        self._user: Optional['User'] = user
         self._group: 'BattleGroup' = group
-        self._turn_modifiers: list[StatModifier] = []
+        self._temp_modifiers: list[StatModifier] = []
         self._ability_instances: list[AbilityInstance] = []
         self._last_target: Optional['BattleEntity'] = None
-        # Apply global stat modifiers
-        for modifier in entity.get_battle_modifiers():
-            self._turn_modifiers.append(modifier.clone(-1))
 
     def get_group(self) -> 'BattleGroup':
         return self._group
 
-    def add_turn_modifier(self, modifier: StatModifier) -> None:
-        self._turn_modifiers.append(modifier)
+    def add_temp_modifier(self, modifier: StatModifier) -> None:
+        self._temp_modifiers.append(modifier)
 
     def step_turn_modifiers(self) -> None:
         modifiers: list[StatModifier] = []
-        for modifier in self._turn_modifiers:
+        for modifier in self._temp_modifiers:
             if modifier.duration == -1:
                 modifiers.append(modifier)
             else:
                 modifier.duration -= 1
                 if modifier.duration > 0:
                     modifiers.append(modifier)
-        self._turn_modifiers = modifiers
+        self._temp_modifiers = modifiers
+        self._entity.step_turn_modifiers()
 
     def step_battle_modifiers(self) -> None:
         self._entity.step_battle_modifiers()
@@ -143,20 +143,20 @@ class BattleEntity:
 
     def get_money_value(self) -> int:
         stat_dict: dict[Stat, int] = self._entity.get_stat_dict()
-        stat_sum: float = sum(stat.get_type().get_real_value() * count for stat, count in stat_dict.items())
+        stat_sum: float = sum(stat.get_type().get_weighted_value() * count for stat, count in stat_dict.items())
 
         return pow(stat_sum / 2.8, 1.6)
 
     def get_stat(self, stat: Stat) -> int:
         number: float = self._entity.get_stat(stat)
-        for modifier in self._turn_modifiers:
+        for modifier in self._temp_modifiers + self._entity.get_modifiers():
             if modifier.stat == stat:
                 number = modifier.apply(number)
         return max(0, round(number))
 
     def _print_battle_stat(self, stat: Stat) -> str:
         stuff: list[str] = []
-        for modifier in self._turn_modifiers:
+        for modifier in self._temp_modifiers + self._entity.get_modifiers():
             if modifier.stat == stat:
                 stuff.append(modifier.print())
         if stuff:
@@ -177,7 +177,7 @@ class BattleEntity:
     def is_bot(self) -> bool:
         return isinstance(self._entity, BotEntity)
 
-    def is_user(self, user: Optional[User] = None) -> bool:
+    def is_user(self, user: Optional['User'] = None) -> bool:
         if user is None:
             return isinstance(self._entity, UserEntity)
         else:
@@ -246,6 +246,15 @@ class BattleEntity:
                     temp = tr(data.lang, 'BATTLE_ATTACK.COUNTER', target=target_entity.get_name(), damage=ar.damage)
                     msg.append(f"> {Emoji.CONT} {temp}")
                 return '\n'.join(msg)
+        if battle_emoji == BattleEmoji.POTION:
+            if self.is_user():
+                potion: Optional[Potion] = self._user.inventory.get_potion()
+                if potion is not None:
+                    self._user.inventory.use_potion()
+                    for sm in potion.copy_stat_modifiers():
+                        self._user.user_entity.add_modifier(sm)
+                    return f"{self._user.get_name()} used {potion.print()}!"
+            return None
         if battle_emoji == BattleEmoji.WAIT:
             return f"> {battle_emoji} {tr(data.lang, 'BATTLE_ATTACK.WAIT', source=self.get_name())}"
         spell_index: int = battle_emoji.get_spell_index()

@@ -326,6 +326,11 @@ class BattleChapter(Chapter):
         await self.get_adventure().add_reaction(BattleEmoji.ATTACK.value, self.execute_action)
         for battle_emoji in BattleEmoji.get_spells(abilities):
             await self.get_adventure().add_reaction(battle_emoji.value, self.execute_action)
+        for user in self.get_adventure().get_users():
+            if (self._group_a.find_user(user) is not None) or (self._group_b.find_user(user) is not None):
+                if user.inventory.get_potion() is not None:
+                    await self.get_adventure().add_reaction(BattleEmoji.POTION.value, self.execute_action)
+                    break
         if utils.is_test():
             await self.get_adventure().add_reaction(BattleEmoji.WAIT.value, self.execute_action)
         await self._recalculate_max_targets()

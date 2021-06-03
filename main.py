@@ -10,6 +10,9 @@ from discord_slash.utils.manage_commands import create_option, create_choice
 import utils
 from adventure_classes.game_adventures import adventure_provider
 from commands import simple, crate, bet, upgrade, shop, test, adventure, setup, equipment
+from enums.item_rarity import ItemRarity
+from enums.item_type import EquipmentType
+from enums.location import Location
 from game_data import data_loader
 from helpers import storage, messages, translate
 from db import database
@@ -74,7 +77,8 @@ cmd_handler.register_command(simple.check,
 
 cmd_handler.register_command(simple.inv,
                              name="inv", description="Check your inventory",
-                             guild_ids=registered_guild_ids)
+                             guild_ids=registered_guild_ids,
+                             ignore_battle=True)
 
 cmd_handler.register_command(simple.post_inv, name="post_inv", description="Post your inventory",
                              guild_only=True,
@@ -168,29 +172,29 @@ cmd_handler.register_command(shop.buy,
                              base="shop", name="buy", description="Buy an item shop",
                              options=[
                                  create_option(
-                                     name="number",
-                                     description="Number of the item to buy",
-                                     option_type=4,
+                                     name="slot",
+                                     description="Slot of the item to buy",
+                                     option_type=3,
                                      required=True
                                  )
                              ], guild_only=True,
                              guild_ids=registered_guild_ids)
 
-cmd_handler.register_command(shop.sell,
-                             base="shop", name="sell", description="Sell an item from your inventory",
+cmd_handler.register_command(equipment.sell, name="sell", description="Sell an item from your inventory",
                              options=[
                                  create_option(
-                                     name="number",
-                                     description="Number of the item to sell",
-                                     option_type=4,
+                                     name="slot",
+                                     description="Slot of the item to sell",
+                                     option_type=3,
                                      required=True
                                  )
                              ],
                              guild_ids=registered_guild_ids)
 
-cmd_handler.register_command(shop.sell_all,
-                             base="shop", name="dispose", description="Sells all unequipped items from your inventory",
-                             guild_ids=registered_guild_ids)
+# cmd_handler.register_command(shop.sell_all,
+#                              base="shop", name="dispose",
+#                              description="Sells all unequipped items from your inventory",
+#                              guild_ids=registered_guild_ids)
 
 # RPG management
 cmd_handler.register_command(simple.stats,
@@ -205,9 +209,9 @@ cmd_handler.register_command(equipment.equip,
                              name="equip", description="Equip an item",
                              options=[
                                  create_option(
-                                     name="number",
-                                     description="Number of the item to equip",
-                                     option_type=4,
+                                     name="slot",
+                                     description="Slot of the item to equip",
+                                     option_type=3,
                                      required=True
                                  )
                              ],
@@ -221,17 +225,17 @@ cmd_handler.register_command(equipment.unequip,
                              name="unequip", description="Unequip an item",
                              options=[
                                  create_option(
-                                     name="number",
-                                     description="Number of the item to unequip",
-                                     option_type=4,
+                                     name="slot",
+                                     description="Slot of the item to unequip",
+                                     option_type=3,
                                      required=True
                                  )
                              ],
                              guild_ids=registered_guild_ids)
 
-cmd_handler.register_command(equipment.unequip_all,
-                             name="unequip_all", description="Unequip all items",
-                             guild_ids=registered_guild_ids)
+# cmd_handler.register_command(equipment.unequip_all,
+#                              name="unequip_all", description="Unequip all items",
+#                              guild_ids=registered_guild_ids)
 
 # Adventures
 # cmd_handler.register_command(adventure.coliseum_start,
@@ -305,15 +309,78 @@ if utils.is_test():
                                  name="relshop", description="Reload the shop",
                                  guild_ids=registered_guild_ids)
 
+    cmd_handler.register_command(test.gimme,
+                                 name="gimme", description="gimme!",
+                                 options=[
+                                     create_option(
+                                         name='tier',
+                                         description='tier',
+                                         option_type=3,
+                                         choices=[
+                                             create_choice('0', '0')
+                                         ],
+                                         required=False
+                                     ),
+                                     create_option(
+                                         name='location',
+                                         description='location',
+                                         option_type=3,
+                                         choices=[
+                                             create_choice(loc.get_name(), loc.get_name()) for loc in Location
+                                         ],
+                                         required=False
+                                     ),
+                                     create_option(
+                                         name='rarity',
+                                         description='rarity',
+                                         option_type=3,
+                                         choices=[
+                                             create_choice(rar.get_name(), rar.get_name()) for rar in ItemRarity
+                                         ],
+                                         required=False
+                                     ),
+                                     create_option(
+                                         name='subtype',
+                                         description='subtype',
+                                         option_type=3,
+                                         choices=[
+                                             create_choice(et.get_name(), et.get_name()) for et in EquipmentType
+                                         ],
+                                         required=False
+                                     )
+                                 ],
+                                 guild_ids=registered_guild_ids)
+
     cmd_handler.register_command(test.gimme_all,
                                  name="gimme_all", description="gimme_all!",
                                  options=[
                                      create_option(
-                                         name=x,
-                                         description=x,
+                                         name='tier',
+                                         description='tier',
                                          option_type=3,
+                                         choices=[
+                                             create_choice('0', '0')
+                                         ],
                                          required=False
-                                     ) for x in ['tier', 'location', 'rarity']
+                                     ),
+                                     create_option(
+                                         name='location',
+                                         description='location',
+                                         option_type=3,
+                                         choices=[
+                                             create_choice(loc.get_name(), loc.get_name()) for loc in Location
+                                         ],
+                                         required=False
+                                     ),
+                                     create_option(
+                                         name='rarity',
+                                         description='rarity',
+                                         option_type=3,
+                                         choices=[
+                                             create_choice(rar.get_name(), rar.get_name()) for rar in ItemRarity
+                                         ],
+                                         required=False
+                                     ),
                                  ],
                                  guild_ids=registered_guild_ids)
 
