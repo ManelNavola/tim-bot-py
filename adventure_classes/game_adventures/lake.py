@@ -6,7 +6,6 @@ from adventure_classes.generic.battle import battle
 from adventure_classes.generic.bonus import BonusChapter
 from adventure_classes.generic.choice import ChoiceChapter
 from adventure_classes.generic.reward import MoneyRewardChapter, ItemRewardChapter
-from adventure_classes.generic.stat_modifier import StatModifierAdd
 from entities.ai.ability_ai import AbilityAI, AbilityDecision
 from entities.bot_entity import BotEntity
 from enums.emoji import Emoji
@@ -14,9 +13,9 @@ from enums.item_rarity import ItemRarity
 from enums.location import Location
 from helpers.translate import tr
 from item_data.abilities import AbilityContainer, AbilityEnum
-from item_data.item_classes import Item
-from item_data.item_utils import RandomItemBuilder
+from item_data.item_classes import Equipment, RandomEquipmentBuilder
 from item_data.stat import Stat
+from item_data.stat_modifier import StatModifierOperation, StatModifier
 
 if typing.TYPE_CHECKING:
     from helpers.command import Command
@@ -36,7 +35,7 @@ def aa_deepest(adventure: Adventure):
                 pre_text=[tr(adventure.get_lang(), 'LAKE.BOSS1'),
                           tr(adventure.get_lang(), 'LAKE.BOSS2'),
                           tr(adventure.get_lang(), 'LAKE.BOSS3')])
-    item: Item = RandomItemBuilder(0).set_location(Location.LAKE).build()
+    item: Equipment = RandomEquipmentBuilder(0).set_location(Location.LAKE).build()
     adventure.add_chapter(ItemRewardChapter(item))
 
 
@@ -46,7 +45,7 @@ def ab_around(adventure: Adventure):
     if random.random() < 0.5:
         adventure.add_chapter(MoneyRewardChapter(random.randint(175, 225)))
     else:
-        item: Item = RandomItemBuilder(0).set_location(Location.ANYWHERE) \
+        item: Equipment = RandomEquipmentBuilder(0).set_location(Location.ANYWHERE) \
             .choose_rarity([ItemRarity.RARE, ItemRarity.EPIC], [5, 2]).build()
         adventure.add_chapter(ItemRewardChapter(item))
 
@@ -56,9 +55,9 @@ def a_deep(adventure: Adventure):
     battle.qsab(adventure, Location.LAKE, 'B')
     bc: BonusChapter = BonusChapter(tr(adventure.get_lang(), 'LAKE.EVENT1'))
     if random.random() < 0.5:
-        bc.add_modifier(StatModifierAdd(Stat.EVA, 3))
+        bc.add_modifier(StatModifier(Stat.EVA, 3, StatModifierOperation.ADD))
     else:
-        bc.add_modifier(StatModifierAdd(Stat.CONT, 4))
+        bc.add_modifier(StatModifier(Stat.CONT, 4, StatModifierOperation.ADD))
     bc.add_persistent(Stat.HP, 4)
     adventure.add_chapter(bc)
     adventure.add_chapter(ChoiceChapter(Emoji.LAKE, tr(adventure.get_lang(), 'LAKE.DECISION3_TEXT'))
@@ -71,7 +70,7 @@ def b_before_reward(adventure: Adventure):
     if random.random() < 0.5:
         adventure.add_chapter(MoneyRewardChapter(random.randint(75, 125)))
     else:
-        item: Item = RandomItemBuilder(0).set_location(Location.ANYWHERE) \
+        item: Equipment = RandomEquipmentBuilder(0).set_location(Location.ANYWHERE) \
             .choose_rarity([ItemRarity.UNCOMMON, ItemRarity.RARE], [5, 2]).build()
         adventure.add_chapter(ItemRewardChapter(item))
 
@@ -80,9 +79,9 @@ def ba_pick(adventure: Adventure):
     if random.random() < 0.5:
         bc: BonusChapter = BonusChapter(tr(adventure.get_lang(), 'LAKE.DECISION2_RESULT1'))
         if random.random() < 0.5:
-            bc.add_modifier(StatModifierAdd(Stat.STR, 2))
+            bc.add_modifier(StatModifier(Stat.STR, 2, StatModifierOperation.ADD))
         else:
-            bc.add_modifier(StatModifierAdd(Stat.DEF, 2))
+            bc.add_modifier(StatModifier(Stat.DEF, 2, StatModifierOperation.ADD))
         adventure.add_chapter(bc)
         battle.qsab(adventure, Location.LAKE, 'A')
     else:

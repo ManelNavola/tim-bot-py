@@ -8,7 +8,8 @@ from tkinter import *
 
 from jsonpath_ng import parse
 
-from adventure_classes.generic.battle.battle import BattleEntity, BattleGroup
+from adventure_classes.generic.battle.battle_entity import BattleEntity
+from adventure_classes.generic.battle.battle_group import BattleGroup
 from entities.ai.no_ai import NoAI
 from entities.bot_entity import BotEntity
 from tk_utils import center
@@ -224,7 +225,14 @@ class EasyJSONEnum(EasyJSONWithVar):
         self.enum = my_enum
 
     def save(self, _):
-        self.set_value(self.var.get())
+        self.set_value(self.enum.from_name(self.var.get()).get_id())
+
+    def update(self, data):
+        super().update(data)
+        self.var.set(self.enum.from_id(self.get_value()).get_name())
+
+    def show(self, data: dict[str, Any], key) -> str:
+        return self.enum.from_id(self.get_value(data)).get_name()
 
     def build(self, parent):
         super().build(parent)

@@ -5,11 +5,11 @@ from enum import Enum, unique
 from typing import Optional
 from autoslot import Slots
 
-from adventure_classes.generic.stat_modifier import StatModifierAdd
 from enemy_data import enemy_utils
 from enums.emoji import Emoji
 from helpers.translate import tr
 from item_data.stat import Stat
+from item_data.stat_modifier import StatModifier, StatModifierOperation
 
 if typing.TYPE_CHECKING:
     from adventure_classes.generic.battle.battle import BattleEntity
@@ -80,8 +80,8 @@ class Claw(Ability):
 
     @staticmethod
     def use(lang: str, source: 'BattleEntity', target_entity: 'BattleEntity', tier: int) -> str:
-        target_entity.add_turn_modifier(StatModifierAdd(Stat.DEF, -3, 3))
-        target_entity.add_turn_modifier(StatModifierAdd(Stat.STR, -3, 3))
+        target_entity.add_temp_modifier(StatModifier(Stat.DEF, -3, StatModifierOperation.ADD, 3))
+        target_entity.add_temp_modifier(StatModifier(Stat.STR, -4, StatModifierOperation.ADD, 3))
         return tr(lang, 'ABILITIES.CLAW_USE', source=source.get_name(), target=target_entity.get_name())
 
     @staticmethod

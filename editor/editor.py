@@ -3,9 +3,10 @@ import json
 from tkinter import *
 from tkinter import messagebox
 from tkinter.ttk import Notebook
+from typing import Any
 
+from enums.item_type import EquipmentType, ItemType
 from enums.location import Location
-from enums.item_type import ItemType
 from item_data.stat import Stat
 from tk_utils import center
 from easy import EasyJSONField, EasyItem, EasyJSONKey, EasyJSONEnum, EasyGridTree, EasyValidation, \
@@ -13,11 +14,22 @@ from easy import EasyJSONField, EasyItem, EasyJSONKey, EasyJSONEnum, EasyGridTre
 
 
 class JSONEditor(Frame):
-    def __init__(self, master, editor_grid: EasyGridTree, sample_create: dict, read_from: str):
+    def __init__(self, master, editor_grid: EasyGridTree, sample_create: dict, read_from: str,
+                 filter_by: list[tuple[str, Any]] = None):
         super().__init__(master)
+        if filter_by is None:
+            filter_by = []
         self.read_path = read_from
         with open(self.read_path, 'r') as f:
-            self.data = json.load(f)
+            self.data = {}
+            for k, v in json.load(f).items():
+                fg: bool = True
+                for fb in filter_by:
+                    if v.get(fb[0], None) != fb[1]:
+                        fg = False
+                        break
+                if fg:
+                    self.data[k] = v
         self.editor_grid: EasyGridTree = editor_grid
         self.editor_grid.sample_create = sample_create
         self.tree = None
@@ -131,7 +143,7 @@ class JSONEditor(Frame):
         save_frame.grid(row=1, column=0, columnspan=2, pady=(20, 20))
 
 
-class Items(JSONEditor):
+class Equipment(JSONEditor):
     def __init__(self, master=None):
         super().__init__(master,
                          EasyGridTree([
@@ -142,17 +154,19 @@ class Items(JSONEditor):
                              EasyItem('Tier', EasyJSONField('Tier', 'Tier', EasyValidation.positive, width=5),
                                       2, 0,
                                       field_width=5),
-                             EasyItem('Type', EasyJSONEnum('Type', 'Type', ItemType), 3, 0),
+                             EasyItem('Subtype', EasyJSONEnum('Subtype', 'Subtype', EquipmentType), 3, 0),
                              EasyItem('Stats', EasyJSONStatsWeights('Stats'), 0, 1, row_span=4),
                          ], [64, 128, 128, 32, 128]),
                          {
                              'Name': 'Item',
-                             'Location': Location.NOWHERE.get_name(),
+                             'Location': Location.NOWHERE.get_id(),
                              'Tier': 0,
-                             'Type': ItemType.BOOT.get_name(),
+                             'Type': ItemType.EQUIPMENT.get_id(),
+                             'Subtype': EquipmentType.BOOT.get_id(),
                              'Stats': {}
                          },
-                         read_from='../game_data/items.json')
+                         read_from='../game_data/items.json',
+                         filter_by=[('Type', 0)])
 
 
 class Enemies(JSONEditor):
@@ -168,7 +182,7 @@ class Enemies(JSONEditor):
                          ], [64, 128, 128, 64]),
                          {
                              'Name': 'Enemy',
-                             'Location': Location.NOWHERE.get_name(),
+                             'Location': Location.NOWHERE.get_id(),
                              'Stats': {
                                  Stat.HP.get_abv(): 4,
                                  Stat.STR.get_abv(): 4,
@@ -194,7 +208,7 @@ class Editor(Tk):
 
     def create_widgets(self):
         tabs = Notebook(self)
-        tabs.add(Items(tabs), text='Items')
+        tabs.add(Equipment(tabs), text='Equipment')
         tabs.add(Enemies(tabs), text='Enemies')
         tabs.pack(fill=BOTH, expand=True, padx=4, pady=4)
 

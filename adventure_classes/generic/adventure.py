@@ -7,7 +7,7 @@ from discord import Message
 
 import utils
 from helpers.translate import tr
-from item_data.item_classes import Item
+from item_data.item_classes import Equipment
 from user_data.user import User
 from helpers import messages
 from helpers.messages import MessagePlus
@@ -24,7 +24,7 @@ class UserAdventureData:
         self._user: User = user
         self._earned_money: int = 0
         self._enemies_defeated: int = 0
-        self._items_found: list[Item] = []
+        self._items_found: list[Equipment] = []
         self._user.on_money_changed += self._on_money_changed
 
     def _on_money_changed(self, money: int):
@@ -96,6 +96,7 @@ class Adventure:
             message = await cmd.send(tr(self._lang, "ADVENTURE.START", players=self.get_user_names(),
                                         name=tr(self._lang, self._instance.name)) + "\n" + self.print_progress(None))
         self._message = messages.register_message_reactions(message, [user.id for user in self._users])
+
         await asyncio.sleep(2)
 
         while self._chapters:

@@ -1,28 +1,39 @@
 from enum import unique, Enum
-from typing import Optional
 
 from autoslot import Slots
 
 
 class LocationInstance(Slots):
-    def __init__(self, name: str):
+    def __init__(self, loc_id: int, name: str):
+        self.id: int = loc_id
         self.name: str = name
 
 
 @unique
 class Location(Enum):
     _ignore_ = ['_INFO']
-    NOWHERE = LocationInstance('Nowhere')
-    TUTORIAL = LocationInstance('Tutorial')
-    ANYWHERE = LocationInstance('Anywhere')
-    COLISEUM = LocationInstance('Coliseum')
-    FOREST = LocationInstance('Forest')
-    LAKE = LocationInstance('Lake')
+    NOWHERE = LocationInstance(0, 'Nowhere')
+    TUTORIAL = LocationInstance(1, 'Tutorial')
+    ANYWHERE = LocationInstance(2, 'Anywhere')
+    COLISEUM = LocationInstance(3, 'Coliseum')
+    FOREST = LocationInstance(4, 'Forest')
+    LAKE = LocationInstance(5, 'Lake')
     _INFO = {}
 
+    def get_id(self) -> int:
+        return self.value.id
+
     @staticmethod
-    def get_from_name(name: str) -> Optional['Location']:
-        return Location._INFO['from_name'].get(name)
+    def from_name(name: str) -> 'Location':
+        return {
+            x.value.name: x for x in Location
+        }[name]
+
+    @staticmethod
+    def from_id(eid: int) -> 'Location':
+        return {
+            x.value.id: x for x in Location
+        }[eid]
 
     def __repr__(self):
         return f"<Location {self.get_name()}>"

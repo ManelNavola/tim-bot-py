@@ -6,7 +6,6 @@ from adventure_classes.generic.adventure import Adventure
 from adventure_classes.generic.bonus import BonusChapter
 from adventure_classes.generic.choice import ChoiceChapter
 from adventure_classes.generic.reward import MoneyRewardChapter, ItemRewardChapter
-from adventure_classes.generic.stat_modifier import StatModifierAdd
 from entities.ai.ability_ai import AbilityAI, AbilityDecision
 from entities.bot_entity import BotEntity
 from enums.emoji import Emoji
@@ -14,9 +13,9 @@ from enums.location import Location
 from enums.item_rarity import ItemRarity
 from helpers.translate import tr
 from item_data.abilities import AbilityContainer, AbilityEnum
-from item_data.item_classes import Item
-from item_data.item_utils import RandomItemBuilder
+from item_data.item_classes import Equipment, RandomEquipmentBuilder
 from item_data.stat import Stat
+from item_data.stat_modifier import StatModifier, StatModifierOperation
 
 if typing.TYPE_CHECKING:
     from helpers.command import Command
@@ -26,9 +25,9 @@ def eat_mushroom(color: int):
     def mushroom_effect(adventure: Adventure):
         bc = BonusChapter(tr(adventure.get_lang(), 'FOREST.EVENT6'))
         if color == 0:
-            bc.add_modifier(StatModifierAdd(Stat.DEF, -2, 1))
+            bc.add_modifier(StatModifier(Stat.DEF, -2, StatModifierOperation.ADD, 1))
         elif color == 1:
-            bc.add_modifier(StatModifierAdd(Stat.SPD, 5))
+            bc.add_modifier(StatModifier(Stat.SPD, 5, StatModifierOperation.ADD))
         else:
             bc.add_persistent(Stat.HP, Stat.HP.get_value(4))
         adventure.insert_chapter(bc)
@@ -40,9 +39,9 @@ def aa_deeper(adventure: Adventure):
     battle.qsab(adventure, Location.FOREST, 'C')
     bc = BonusChapter(tr(adventure.get_lang(), 'FOREST.EVENT5'))
     if random.random() < 0.5:
-        bc.add_modifier(StatModifierAdd(Stat.EVA, 3))
+        bc.add_modifier(StatModifier(Stat.EVA, 3, StatModifierOperation.ADD))
     else:
-        bc.add_modifier(StatModifierAdd(Stat.SPD, 3))
+        bc.add_modifier(StatModifier(Stat.SPD, 3, StatModifierOperation.ADD))
     adventure.add_chapter(bc)
     battle.qsab(adventure, Location.FOREST, 'C')
 
@@ -63,14 +62,14 @@ def aa_deeper(adventure: Adventure):
                            tr(adventure.get_lang(), 'FOREST.BOSS2'),
                            tr(adventure.get_lang(), 'FOREST.BOSS3')])
 
-    item: Item = RandomItemBuilder(0).set_location(Location.FOREST).build()
+    item: Equipment = RandomEquipmentBuilder(0).set_location(Location.FOREST).build()
     adventure.add_chapter(ItemRewardChapter(item))
 
 
 def ab_continue_path(adventure):
     if random.random() < 0.5:
         bc = BonusChapter(tr(adventure.get_lang(), 'FOREST.EVENT3'))
-        bc.add_modifier(StatModifierAdd(Stat.DEF, 3))
+        bc.add_modifier(StatModifier(Stat.DEF, 3, StatModifierOperation.ADD))
         adventure.add_chapter(bc)
     else:
         bc = BonusChapter(tr(adventure.get_lang(), 'FOREST.EVENT4'))
@@ -81,7 +80,7 @@ def ab_continue_path(adventure):
     if random.random() < 0.5:
         adventure.add_chapter(MoneyRewardChapter(random.randint(100, 150)))
     else:
-        item: Item = RandomItemBuilder(0).set_location(Location.ANYWHERE) \
+        item: Equipment = RandomEquipmentBuilder(0).set_location(Location.ANYWHERE) \
             .choose_rarity([ItemRarity.UNCOMMON, ItemRarity.RARE, ItemRarity.EPIC], [6, 3, 1]).build()
         adventure.add_chapter(ItemRewardChapter(item))
 
@@ -99,7 +98,7 @@ def b_reward(adventure):
     if random.random() < 0:
         adventure.add_chapter(MoneyRewardChapter(random.randint(50, 100)))
     else:
-        item: Item = RandomItemBuilder(0).set_location(Location.ANYWHERE) \
+        item: Equipment = RandomEquipmentBuilder(0).set_location(Location.ANYWHERE) \
             .choose_rarity([ItemRarity.COMMON, ItemRarity.UNCOMMON], [5, 2]).build()
         adventure.add_chapter(ItemRewardChapter(item))
 

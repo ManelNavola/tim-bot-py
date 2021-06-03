@@ -83,14 +83,6 @@
     "SHOW_RATE": "{EMOJI_BOX} Hay {money} en la caja ({rate} {EMOJI_CLOCK})",
     "TAKE": "{EMOJI_BOX} {name} ha tomado {money} de la caja!"
   },
-  "EQUIPMENT": {
-    "EMPTY": "No tienes equipamiento",
-    "EQUIP": "Equipado {item}",
-    "INVALID_INDEX": "Índice de ítem inválido!",
-    "NO_EQUIPPED": "No tienes nada equipado!",
-    "UNEQUIP": "Desequipado {item}",
-    "UNEQUIP_ALL": "Desequipado todos los ítems"
-  },
   "FOREST": {
     "BOSS1": "Sientes el bosque observándote...",
     "BOSS2": "De repente ves algo moverse!",
@@ -115,6 +107,18 @@
     "EVENT5": "Tal como te adentras en el bosque, reúnes algo de coraje...",
     "EVENT6": "Sientes el efecto de la seta...",
     "NAME": "Bosque"
+  },
+  "INVENTORY": {
+    "EQUIPMENT": "{EMOJI_EQUIPMENT} Equipamiento:",
+    "EQUIPPED": "Equipado {item}",
+    "FULL": "Tu inventario está lleno!",
+    "INVALID_SLOT_TYPE": "Ese no es un hueco de inventario válido!",
+    "INVENTORY": "{EMOJI_INVENTORY} Inventario ({busy}/{total})",
+    "MISSING_ITEM": "No hay ningún item en este hueco!",
+    "NO_EQUIPMENT": "{EMOJI_EQUIPMENT} Sin equipamiento",
+    "POTIONS": "{EMOJI_POTION} Bolsa de Pociones: ({busy}/{total})",
+    "SOLD": "Vendido {item} por {money}",
+    "UNEQUIPPED": "Desequipado {item}"
   },
   "LAKE": {
     "BOSS1": "Tal como te acercas al centro, el brillo desaparece...",

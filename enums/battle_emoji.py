@@ -10,6 +10,7 @@ class BattleEmoji(Enum):
     SPELL_2 = Emoji.RED_BOOK
     SPELL_3 = Emoji.GREEN_BOOK
     SPELL_4 = Emoji.ORANGE_BOOK
+    POTION = Emoji.POTION_TUBE
     WAIT = Emoji.CLOCK
 
     def __str__(self) -> str:

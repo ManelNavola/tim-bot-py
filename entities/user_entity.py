@@ -1,8 +1,9 @@
 from typing import Optional
 
 from entities.entity import Entity
+from enums.item_type import EquipmentType
 from helpers.dictref import DictRef
-from item_data.item_classes import Item
+from item_data.item_classes import Equipment
 from item_data.stat import Stat
 from enums.user_class import UserClass
 
@@ -38,18 +39,17 @@ class UserEntity(Entity):
         else:
             return self._stat_dict.get(stat, default) + self._base_dict.get(stat, default)
 
-    def update_equipment(self, item_list: list[Item]):
-        calc_power: float = 0
+    def update_equipment(self, item_list: dict[EquipmentType, Equipment]):
         self._stat_dict.clear()
         # self._available_abilities.clear()
-        for item in item_list:
-            for stat, value in item.get_stats().items():
+        for equipment in item_list.values():
+            for stat, value in equipment.get_stats().items():
                 self._stat_dict[stat] = self._stat_dict.get(stat, 0) + value
             # if item.data.ability is not None:
             #     self._available_abilities.append((item.data.ability,
             #                                       ItemDescription.INDEX_TO_ITEM[item.data.desc_id].type))
-            calc_power += item.get_price()
-        self._power = calc_power // 100
+        self._power = round(sum(stat.get_type().get_weighted_value() * count
+                                for stat, count in self._stat_dict.items()))
         self.reset()
 
     def print_detailed(self):

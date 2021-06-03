@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 from typing import Optional
 
-from adventure_classes.generic.stat_modifier import StatModifier
+from item_data.stat_modifier import StatModifier
 from item_data.abilities import AbilityContainer
 from item_data.stat import Stat
 
@@ -13,28 +13,40 @@ class Entity(ABC):
         self._persistent_stats: dict[Stat, int] = {}
         if modifiers is None:
             modifiers = []
-        self._battle_modifiers: list[StatModifier] = modifiers
+        self._stat_modifiers: list[StatModifier] = modifiers
 
-    def add_battle_modifier(self, modifier: StatModifier) -> None:
-        self._battle_modifiers.append(modifier)
+    def add_modifier(self, modifier: StatModifier) -> None:
+        if modifier.persistent:
+            self.set_persistent_value(modifier.stat, round(modifier.apply(self.get_persistent_value(modifier.stat))))
+        else:
+            self._stat_modifiers.append(modifier)
 
-    def get_battle_modifiers(self) -> list[StatModifier]:
-        return self._battle_modifiers
+    def get_modifiers(self) -> list[StatModifier]:
+        return self._stat_modifiers
+
+    def step_turn_modifiers(self):
+        for i in range(len(self._stat_modifiers) - 1, -1, -1):
+            if self._stat_modifiers[i].per_battle:
+                continue
+            self._stat_modifiers[i].duration -= 1
+            if self._stat_modifiers[i].duration == 0:
+                del self._stat_modifiers[i]
 
     def step_battle_modifiers(self):
-        for i in range(len(self._battle_modifiers) - 1, -1, -1):
-            self._battle_modifiers[i].duration -= 1
-            if self._battle_modifiers[i].duration == 0:
-                del self._battle_modifiers[i]
+        for i in range(len(self._stat_modifiers) - 1, -1, -1):
+            if self._stat_modifiers[i].per_battle:
+                self._stat_modifiers[i].duration -= 1
+                if self._stat_modifiers[i].duration == 0:
+                    del self._stat_modifiers[i]
 
-    def clear_battle_modifiers(self) -> None:
-        self._battle_modifiers.clear()
+    def clear_stat_modifiers(self) -> None:
+        self._stat_modifiers.clear()
 
     def get_stat(self, stat: Stat, default: Optional[int] = 0) -> Optional[int]:
         return self._stat_dict.get(stat, default)
 
     def reset(self) -> None:
-        self.clear_battle_modifiers()
+        self.clear_stat_modifiers()
         self._persistent_stats.clear()
         for stat in Stat:
             if stat.is_persistent():
