@@ -36,6 +36,7 @@ else:
 
 # Register bot
 bot = commands.Bot(command_prefix='/')
+utils.BOT_CLIENT = bot
 slash = SlashCommand(bot, sync_commands=True)
 
 # Command handler
@@ -259,6 +260,20 @@ cmd_handler.register_command(adventure.start_adventure,
                                          for name, instance in adventure_provider.name_to_adventure.items()
                                          if not name.startswith('_')
                                      ]
+                                 )
+                             ],
+                             guild_only=True,
+                             guild_ids=registered_guild_ids)
+
+
+cmd_handler.register_command(simple.duel,
+                             name="duel", description="Duel time!",
+                             options=[
+                                 create_option(
+                                     name="user",
+                                     description="User to check",
+                                     option_type=6,
+                                     required=True
                                  )
                              ],
                              guild_only=True,

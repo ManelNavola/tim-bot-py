@@ -41,18 +41,25 @@ class UserAdventureData:
 
 
 class Adventure:
-    def __init__(self, lang: str, instance: 'AdventureInstance'):
+    def __init__(self, lang: str, instance: 'AdventureInstance', saved_data=None):
+        if saved_data is None:
+            saved_data = {}
         self._lang: str = lang
         self._instance: 'AdventureInstance' = instance
         self._users: dict[User, UserAdventureData] = {}
         self._started_on: int = -1
         self._message: Optional[MessagePlus] = None
         self._chapters: list['Chapter'] = []
-        self.saved_data: dict = {}
+        self.saved_data: dict = saved_data
         self._current_chapter: int = 0
         self._event: Event = Event()
         self.lost: bool = False
         self._finished: bool = False
+        self.start_override_text: Optional[str] = None
+        self.end_override_text: Optional[str] = None
+
+    def get_message(self) -> MessagePlus:
+        return self._message
 
     def get_lang(self) -> str:
         return self._lang
@@ -89,13 +96,13 @@ class Adventure:
             user.remove_tokens(self._instance.tokens)
             user.start_adventure(self)
         message: Message
-        if self._instance.override_str is not None:
-            message = await cmd.send(self._instance.override_str.format(self.get_user_names()) + "\n"
+        if self.start_override_text is not None:
+            message = await cmd.send(self.start_override_text + "\n"
                                      + self.print_progress(None))
         else:
             message = await cmd.send(tr(self._lang, "ADVENTURE.START", players=self.get_user_names(),
                                         name=tr(self._lang, self._instance.name)) + "\n" + self.print_progress(None))
-        self._message = messages.register_message_reactions(message, [user.id for user in self._users])
+        self._message = messages.register_message_reactions(message, {user.id for user in self._users})
 
         await asyncio.sleep(2)
 
@@ -122,14 +129,17 @@ class Adventure:
         end_log: str = '\n'.join([
             f"{user.get_name()}: {data.print(self._lang)}" for user, data in self._users.items()
         ])
-        if lost:
-            await self._message.edit(tr(self._lang, 'ADVENTURE.DIED', EMOJI_SKULL=Emoji.DEAD,
-                                        name=self.get_user_names(), location=tr(self._lang, self._instance.name))
-                                     + f"\n({end_log})")
+        if self.end_override_text:
+            await self._message.edit(self.end_override_text)
         else:
-            await self._message.edit(tr(self._lang, 'ADVENTURE.FINISH', EMOJI_LOCATION=self._instance.icon,
-                                        name=self.get_user_names(), location=tr(self._lang, self._instance.name))
-                                     + f"\n({end_log})")
+            if lost:
+                await self._message.edit(tr(self._lang, 'ADVENTURE.DIED', EMOJI_SKULL=Emoji.DEAD,
+                                            name=self.get_user_names(), location=tr(self._lang, self._instance.name))
+                                         + f"\n({end_log})")
+            else:
+                await self._message.edit(tr(self._lang, 'ADVENTURE.FINISH', EMOJI_LOCATION=self._instance.icon,
+                                            name=self.get_user_names(), location=tr(self._lang, self._instance.name))
+                                         + f"\n({end_log})")
 
         # Cleanup
         for user in self._users:
@@ -148,6 +158,9 @@ class Adventure:
 
     def get_users(self) -> list[User]:
         return list(self._users.keys())
+
+    def insert_user(self, user: User) -> None:
+        self._users[user] = UserAdventureData(user)
 
     def insert_chapter(self, chapter: 'Chapter', index: int = 0) -> None:
         self._chapters.insert(index, chapter)

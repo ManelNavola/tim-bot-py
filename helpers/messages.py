@@ -10,14 +10,15 @@ from enums.emoji import Emoji
 
 if typing.TYPE_CHECKING:
     from user_data.user import User
+    from adventure_classes.generic.adventure import Adventure
 
 
 class MessagePlus:
     FINISH_SECONDS: int = utils.TimeSlot(utils.TimeMetric.MINUTE, 14).seconds()
 
-    def __init__(self, message: Message, react_to: Optional[list[int]]):
+    def __init__(self, message: Message, react_to: Optional[set[int]]):
         self.message: Message = message
-        self.react_to: Optional[list[int]] = react_to
+        self.react_to: Optional[set[int]] = react_to
         self._reaction_hooks: dict[Emoji, Callable] = {}
         self._first_interaction: int = utils.now()
         self._finished: bool = False
@@ -25,8 +26,18 @@ class MessagePlus:
     async def edit(self, msg: str):
         await self.message.edit(content=msg)
 
+    def register(self, user_id: int):
+        self.react_to.add(user_id)
+
+    def unregister(self, user_id: int):
+        self.react_to.remove(user_id)
+
     async def on_reaction(self, user: 'User', member: discord.Member, input_reaction: Reaction) -> None:
         if user.id in self.react_to:
+            adventure: Optional['Adventure'] = user.get_adventure()
+            if adventure is not None:
+                if adventure._message != self:  # noqa
+                    return
             for reaction, hook in self._reaction_hooks.items():
                 if reaction.compare(input_reaction.emoji):
                     li = [user, reaction]
@@ -60,7 +71,7 @@ class MessagePlus:
 _MESSAGE_ID_TO_MESSAGE_PLUS: dict[int, MessagePlus] = {}
 
 
-def register_message_reactions(message: Message, react_to: Optional[list[int]]) -> MessagePlus:
+def register_message_reactions(message: Message, react_to: Optional[set[int]]) -> MessagePlus:
     mp: MessagePlus = MessagePlus(message, react_to)
     _MESSAGE_ID_TO_MESSAGE_PLUS[mp.message.id] = mp
     if len(_MESSAGE_ID_TO_MESSAGE_PLUS) > 100:

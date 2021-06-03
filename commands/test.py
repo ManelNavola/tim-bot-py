@@ -13,6 +13,7 @@ from helpers.command import Command
 # from item_data import item_utils
 from item_data.abilities import AbilityContainer, AbilityEnum
 from item_data.item_classes import RandomEquipmentBuilder, Item
+from item_data.item_utils import create_user_item
 from item_data.stat import Stat
 from item_data.stat_modifier import StatModifierOperation, StatModifier
 from user_data.inventory import SlotType
@@ -60,6 +61,7 @@ async def gimme_all(cmd: Command, tier: str = '0', location: str = 'Anywhere', r
             await cmd.error("Full lmao")
             return
         item = _gimme(tier, location, rarity, et.get_name())
+        create_user_item(cmd.db, cmd.user.id, item, slot)
         cmd.user.inventory.add_item(item, slot)
     await cmd.send_hidden("epic")
 
@@ -84,4 +86,4 @@ async def setup(_: 'Command', adventure: Adventure):
 
 async def test(cmd: Command):
     adv = AdventureInstance(setup, 'TEST', Emoji.SPARKLE, tokens=0)
-    await adv.start(cmd)
+    await adv.start(cmd, [cmd.user])

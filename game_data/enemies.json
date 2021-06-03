@@ -355,5 +355,21 @@
       "STR": 4
     },
     "Pool": "BOSS"
+  },
+  "33": {
+    "Name": "Tim",
+    "Location": 0,
+    "Stats": {
+      "HP": 15,
+      "AP": 15,
+      "STR": 15,
+      "DEF": 15,
+      "SPD": 15,
+      "EVA": 15,
+      "CONT": 15,
+      "CRIT": 15,
+      "VAMP": 15
+    },
+    "Pool": "TIM"
   }
 }
