@@ -49,7 +49,7 @@ class BattleGroup:
     def get_speed(self) -> float:
         return self._speed
 
-    def load(self, adventure: 'Adventure') -> None:
+    def load(self, _: 'Adventure') -> None:
         # Load users if any
         for user in self._users:
             self._battle_entities.append(BattleEntity(user.user_entity, self, user))
@@ -83,3 +83,11 @@ class BattleGroup:
         else:
             self._speed = sum(fl) / float(len(fl))
 
+
+class BattleGroupUserDelayed(BattleGroup):
+    def __init__(self):
+        super().__init__()
+
+    def load(self, adventure: 'Adventure') -> None:
+        self._users = adventure.get_users()
+        super().load(adventure)
