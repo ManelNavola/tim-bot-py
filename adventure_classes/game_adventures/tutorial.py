@@ -1,5 +1,5 @@
 import typing
-from collections import Callable
+from collections.abc import Callable
 
 from adventure_classes.generic.adventure import Adventure
 from adventure_classes.generic.battle import battle

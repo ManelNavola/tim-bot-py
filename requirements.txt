@@ -1,6 +1,3 @@
-autoslot==2021.4.2
-psycopg2==2.9.1
-discord.py==1.7.3
-discord-py-slash-command==3.0.1
+autoslot==2021.10.1
+psycopg2==2.9.2
 future==0.18.2
-jsonpath-ng==1.5.3
