@@ -2,6 +2,7 @@ import random
 import typing
 
 from autoslot import Slots
+from typing import List
 
 from entities.ai.base_ai import BotAI
 from enums.battle_emoji import BattleEmoji
@@ -24,7 +25,7 @@ class AbilityDecision(Slots):
 
 
 class AbilityAI(BotAI):
-    def __init__(self, ability_decision_list: list[AbilityDecision] = None):
+    def __init__(self, ability_decision_list: List[AbilityDecision] = None):
         if ability_decision_list is None:
             ability_decision_list = []
         self._ability_decisions = ability_decision_list
@@ -43,7 +44,7 @@ class AbilityAI(BotAI):
 
         if battle_entity.has_ap(self._min_ap):
             current_hp_pct: float = float(battle_entity.get_hp()) / battle_entity.get_max_hp()
-            potential_abilities: list[AbilityDecision] = []
+            potential_abilities: List[AbilityDecision] = []
             for ability_decision in self._ability_decisions:
                 if ability_decision.min_hp <= current_hp_pct <= ability_decision.max_hp and battle_entity.has_ap(
                         ability_decision.get_cost()) and ability_decision.uses > 0:

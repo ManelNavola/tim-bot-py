@@ -1,6 +1,8 @@
 import math
 import typing
 
+from typing import List
+
 from adventure_classes.generic.battle.battle_entity import BattleEntity
 from entities.entity import Entity
 from item_data.stat import Stat
@@ -11,13 +13,13 @@ if typing.TYPE_CHECKING:
 
 
 class BattleGroup:
-    def __init__(self, entities: list[Entity] = None, users: list['User'] = None):
+    def __init__(self, entities: List[Entity] = None, users: List['User'] = None):
         if entities is None:
             entities = []
         if users is None:
             users = []
-        self._users: list['User'] = users
-        self._battle_entities: list[BattleEntity] = [BattleEntity(entity, self) for entity in entities]
+        self._users: List['User'] = users
+        self._battle_entities: List[BattleEntity] = [BattleEntity(entity, self) for entity in entities]
         self._speed: float = 0
 
     def get_name(self) -> str:
@@ -76,7 +78,7 @@ class BattleGroup:
         self._recalculate()
 
     def _recalculate(self) -> None:
-        fl: list[float] = [battle_entity.get_stat_value(Stat.SPD)
+        fl: List[float] = [battle_entity.get_stat_value(Stat.SPD)
                            for battle_entity in self._battle_entities]
         if not fl:
             self._speed = 1

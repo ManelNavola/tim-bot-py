@@ -3,7 +3,7 @@ import json
 from tkinter import *
 from tkinter import messagebox
 from tkinter.ttk import Notebook
-from typing import Any
+from typing import Any, Tuple, List
 
 from enums.item_type import EquipmentType, ItemType
 from enums.location import Location
@@ -15,7 +15,7 @@ from easy import EasyJSONField, EasyItem, EasyJSONKey, EasyJSONEnum, EasyGridTre
 
 class JSONEditor(Frame):
     def __init__(self, master, editor_grid: EasyGridTree, sample_create: dict, read_from: str,
-                 filter_by: list[tuple[str, Any]] = None):
+                 filter_by: List[Tuple[str, Any]] = None):
         super().__init__(master)
         if filter_by is None:
             filter_by = []

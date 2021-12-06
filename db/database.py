@@ -1,14 +1,14 @@
 import json
 import os
 import string
-from typing import Optional, Any, Union
+from typing import Optional, Any, Union, List, Tuple, Dict
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-SQLColumns = Optional[list[str]]
-SQLDict = dict[str, Any]
-SQLResult = Union[SQLDict, list[SQLDict]]
+SQLColumns = Optional[List[str]]
+SQLDict = Dict[str, Any]
+SQLResult = Union[SQLDict, List[SQLDict]]
 
 
 def get_column_names(columns: SQLColumns, as_name: str = ''):
@@ -118,11 +118,11 @@ class PostgreSQL:
 
 
 class JoinOn:
-    def __init__(self, table_name: str, field_matches: Optional[list[tuple[str, str]]],
-                 value_matches: Optional[list[tuple[str, Any]]]):
+    def __init__(self, table_name: str, field_matches: Optional[List[Tuple[str, str]]],
+                 value_matches: Optional[List[Tuple[str, Any]]]):
         self.table_name: str = table_name
-        self.field_matches: Optional[list[tuple[str, str]]] = field_matches
-        self.value_matches: Optional[list[tuple[str, Any]]] = value_matches
+        self.field_matches: Optional[List[Tuple[str, str]]] = field_matches
+        self.value_matches: Optional[List[Tuple[str, Any]]] = value_matches
 
     def print_matches(self, a: str, b: str) -> str:
         tp = []
@@ -141,16 +141,16 @@ class Join:
         self._match_columns: SQLDict = match_columns
         self._columns: SQLColumns = columns
         self._limit: int = limit
-        self._join_on: list[JoinOn] = []
+        self._join_on: List[JoinOn] = []
 
-    def join(self, table_name: str, field_matches: Optional[list[tuple[str, str]]] = None,
-             value_matches: Optional[list[tuple[str, Any]]] = None) -> 'Join':
+    def join(self, table_name: str, field_matches: Optional[List[Tuple[str, str]]] = None,
+             value_matches: Optional[List[Tuple[str, Any]]] = None) -> 'Join':
         self._join_on.append(JoinOn(table_name, field_matches, value_matches))
         return self
 
     def execute(self) -> SQLResult:
         letters: str = string.ascii_uppercase
-        to_execute: list[str] = []
+        to_execute: List[str] = []
         i = 0
         for join_on in self._join_on:
             i += 1
@@ -170,7 +170,7 @@ class Join:
 
 
 def load_test_database():
-    with open('C:/Users/Manel/git/tim-bot-py/local/b.txt', 'r') as f:
+    with open(r'D:\Coding\Git\tim-bot-py\local\b.txt', 'r') as f:
         return PostgreSQL(host="localhost", user="postgres", password=f.readline(), database='testing')
 
 

@@ -1,6 +1,6 @@
 import random
 import typing
-from typing import Optional
+from typing import Optional, List, Dict
 
 from autoslot import Slots
 
@@ -36,8 +36,8 @@ class BattleEntity:
         self._entity: Entity = entity
         self._user: Optional['User'] = user
         self._group: 'BattleGroup' = group
-        self._temp_modifiers: list[StatModifier] = []
-        self._ability_instances: list[AbilityInstance] = []
+        self._temp_modifiers: List[StatModifier] = []
+        self._ability_instances: List[AbilityInstance] = []
         self._last_target: Optional['BattleEntity'] = None
 
     def get_group(self) -> 'BattleGroup':
@@ -47,7 +47,7 @@ class BattleEntity:
         self._temp_modifiers.append(modifier)
 
     def step_turn_modifiers(self) -> None:
-        modifiers: list[StatModifier] = []
+        modifiers: List[StatModifier] = []
         for modifier in self._temp_modifiers:
             if modifier.duration == -1:
                 modifiers.append(modifier)
@@ -67,13 +67,13 @@ class BattleEntity:
     def set_last_target(self, battle_entity: Optional['BattleEntity']) -> None:
         self._last_target = battle_entity
 
-    def get_ability_instances(self) -> list[AbilityInstance]:
+    def get_ability_instances(self) -> List[AbilityInstance]:
         return self._ability_instances
 
     def add_ability_instance(self, ability_instance: AbilityInstance) -> None:
         self._ability_instances.append(ability_instance)
 
-    def set_ability_instances(self, ability_instances: list[AbilityInstance]) -> None:
+    def set_ability_instances(self, ability_instances: List[AbilityInstance]) -> None:
         self._ability_instances = ability_instances
 
     def get_name(self) -> str:
@@ -86,7 +86,7 @@ class BattleEntity:
             return True
         return False
 
-    def get_abilities(self) -> list[AbilityContainer]:
+    def get_abilities(self) -> List[AbilityContainer]:
         return self._entity.get_abilities()
 
     def _get_persistent_value(self, stat: Stat) -> int:
@@ -142,7 +142,7 @@ class BattleEntity:
         self._change_persistent_value(Stat.AP, value)
 
     def get_money_value(self) -> int:
-        stat_dict: dict[Stat, int] = self._entity.get_stat_dict()
+        stat_dict: Dict[Stat, int] = self._entity.get_stat_dict()
         stat_sum: float = sum(stat.get_type().get_weighted_value() * count for stat, count in stat_dict.items())
 
         return pow(stat_sum / 2.8, 1.6)
@@ -155,7 +155,7 @@ class BattleEntity:
         return max(0, round(number))
 
     def _print_battle_stat(self, stat: Stat) -> str:
-        stuff: list[str] = []
+        stuff: List[str] = []
         for modifier in self._temp_modifiers + self._entity.get_modifiers():
             if modifier.stat == stat:
                 stuff.append(modifier.print())
@@ -281,8 +281,8 @@ class BattleEntity:
         return None
 
     def print(self) -> str:
-        prefixes: list[str] = []
-        sc: list[str] = []
+        prefixes: List[str] = []
+        sc: List[str] = []
 
         if self.is_dead():
             return f"{Emoji.DEAD} {self.get_name()}"

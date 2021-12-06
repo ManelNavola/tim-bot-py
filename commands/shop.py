@@ -1,3 +1,5 @@
+from typing import List
+
 from helpers.action_result import ActionResult
 from helpers.command import Command
 from enums.emoji import Emoji
@@ -23,7 +25,7 @@ def get_slot_type(slot: str):
 async def buy(cmd: Command, slot: str) -> None:
     result: ActionResult = cmd.guild.shop.buy(cmd.user, slot)
     if result.success:
-        ts: list[str] = [tr(cmd.lang, 'SHOP.PURCHASE', EMOJI_PURCHASE=Emoji.PURCHASE, name=cmd.user.get_name(),
+        ts: List[str] = [tr(cmd.lang, 'SHOP.PURCHASE', EMOJI_PURCHASE=Emoji.PURCHASE, name=cmd.user.get_name(),
                             item=result.item)]
         if hasattr(result, 'must_equip'):
             ts.append(f"> {tr(cmd.lang, 'SHOP.AUTO_EQUIP')}")

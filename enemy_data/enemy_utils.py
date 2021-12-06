@@ -1,7 +1,7 @@
 import json
 import random
 import typing
-from typing import Any, Optional
+from typing import Any, Optional, List, Dict
 
 from enums.location import Location
 from item_data.stat import Stat
@@ -9,24 +9,24 @@ from item_data.stat import Stat
 if typing.TYPE_CHECKING:
     from enemy_data.bot_entity_builder import BotEntityBuilder
 
-_ENEMIES: dict[Location, dict[str, list['BotEntityBuilder']]] = {
+_ENEMIES: Dict[Location, Dict[str, List['BotEntityBuilder']]] = {
     x: {} for x in Location
 }
 
-_ENEMY_IDS: dict[int, 'BotEntityBuilder'] = {}
+_ENEMY_IDS: Dict[int, 'BotEntityBuilder'] = {}
 
 
 def load():
     from enemy_data.bot_entity_builder import BotEntityBuilder
     enemy_count: int = 0
     with open('game_data/enemies.json', 'r') as f:
-        item_dict: dict[str, Any] = json.load(f)
+        item_dict: Dict[str, Any] = json.load(f)
         for id_k, id_v in item_dict.items():
             if id_k.startswith('X'):
                 print(f"JSON not consolidated: {id_v['Name']}")
                 continue
             stat_sum: int = 0
-            stat_dict: dict[Stat, int] = {}
+            stat_dict: Dict[Stat, int] = {}
             for abv, v in id_v['Stats'].items():
                 stat_dict[Stat.get_by_abv(abv)] = v
                 stat_sum += v
@@ -55,7 +55,7 @@ def get_enemy(enemy_id: int) -> 'BotEntityBuilder':
 
 def get_random_enemy(location: Location, pool: str = '', last_chosen_id: Optional[int] = None) \
         -> 'BotEntityBuilder':
-    possible_enemies: list['BotEntityBuilder'] = _ENEMIES[location][pool]
+    possible_enemies: List['BotEntityBuilder'] = _ENEMIES[location][pool]
     if len(possible_enemies) == 0:
         return get_enemy(-1)
     if len(possible_enemies) == 1:

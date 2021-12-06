@@ -1,6 +1,6 @@
 import inspect
 import typing
-from typing import Callable, Optional
+from typing import Callable, Optional, List, Set, Dict
 
 import discord
 from discord import Message, Reaction
@@ -16,10 +16,10 @@ if typing.TYPE_CHECKING:
 class MessagePlus:
     FINISH_SECONDS: int = utils.TimeSlot(utils.TimeMetric.MINUTE, 14).seconds()
 
-    def __init__(self, message: Message, react_to: Optional[set[int]]):
+    def __init__(self, message: Message, react_to: Optional[Set[int]]):
         self.message: Message = message
-        self.react_to: Optional[set[int]] = react_to
-        self._reaction_hooks: dict[Emoji, Callable] = {}
+        self.react_to: Optional[Set[int]] = react_to
+        self._reaction_hooks: Dict[Emoji, Callable] = {}
         self._first_interaction: int = utils.now()
         self._finished: bool = False
 
@@ -68,14 +68,14 @@ class MessagePlus:
         return self._finished
 
 
-_MESSAGE_ID_TO_MESSAGE_PLUS: dict[int, MessagePlus] = {}
+_MESSAGE_ID_TO_MESSAGE_PLUS: Dict[int, MessagePlus] = {}
 
 
-def register_message_reactions(message: Message, react_to: Optional[set[int]]) -> MessagePlus:
+def register_message_reactions(message: Message, react_to: Optional[Set[int]]) -> MessagePlus:
     mp: MessagePlus = MessagePlus(message, react_to)
     _MESSAGE_ID_TO_MESSAGE_PLUS[mp.message.id] = mp
     if len(_MESSAGE_ID_TO_MESSAGE_PLUS) > 100:
-        to_remove: list[int] = []
+        to_remove: List[int] = []
         for k, mp in _MESSAGE_ID_TO_MESSAGE_PLUS.items():
             if mp.has_finished():
                 to_remove.append(k)

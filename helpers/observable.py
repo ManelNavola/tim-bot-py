@@ -1,11 +1,11 @@
-from typing import TypeVar, Generic, Callable
+from typing import TypeVar, Generic, Callable, Set
 
 T = TypeVar('T')
 
 
 class Observable(Generic[T]):
     def __init__(self):
-        self._observers: set[Callable[[T], None]] = set()
+        self._observers: Set[Callable[[T], None]] = set()
 
     def __add__(self, other: Callable[[T], None]) -> 'Observable[Generic[T]]':
         self.register(other)

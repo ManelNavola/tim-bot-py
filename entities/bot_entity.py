@@ -1,3 +1,5 @@
+from typing import List, Dict
+
 from entities.ai.base_ai import BotAI
 # from item_data.abilities import AbilityInstance
 from entities.entity import Entity
@@ -6,7 +8,7 @@ from item_data.stat import Stat
 
 
 class BotEntity(Entity):
-    def __init__(self, name: str, stat_dict: dict[Stat, int], ai: BotAI, abilities: list[AbilityEnum] = None):
+    def __init__(self, name: str, stat_dict: Dict[Stat, int], ai: BotAI, abilities: List[AbilityEnum] = None):
         super().__init__(stat_dict)
         self._name: str = name
         if abilities:
@@ -23,7 +25,7 @@ class BotEntity(Entity):
         return self._name
 
     def print_detailed(self) -> str:
-        dc: list[str] = []
+        dc: List[str] = []
         for stat in Stat.get_all():
             if stat in self._stat_dict:
                 dc.append(stat.print(self._stat_dict.get(stat, 0)))

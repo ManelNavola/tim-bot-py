@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict
 
 from db.database import PostgreSQL
 from enums.item_type import ItemType
@@ -66,7 +66,7 @@ def clone_item(db: PostgreSQL, item: 'Item') -> Item:
     return get_from_dict(fetch_data['id'], item.get_desc().id, item.to_dict())
 
 
-def get_from_dict(item_id: int, desc_id: int, data_dict: dict[str, Any]) -> 'Item':
+def get_from_dict(item_id: int, desc_id: int, data_dict: Dict[str, Any]) -> 'Item':
     description: ItemDescription = item_loader.get_description(desc_id)
     it: ItemType = description.type
     item: Item

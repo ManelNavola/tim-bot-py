@@ -1,7 +1,7 @@
 import asyncio
 import typing
 from asyncio import Event
-from typing import Optional
+from typing import Optional, List, Dict
 
 from discord import Message
 
@@ -24,7 +24,7 @@ class UserAdventureData:
         self._user: User = user
         self._earned_money: int = 0
         self._enemies_defeated: int = 0
-        self._items_found: list[Equipment] = []
+        self._items_found: List[Equipment] = []
         self._user.on_money_changed += self._on_money_changed
 
     def _on_money_changed(self, money: int):
@@ -46,10 +46,10 @@ class Adventure:
             saved_data = {}
         self._lang: str = lang
         self._instance: 'AdventureInstance' = instance
-        self._users: dict[User, UserAdventureData] = {}
+        self._users: Dict[User, UserAdventureData] = {}
         self._started_on: int = -1
         self._message: Optional[MessagePlus] = None
-        self._chapters: list['Chapter'] = []
+        self._chapters: List['Chapter'] = []
         self.saved_data: dict = saved_data
         self._current_chapter: int = 0
         self._event: Event = Event()
@@ -67,7 +67,7 @@ class Adventure:
     def get_user_names(self) -> str:
         return ', '.join([user.get_name() for user in self._users])
 
-    async def start(self, cmd: 'Command', users: list[User]):
+    async def start(self, cmd: 'Command', users: List[User]):
         assert len(self._chapters) > 0, "Tried starting adventure without chapters"
         assert len(users) > 0, "Tried starting adventure without chapters"
 
@@ -156,7 +156,7 @@ class Adventure:
 
         return next(iter(self._users.keys()))
 
-    def get_users(self) -> list[User]:
+    def get_users(self) -> List[User]:
         return list(self._users.keys())
 
     def insert_user(self, user: User) -> None:
@@ -169,7 +169,7 @@ class Adventure:
         self._chapters.append(chapter)
 
     def print_progress(self, current_chapter: Optional['Chapter']) -> str:
-        path: list[str] = []
+        path: List[str] = []
         if current_chapter is None:
             path.append(Emoji.COWBOY.value)
         else:

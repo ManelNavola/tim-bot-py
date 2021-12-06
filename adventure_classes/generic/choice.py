@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Tuple, List
 
 from adventure_classes.generic.chapter import Chapter
 from enums.emoji import Emoji
@@ -8,7 +8,7 @@ class ChoiceChapter(Chapter):
     def __init__(self, emoji: Emoji, msg: str = '', skip: bool = True):
         super().__init__(emoji)
         self.msg: str = msg
-        self.choices: list[tuple[Emoji, str, Callable]] = []
+        self.choices: List[Tuple[Emoji, str, Callable]] = []
         self.skip = skip
 
     def add_choice(self, icon: Emoji, desc: str, result: Callable):

@@ -1,5 +1,5 @@
 import typing
-from typing import Optional
+from typing import Optional, Dict
 
 from autoslot import Slots
 
@@ -14,9 +14,9 @@ class BattleActionData(Slots):
                  lang: str,
                  damage_multiplier: int,
                  target_entity: Optional['BattleEntity'] = None,
-                 targeted_entities: Optional[dict['BattleEntity', int]] = None):
+                 targeted_entities: Optional[Dict['BattleEntity', int]] = None):
         self.lang: str = lang
         self.damage_multiplier: int = damage_multiplier
         self.target_entity: Optional['BattleEntity'] = target_entity
-        self.targeted_entities: Optional[dict['BattleEntity', int]] = targeted_entities
+        self.targeted_entities: Optional[Dict['BattleEntity', int]] = targeted_entities
         self.override_ability: Optional[AbilityContainer] = None

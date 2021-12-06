@@ -1,6 +1,6 @@
 import copy
 from collections import UserDict
-from typing import Any
+from typing import Any, Dict
 
 from autoslot import Slots
 
@@ -43,7 +43,7 @@ class Row(Slots):
     def get_db(self) -> PostgreSQL:
         return self._db
 
-    def load_defaults(self) -> dict[str, Any]:
+    def load_defaults(self) -> Dict[str, Any]:
         return {}
 
     def save(self) -> None:

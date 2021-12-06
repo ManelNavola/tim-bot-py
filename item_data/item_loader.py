@@ -1,23 +1,23 @@
 import json
-from typing import Any
+from typing import Any, List, Dict
 
 from enums.item_type import EquipmentType, ItemType
 from enums.location import Location
 from item_data import item_descriptions
 from item_data.item_descriptions import ItemDescription, EquipmentDescription, PotionDescription
 
-_EQUIPMENT_DICT: dict[int, dict[Location, dict[EquipmentType, list[EquipmentDescription]]]] = {
+_EQUIPMENT_DICT: Dict[int, Dict[Location, Dict[EquipmentType, List[EquipmentDescription]]]] = {
     tier: {location: {} for location in Location} for tier in range(5)
 }
 
-_POTION_LIST: list[PotionDescription] = []
+_POTION_LIST: List[PotionDescription] = []
 
-_INDEX_TO_DESC: dict[int, ItemDescription] = {}
+_INDEX_TO_DESC: Dict[int, ItemDescription] = {}
 
 
 def load():
     with open('game_data/items.json', 'r') as f:
-        item_dict: dict[str, dict[str, Any]] = json.load(f)
+        item_dict: Dict[str, Dict[str, Any]] = json.load(f)
         equipment_count: int = 0
         for id_k, id_v in item_dict.items():
             item_type: ItemType = ItemType.from_id(id_v['Type'])
@@ -40,9 +40,9 @@ def get_description(desc_id: int) -> ItemDescription:
     return _INDEX_TO_DESC[desc_id]
 
 
-def get_equipment_dict() -> dict[int, dict[Location, dict[EquipmentType, list[EquipmentDescription]]]]:
+def get_equipment_dict() -> Dict[int, Dict[Location, Dict[EquipmentType, List[EquipmentDescription]]]]:
     return _EQUIPMENT_DICT
 
 
-def get_potion_list() -> list[PotionDescription]:
+def get_potion_list() -> List[PotionDescription]:
     return _POTION_LIST

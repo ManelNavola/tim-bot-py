@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar, Any, Optional
+from typing import Generic, TypeVar, Any, Optional, Dict
 
 from autoslot import Slots
 
@@ -6,8 +6,8 @@ T = TypeVar('T')
 
 
 class DictRef(Generic[T], Slots):
-    def __init__(self, dictionary: dict[Any, T], key: Any):
-        self.dictionary: dict[Any, T] = dictionary
+    def __init__(self, dictionary: Dict[Any, T], key: Any):
+        self.dictionary: Dict[Any, T] = dictionary
         self.key: Any = key
 
     def try_get(self) -> Optional[T]:

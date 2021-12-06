@@ -1,6 +1,6 @@
 import random
 import typing
-from typing import Any
+from typing import Any, Dict, Set
 
 import utils
 from db.database import PostgreSQL
@@ -32,9 +32,9 @@ class Shop:
         self._lang = lang
         self._guild_id: int = guild_id
         self._shop_time: DictRef[int] = shop_time
-        self._shop_items: dict[int, Item] = {}
-        self._shop_potions: dict[int, Potion] = {}
-        self._last_valid_checks: set[int] = set()
+        self._shop_items: Dict[int, Item] = {}
+        self._shop_potions: Dict[int, Potion] = {}
+        self._last_valid_checks: Set[int] = set()
 
     def get_lang(self) -> str:
         return self._lang.get()
@@ -171,12 +171,12 @@ class Shop:
         for isd in items_data:
             slot: str = isd['slot'].strip()
             item_id: int = isd['item_id']
-            item_dict: dict[str, Any] = self._db.get_row_data('items', dict(id=item_id))
+            item_dict: Dict[str, Any] = self._db.get_row_data('items', dict(id=item_id))
             item: Item = item_utils.get_from_dict(item_id, item_dict['desc_id'], item_dict['data'])
             self._get_dict_ref(slot).set(item)
 
     def _clear_shop(self) -> None:
-        shop_items: dict[int, Item] = self._shop_items
+        shop_items: Dict[int, Item] = self._shop_items
         shop_len: int = len([1 for x in shop_items if x is not None])
         if shop_len > 0:
             self._db.delete_row("guild_items", dict(guild_id=self._guild_id), shop_len)

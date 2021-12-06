@@ -2,7 +2,7 @@ import typing
 from abc import ABC, abstractmethod
 from enum import Enum, unique
 
-from typing import Optional
+from typing import Optional, Tuple, Dict
 from autoslot import Slots
 
 from enemy_data import enemy_utils
@@ -93,7 +93,7 @@ class Claw(Ability):
         return 4
 
 
-SUMMON_TYPES_TIER: dict[int, tuple[int, int]] = {
+SUMMON_TYPES_TIER: Dict[int, Tuple[int, int]] = {
     100: (22, 5)  # Entling
 }
 

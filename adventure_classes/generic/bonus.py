@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 from adventure_classes.generic.chapter import Chapter
 from item_data.stat_modifier import StatModifier
 from enums.emoji import Emoji
@@ -10,8 +12,8 @@ class BonusChapter(Chapter):
     def __init__(self, text: str):
         super().__init__(Emoji.BOX)
         self._text: str = text
-        self._bonus: list[StatModifier] = []
-        self._persistent_bonus: list[tuple[Stat, int]] = []
+        self._bonus: List[StatModifier] = []
+        self._persistent_bonus: List[Tuple[Stat, int]] = []
 
     def add_modifier(self, modifier: StatModifier):
         self._bonus.append(modifier)
@@ -21,7 +23,7 @@ class BonusChapter(Chapter):
 
     async def init(self):
         self.add_log(self._text)
-        users: list[User] = self.get_adventure().get_users()
+        users: List[User] = self.get_adventure().get_users()
         for bonus in self._bonus:
             if bonus.duration < 0:
                 self.add_log(tr(self.get_lang(), 'BONUS.WHOLE',

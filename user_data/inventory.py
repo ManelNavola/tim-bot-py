@@ -1,5 +1,5 @@
 from enum import unique, Enum
-from typing import Optional, Any
+from typing import Optional, Any, List, Dict, Tuple
 
 import utils
 from db.database import PostgreSQL
@@ -37,7 +37,7 @@ class Inventory:
     #     self._user_entity: UserEntity = user_entity
     #     self._user_entity.update_equipment(self.get_equipment())
 
-    CHAR_TO_EQUIPMENT_TYPE: dict[str, EquipmentType] = {
+    CHAR_TO_EQUIPMENT_TYPE: Dict[str, EquipmentType] = {
         'h': EquipmentType.HELMET,
         'c': EquipmentType.CHEST,
         'w': EquipmentType.WEAPON,
@@ -45,7 +45,7 @@ class Inventory:
         'b': EquipmentType.BOOT,
     }
 
-    EQUIPMENT_TYPE_TO_CHAR: dict[EquipmentType, str] = {
+    EQUIPMENT_TYPE_TO_CHAR: Dict[EquipmentType, str] = {
         v: k for k, v in CHAR_TO_EQUIPMENT_TYPE.items()
     }
 
@@ -54,16 +54,16 @@ class Inventory:
         self._db: PostgreSQL = db
         self._user_id: int = user_id
         self._user_entity: UserEntity = user_entity
-        self._items: dict[int, Item] = {}
+        self._items: Dict[int, Item] = {}
         self._item_slots: int = item_slots
-        self._equipment: dict[EquipmentType, Equipment] = {}
-        self._potions: dict[int, Potion] = {}
+        self._equipment: Dict[EquipmentType, Equipment] = {}
+        self._potions: Dict[int, Potion] = {}
         self._potion_slots: int = potion_slots
 
         for isd in items_data:
             slot: str = isd['slot'].strip()
             item_id: int = isd['item_id']
-            item_dict: dict[str, Any] = self._db.get_row_data('items', dict(id=item_id))  # STARTS @ 1!!!
+            item_dict: Dict[str, Any] = self._db.get_row_data('items', dict(id=item_id))  # STARTS @ 1!!!
             item: Item = item_utils.get_from_dict(item_id, item_dict['desc_id'], item_dict['data'])
             self._get_dict_ref(slot).set(item)
 
@@ -103,8 +103,8 @@ class Inventory:
             if i in self._potions:
                 return self._potions[i]
 
-    def get_all_potions(self) -> list[Potion]:
-        potions: list[Potion] = []
+    def get_all_potions(self) -> List[Potion]:
+        potions: List[Potion] = []
         for i in range(1, self._potion_slots + 1):
             if i in self._potions:
                 potions.append(self._potions[i])
@@ -189,20 +189,20 @@ class Inventory:
             return ActionResult(message='INVENTORY.ITEM_NOT_EQUIPMENT')
 
     def equip_best(self) -> ActionResult:
-        inventory_equipment: dict[EquipmentType, tuple[str, Equipment]] = {}
+        inventory_equipment: Dict[EquipmentType, Tuple[str, Equipment]] = {}
         for et in EquipmentType:
             equipment: Optional[Equipment] = self._equipment.get(et)
             if equipment is not None:
                 inventory_equipment[et] = (Inventory.EQUIPMENT_TYPE_TO_CHAR[et], equipment)
         for slot_int, item in self._items.items():
             if isinstance(item, Equipment):
-                other_equipment: Optional[tuple[str, Equipment]] = inventory_equipment.get(item.get_desc().subtype)
+                other_equipment: Optional[Tuple[str, Equipment]] = inventory_equipment.get(item.get_desc().subtype)
                 if other_equipment is None:
                     inventory_equipment[item.get_desc().subtype] = (str(slot_int), item)
                 else:
                     if other_equipment[1].get_price(True) < item.get_price(True):
                         inventory_equipment[item.get_desc().subtype] = (str(slot_int), item)
-        item_list: list[str] = []
+        item_list: List[str] = []
         for et, tup in inventory_equipment.items():
             self._move(tup[0], Inventory.EQUIPMENT_TYPE_TO_CHAR[tup[1].get_desc().subtype])
             item_list.append(tup[1].print())
@@ -225,11 +225,11 @@ class Inventory:
         self.update_equipment()
         return ActionResult(message='INVENTORY.UNEQUIPPED', success=True, item=item.print())
 
-    def get_equipment(self) -> dict[EquipmentType, Equipment]:
+    def get_equipment(self) -> Dict[EquipmentType, Equipment]:
         return self._equipment
 
     def print(self, lang: str) -> str:
-        ta: list[str] = []
+        ta: List[str] = []
         # Equipment
         if self._equipment:
             ta.append(tr(lang, 'INVENTORY.EQUIPMENT', EMOJI_EQUIPMENT=Emoji.SHIELD))

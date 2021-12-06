@@ -1,9 +1,5 @@
 from typing import Optional
 
-from discord import Client
-from discord.utils import get
-
-import utils
 from db.database import PostgreSQL
 from guild_data.guild import Guild
 from helpers.cache import Cache

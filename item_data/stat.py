@@ -1,5 +1,5 @@
 from enum import Enum, unique
-from typing import Optional, Any
+from typing import Optional, Any, List
 
 from autoslot import Slots
 
@@ -39,7 +39,7 @@ class StatInstance(Slots):
         return f"{value}"
 
     def print(self, value: int, base: int = 0, short: bool = False, persistent_value: Optional[int] = None) -> str:
-        tp: list[str] = []
+        tp: List[str] = []
         if short:
             tp.append(f"{self.abv}: ")
         else:
@@ -181,7 +181,7 @@ class Stat(Enum):
         return self.value.type
 
     @staticmethod
-    def get_type_list(st: StatType) -> list['Stat']:
+    def get_type_list(st: StatType) -> List['Stat']:
         return Stat._INFO['of_type'][st]
 
     def get_limit(self) -> int:

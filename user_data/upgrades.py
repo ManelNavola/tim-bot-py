@@ -1,5 +1,5 @@
 # Dictionary
-from typing import Callable, Any, Optional
+from typing import Callable, Any, Optional, Tuple, Dict
 
 from autoslot import Slots
 
@@ -8,10 +8,10 @@ from helpers.dictref import DictRef
 
 
 class Upgrade(Slots):
-    def __init__(self, name: str, icon: Emoji, upgrades: dict[int, tuple[Any, int]], locked: bool = False):
+    def __init__(self, name: str, icon: Emoji, upgrades: Dict[int, Tuple[Any, int]], locked: bool = False):
         self._name: str = name
         self._icon: Emoji = icon
-        self._upgrades: dict[int, tuple[Any, int]] = upgrades
+        self._upgrades: Dict[int, Tuple[Any, int]] = upgrades
         self._locked = locked
 
     def get_name(self) -> str:

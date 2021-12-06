@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from typing import Optional
+from typing import Optional, Dict, List
 
 from item_data.stat_modifier import StatModifier
 from item_data.abilities import AbilityContainer
@@ -7,13 +7,13 @@ from item_data.stat import Stat
 
 
 class Entity(ABC):
-    def __init__(self, stat_dict: dict[Stat, int], modifiers: list[StatModifier] = None):
-        self._stat_dict: dict[Stat, int] = stat_dict
-        self._abilities: list[AbilityContainer] = []
-        self._persistent_stats: dict[Stat, int] = {}
+    def __init__(self, stat_dict: Dict[Stat, int], modifiers: List[StatModifier] = None):
+        self._stat_dict: Dict[Stat, int] = stat_dict
+        self._abilities: List[AbilityContainer] = []
+        self._persistent_stats: Dict[Stat, int] = {}
         if modifiers is None:
             modifiers = []
-        self._stat_modifiers: list[StatModifier] = modifiers
+        self._stat_modifiers: List[StatModifier] = modifiers
 
     def add_modifier(self, modifier: StatModifier) -> None:
         if modifier.persistent:
@@ -21,7 +21,7 @@ class Entity(ABC):
         else:
             self._stat_modifiers.append(modifier)
 
-    def get_modifiers(self) -> list[StatModifier]:
+    def get_modifiers(self) -> List[StatModifier]:
         return self._stat_modifiers
 
     def step_turn_modifiers(self):
@@ -53,17 +53,17 @@ class Entity(ABC):
                 sv = self.get_stat(stat)
                 self._persistent_stats[stat] = stat.get_value(sv)
 
-    def get_abilities(self) -> list[AbilityContainer]:
+    def get_abilities(self) -> List[AbilityContainer]:
         return self._abilities
 
-    def set_abilities(self, abilities: list[AbilityContainer]) -> None:
+    def set_abilities(self, abilities: List[AbilityContainer]) -> None:
         self._abilities = abilities
 
     @abstractmethod
     def get_name(self) -> str:
         pass
 
-    def get_stat_dict(self) -> dict[Stat, int]:
+    def get_stat_dict(self) -> Dict[Stat, int]:
         return self._stat_dict
 
     def set_persistent_value(self, stat: Stat, new_value: int) -> None:

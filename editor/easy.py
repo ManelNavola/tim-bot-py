@@ -3,7 +3,7 @@ import random
 from abc import ABC, abstractmethod
 from tkinter import messagebox
 from tkinter.ttk import Treeview
-from typing import Any, cast
+from typing import Any, cast, List, Dict
 from tkinter import *
 
 from jsonpath_ng import parse
@@ -83,7 +83,7 @@ class EasyJSON(Easy, ABC):
             del current[to_explore[0]]
         self.easy_data.update()
 
-    def show(self, data: dict[str, Any], key) -> str:
+    def show(self, data: Dict[str, Any], key) -> str:
         return self.get_value(data)
 
 
@@ -95,7 +95,7 @@ class EasyJSONKey(EasyJSON):
     def build(self, parent):
         pass
 
-    def show(self, data: dict[str, Any], key) -> str:
+    def show(self, data: Dict[str, Any], key) -> str:
         return key
 
 
@@ -231,7 +231,7 @@ class EasyJSONEnum(EasyJSONWithVar):
         super().update(data)
         self.var.set(self.enum.from_id(self.get_value()).get_name())
 
-    def show(self, data: dict[str, Any], key) -> str:
+    def show(self, data: Dict[str, Any], key) -> str:
         return self.enum.from_id(self.get_value(data)).get_name()
 
     def build(self, parent):
@@ -251,8 +251,8 @@ class EasyGrid(Easy):
         Easy.__init__(self)
         if weights is None:
             weights = []
-        self.structure: list[EasyItem] = structure
-        self.weights: list[int] = weights
+        self.structure: List[EasyItem] = structure
+        self.weights: List[int] = weights
 
     def build(self, parent):
         self.frame = Frame(parent)
@@ -293,7 +293,7 @@ class EasyJSONStats(EasyGrid, EasyJSON):
                 y += 1
         EasyGrid.__init__(self, structure, [1 for _ in range(limit)])
         EasyJSON.__init__(self, path)
-        self.stat_fields: list[EasyItem] = []
+        self.stat_fields: List[EasyItem] = []
 
     def build(self, parent):
         EasyGrid.build(self, parent)
@@ -304,7 +304,7 @@ class EasyJSONStats(EasyGrid, EasyJSON):
     def grid(self, row, column, sticky='nsew', column_span=1, row_span=1):
         EasyGrid.grid(self, row, column, sticky, column_span, row_span)
 
-    def show(self, data: dict[str, Any], key) -> str:
+    def show(self, data: Dict[str, Any], key) -> str:
         tr = []
         for stat in Stat.get_all():
             value = EasyJSON.get_value(self, data).get(stat.abv, 0)
@@ -314,7 +314,7 @@ class EasyJSONStats(EasyGrid, EasyJSON):
 
 
 class EasyJSONStatsWeights(EasyJSONStats):
-    def show(self, data: dict[str, Any], key) -> str:
+    def show(self, data: Dict[str, Any], key) -> str:
         tr = []
         for stat in Stat:
             value = EasyJSON.get_value(self, data).get(stat.get_abv())
@@ -325,7 +325,7 @@ class EasyJSONStatsWeights(EasyJSONStats):
 
 
 class EasyJSONBattleStats(EasyJSONStats):
-    def show(self, data: dict[str, Any], key) -> str:
+    def show(self, data: Dict[str, Any], key) -> str:
         stat_data = {Stat.get_by_abv(x): v for x, v in data['Stats'].items()}
         weighted_sum: float = 0
         for stat, value in stat_data.items():
@@ -340,7 +340,7 @@ class EasyJSONBattleStats(EasyJSONStats):
 
 
 class EasyGridTree(EasyGrid):
-    def __init__(self, structure, widths: list[int]):
+    def __init__(self, structure, widths: List[int]):
         EasyGrid.__init__(self, structure)
         self.data = None
         self.modified_data = {}

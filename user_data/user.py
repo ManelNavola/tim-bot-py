@@ -1,5 +1,5 @@
 import typing
-from typing import Optional
+from typing import Optional, Dict
 
 from discord import Member
 
@@ -59,11 +59,11 @@ class User(Row):
         self._user_class: DictRef[int] = DictRef(self._data, 'class')
         if utils.is_test():
             self._user_class.set(UserClass.WARRIOR.get_id())
-        self._persistent_stats: dict[StatInstance, int] = {}
+        self._persistent_stats: Dict[StatInstance, int] = {}
         if self._user_class.get() != -1:
             uc: UserClass = UserClass.get_from_id(self._user_class.get())
             self.user_entity.set_class(uc)
-            self._persistent_stats: dict[StatInstance, int] = {
+            self._persistent_stats: Dict[StatInstance, int] = {
                 stat: value for stat, value in uc.get_stats().items() if stat.is_persistent()
             }
 

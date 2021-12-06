@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Union
+from typing import Union, List, Dict
 
 TRANSLATIONS = {}
 FALLBACK = None
@@ -17,14 +17,14 @@ def load():
     print(f"Loaded {len(TRANSLATIONS)} languages")
 
 
-def get_available() -> list[str]:
+def get_available() -> List[str]:
     return list(TRANSLATIONS.keys())
 
 
 def tr(lang_lang_lang: str, text_id: str, **kwargs) -> str:
     try:
-        language_json: dict[str, str] = TRANSLATIONS.get(lang_lang_lang, FALLBACK)
-        paths: list[str] = text_id.split('.')
+        language_json: Dict[str, str] = TRANSLATIONS.get(lang_lang_lang, FALLBACK)
+        paths: List[str] = text_id.split('.')
         access: Union[dict, str] = language_json[paths[0]]
         for i in range(1, len(paths)):
             access = access[paths[i]]

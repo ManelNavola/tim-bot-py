@@ -1,6 +1,6 @@
 import random
 from abc import abstractmethod
-from typing import Optional
+from typing import Optional, List
 
 import utils
 from adventure_classes.generic.chapter import Chapter
@@ -35,7 +35,7 @@ class ItemRewardChapter(RewardChapter):
         self.item: Item = item
 
     async def reward(self):
-        users: list[User] = [user
+        users: List[User] = [user
                              for user in self.get_adventure().get_users()
                              if user.inventory.get_empty_slot(SlotType.ITEMS) is not None]
         if not users:

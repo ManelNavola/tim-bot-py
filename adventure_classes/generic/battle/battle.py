@@ -1,7 +1,7 @@
 import asyncio
 import typing
 
-from typing import Optional
+from typing import Optional, List, Dict, Set
 
 import utils
 from adventure_classes.generic.adventure import Adventure
@@ -30,7 +30,7 @@ class BattleChapter(Chapter):
     MULTI_PLAYER_DELAY: int = 20
 
     def __init__(self, group_a: BattleGroup, group_b: BattleGroup,
-                 icon: Emoji = Emoji.BATTLE, pre_text: list[str] = None, is_boss: bool = False):
+                 icon: Emoji = Emoji.BATTLE, pre_text: List[str] = None, is_boss: bool = False):
         super().__init__(icon)
         if pre_text is None:
             pre_text = []
@@ -38,14 +38,14 @@ class BattleChapter(Chapter):
         self._group_b: BattleGroup = group_b
         self._multiple_users: bool = (self._group_a.has_multiple_users() or self._group_b.has_multiple_users())
         self._turn_a: bool = True
-        self._battle_log: list[str] = []
+        self._battle_log: List[str] = []
         self._round: int = 0
         self._round_offbeat: bool = False
-        self._available_targets: list[BattleEntity] = []
-        self._chosen_targets: dict[BattleEntity, BattleEntity] = {}
+        self._available_targets: List[BattleEntity] = []
+        self._chosen_targets: Dict[BattleEntity, BattleEntity] = {}
         self._pass_turn: Optional[WaitUntil] = None
-        self._acted: set[User] = set()
-        self._pre_text: list[str] = pre_text
+        self._acted: Set[User] = set()
+        self._pre_text: List[str] = pre_text
         self._late_clear: bool = False
         self._max_targets: int = 1
         self._speed_balance: float = 0
@@ -128,14 +128,14 @@ class BattleChapter(Chapter):
                 for battle_entity in other_team.get_battle_entities():
                     self.add_log(f"{battle_entity.print()}")
             else:
-                td: dict[BattleEntity, list[str]] = {}
+                td: Dict[BattleEntity, List[str]] = {}
                 for be1, be2 in self._chosen_targets.items():
                     if be2 is not None:
                         td[be2] = td.get(be2, []) + [be1.get_name()]
                 for battle_entity in other_team.get_battle_entities():
                     if battle_entity in self._available_targets:
                         index: int = self._available_targets.index(battle_entity)
-                        sl: list[str] = td.get(battle_entity, [])
+                        sl: List[str] = td.get(battle_entity, [])
                         if sl and (not battle_entity.is_dead()):
                             self.add_log(f"{index + 1} | {battle_entity.print()} <- {', '.join(sl)}")
                         else:
@@ -177,7 +177,7 @@ class BattleChapter(Chapter):
             # Step turn modifiers
             battle_entity.step_turn_modifiers()
             # Step abilities
-            instances: list[AbilityInstance] = []
+            instances: List[AbilityInstance] = []
             for ability_instance in battle_entity.get_ability_instances():
                 ability_instance.duration_remaining -= 1
                 if ability_instance.duration_remaining > 0:
@@ -196,7 +196,7 @@ class BattleChapter(Chapter):
 
         other_team: BattleGroup = self._get_opposing_team()
 
-        self._available_targets: list[BattleEntity] = [battle_entity
+        self._available_targets: List[BattleEntity] = [battle_entity
                                                        for battle_entity in other_team.get_battle_entities()
                                                        if not battle_entity.is_dead()]
 
@@ -287,7 +287,7 @@ class BattleChapter(Chapter):
         if self._is_finished():
             return
         current_team: BattleGroup = self._get_current_team()
-        target_dict: dict[BattleEntity, int] = {
+        target_dict: Dict[BattleEntity, int] = {
             battle_entity: 0
             for battle_entity in self._get_opposing_team().get_battle_entities()
             if not battle_entity.is_dead()
@@ -313,7 +313,7 @@ class BattleChapter(Chapter):
         # Pretext
         if self._pre_text:
             self.start_log()
-            ta: list[str] = [f"_{x}_" for x in self._pre_text]
+            ta: List[str] = [f"_{x}_" for x in self._pre_text]
             for i in range(len(self._pre_text)):
                 await self.send_log('\n'.join([ta[i]]))
                 await asyncio.sleep(2)
@@ -399,23 +399,23 @@ def rnd(adventure: Adventure, location: Location, pool: str = '', bot_ai: Option
 
 # Quick single-player adventure battle
 def qsab(adventure: Adventure, location: Location, pool: str = '',
-         icon: Emoji = Emoji.BATTLE, pre_text: list[str] = None) -> None:
+         icon: Emoji = Emoji.BATTLE, pre_text: List[str] = None) -> None:
     qcsab(adventure, rnd(adventure, location, pool), icon, pre_text)
 
 
 # Quick custom single-player adventure battle
 def qcsab(adventure: Adventure, bot_entity: BotEntity,
-          icon: Emoji = Emoji.BATTLE, pre_text: list[str] = None, is_boss: bool = False) -> None:
+          icon: Emoji = Emoji.BATTLE, pre_text: List[str] = None, is_boss: bool = False) -> None:
     adventure.add_chapter(BattleChapter(BattleGroupUserDelayed(), BattleGroup([bot_entity]),
                                         icon=icon, pre_text=pre_text, is_boss=is_boss))
 
 
 # Quick custom single-player adventure battle
-def qsbb(adventure: Adventure, bot_entity: BotEntity, icon: Emoji = Emoji.BATTLE, pre_text: list[str] = None) -> None:
+def qsbb(adventure: Adventure, bot_entity: BotEntity, icon: Emoji = Emoji.BATTLE, pre_text: List[str] = None) -> None:
     adventure.add_chapter(BattleChapter(BattleGroupUserDelayed(), BattleGroup([bot_entity]),
                                         icon=icon, pre_text=pre_text, is_boss=True))
 
 
 # Team vs team battle
-def qtvt(adventure: Adventure, team_a: list['User'], team_b: list['User']) -> None:
+def qtvt(adventure: Adventure, team_a: List['User'], team_b: List['User']) -> None:
     adventure.add_chapter(BattleChapter(BattleGroup(users=team_a), BattleGroup(users=team_b)))

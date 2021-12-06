@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from enum import unique, Enum
-from typing import Optional, Any
+from typing import Optional, Any, Dict
 
 from autoslot import Slots
 
@@ -47,7 +47,7 @@ class StatModifier(Slots):
         return v
 
     @abstractmethod
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> Dict[str, Any]:
         d = {
             'Stat': self.stat.get_abv(),
             'Value': self.value,
@@ -61,7 +61,7 @@ class StatModifier(Slots):
         return d
 
     @staticmethod
-    def from_dict(data_dict: dict[str, Any]) -> 'StatModifier':
+    def from_dict(data_dict: Dict[str, Any]) -> 'StatModifier':
         return StatModifier(Stat.get_by_abv(data_dict['Stat']), data_dict['Value'],
                             StatModifierOperation(data_dict['Operation']), data_dict.get('Duration', 0),
                             'Persistent' in data_dict, 'PerBattle' in data_dict)

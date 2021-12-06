@@ -1,12 +1,14 @@
 from enum import Enum
 
+from typing import Dict
+
 from enums.emoji import Emoji
 from helpers.translate import tr
 from item_data.stat import Stat
 
 
 class UserClassInstance:
-    def __init__(self, class_id: int, name: str, emoji: Emoji, stats: dict[Stat, int]):
+    def __init__(self, class_id: int, name: str, emoji: Emoji, stats: Dict[Stat, int]):
         self.id = class_id
         self.name = name
         self.stats = stats
@@ -59,7 +61,7 @@ class UserClass(Enum):
     def get_name(self, lang: str) -> str:
         return tr(lang, f"CLASS.{self.value.name}")
 
-    def get_stats(self) -> dict[Stat, int]:
+    def get_stats(self) -> Dict[Stat, int]:
         return self.value.stats
 
     @staticmethod

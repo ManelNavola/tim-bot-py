@@ -1,6 +1,8 @@
 import random
 from unittest import TestCase
 
+from typing import Dict
+
 from helpers.dictref import DictRef
 from helpers.incremental import Incremental
 from utils import TimeSlot, TimeMetric
@@ -8,7 +10,7 @@ from utils import TimeSlot, TimeMetric
 
 class TestIncremental(TestCase):
     def setUp(self) -> None:
-        self.d: dict[str, int] = {
+        self.d: Dict[str, int] = {
             'base': random.randint(100, 10000),
             'time': random.randint(100, 10000),
         }

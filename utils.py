@@ -3,16 +3,17 @@ import os
 import time
 
 from enum import unique, Enum
-from typing import Optional
+from typing import Optional, Dict
 
 from autoslot import Slots
 from discord.ext.commands import Bot
 
-BOT_CLIENT: Optional[Bot] = None
-
 
 # Time metric enum
 from helpers.translate import tr
+
+
+BOT_CLIENT: Optional[Bot] = None
 
 
 @unique
@@ -58,7 +59,7 @@ class TimeSlot(Slots):
         return self.metric.seconds(self.amount)
 
 
-NUMERAL_TO_ROMAN: dict[int, str] = {
+NUMERAL_TO_ROMAN: Dict[int, str] = {
     1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V', 6: 'VI'
 }
 

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List, Dict
 
 from autoslot import Slots
 
@@ -9,16 +9,16 @@ from item_data.stat import Stat
 
 
 class BotEntityBuilder(Slots):
-    def __init__(self, name: str, stat_dict: dict[Stat, int], enemy_id: Optional[int] = None, ai: BotAI = BaseBotAI()):
+    def __init__(self, name: str, stat_dict: Dict[Stat, int], enemy_id: Optional[int] = None, ai: BotAI = BaseBotAI()):
         # abilities: Optional[list[AbilityInstance]] = None, ):
         # if not abilities:
         #    abilities = []
         # self.abilities: list[AbilityInstance] = abilities
-        self.stat_dict: dict[Stat, int] = stat_dict
+        self.stat_dict: Dict[Stat, int] = stat_dict
         self.name: str = name
         self.enemy_id: Optional[int] = enemy_id
         self.ai: BotAI = ai
-        self.abilities: list[AbilityEnum] = []
+        self.abilities: List[AbilityEnum] = []
 
     def instance(self, bot_ai: Optional[BotAI] = None):
         if bot_ai is not None:

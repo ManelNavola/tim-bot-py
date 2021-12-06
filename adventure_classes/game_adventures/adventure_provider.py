@@ -1,4 +1,4 @@
-from typing import Optional, Callable
+from typing import Callable, List, Dict
 
 from adventure_classes.game_adventures import forest, tutorial, lake, duel
 from adventure_classes.generic.adventure import Adventure
@@ -15,7 +15,7 @@ class AdventureInstance:
         self.tokens: int = tokens
         self._setup_call: Callable = setup_call
 
-    async def start(self, cmd: Command, users: list[User], saved_data=None):
+    async def start(self, cmd: Command, users: List[User], saved_data=None):
         if saved_data is None:
             saved_data = {}
         adventure: Adventure = Adventure(cmd.lang, self, saved_data)
@@ -23,7 +23,7 @@ class AdventureInstance:
         await adventure.start(cmd, users)
 
 
-name_to_adventure: dict[str, AdventureInstance] = {
+name_to_adventure: Dict[str, AdventureInstance] = {
     '_tutorial': AdventureInstance(tutorial.setup, 'TUTORIAL.NAME', Emoji.TUTORIAL, tokens=0),
     'Forest': AdventureInstance(forest.setup, 'FOREST.NAME', Emoji.FOREST),
     'Lake': AdventureInstance(lake.setup, 'LAKE.NAME', Emoji.LAKE),
@@ -35,7 +35,7 @@ async def nothing():
     return
 
 
-async def quick_adventure(cmd, users: list[User], name: str, icon: Emoji, tokens: int, chapters: list[Chapter]):
+async def quick_adventure(cmd, users: List[User], name: str, icon: Emoji, tokens: int, chapters: List[Chapter]):
     adventure: Adventure = Adventure(cmd.lang, AdventureInstance(nothing, name, icon, tokens))
     for chapter in chapters:
         adventure.add_chapter(chapter)

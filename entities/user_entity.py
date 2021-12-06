@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List, Dict
 
 from entities.entity import Entity
 from enums.item_type import EquipmentType
@@ -11,7 +11,7 @@ from enums.user_class import UserClass
 class UserEntity(Entity):
     def __init__(self, name_ref: DictRef[str]):
         super().__init__({})
-        self._base_dict: dict[Stat, int] = {}
+        self._base_dict: Dict[Stat, int] = {}
         self._name_ref: DictRef[str] = name_ref
         self._power: int = 0
 
@@ -39,7 +39,7 @@ class UserEntity(Entity):
         else:
             return self._stat_dict.get(stat, default) + self._base_dict.get(stat, default)
 
-    def update_equipment(self, item_list: dict[EquipmentType, Equipment]):
+    def update_equipment(self, item_list: Dict[EquipmentType, Equipment]):
         self._stat_dict.clear()
         # self._available_abilities.clear()
         for equipment in item_list.values():
@@ -53,7 +53,7 @@ class UserEntity(Entity):
         self.reset()
 
     def print_detailed(self):
-        dc: list[str] = []
+        dc: List[str] = []
 
         for stat in Stat:
             if (stat in self._stat_dict) or (stat in self._base_dict) or (stat.is_persistent()):

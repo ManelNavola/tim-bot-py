@@ -1,6 +1,6 @@
 import asyncio
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, List
 
 from adventure_classes.generic.adventure import Adventure
 from enums.emoji import Emoji
@@ -10,7 +10,7 @@ class Chapter(ABC):
     def __init__(self, icon: Emoji):
         self._adventure: Optional[Adventure] = None
         self._prefix: str = ""
-        self._log: list[list[str]] = []
+        self._log: List[List[str]] = []
         self.icon: Emoji = icon
         self.hidden: bool = False
         self._cleared: bool = True
@@ -36,7 +36,7 @@ class Chapter(ABC):
         await self.append(msg)
         await asyncio.sleep(time)
 
-    def _get_log(self) -> list[str]:
+    def _get_log(self) -> List[str]:
         return self._log[len(self._log) - 1]
 
     def start_log(self) -> None:

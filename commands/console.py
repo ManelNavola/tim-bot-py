@@ -3,6 +3,8 @@ import os
 from concurrent.futures.thread import ThreadPoolExecutor
 from functools import partial
 
+from typing import List
+
 from db.database import PostgreSQL
 from helpers import storage
 
@@ -26,7 +28,7 @@ async def execute(db: PostgreSQL):
     while True:
         print("> ", end='')
         c = await rie(input)
-        args: list[str] = c.split(' ')
+        args: List[str] = c.split(' ')
         try:
             if args[0].startswith('rel'):
                 reload()

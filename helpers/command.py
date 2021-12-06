@@ -1,6 +1,6 @@
 import traceback
 import typing
-from typing import Optional, Callable
+from typing import Optional, Callable, List
 
 from discord_slash import SlashCommand, SlashContext
 
@@ -26,8 +26,8 @@ class CommandHandler:
                          base: Optional[str] = None,
                          name: Optional[str] = None,
                          description: Optional[str] = None,
-                         guild_ids: Optional[list[int]] = None,
-                         options: Optional[list[dict]] = None,
+                         guild_ids: Optional[List[int]] = None,
+                         options: Optional[List[dict]] = None,
                          ignore_battle: bool = False,
                          guild_only: bool = False,
                          ignore_all: bool = False):
